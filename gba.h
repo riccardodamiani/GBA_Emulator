@@ -3,6 +3,7 @@
 
 #include "memory_mapper.h"
 #include "clock.h"
+#include "cpu.h"
 
 #include <string>
 
@@ -12,6 +13,7 @@ public:
 	static void Run();
 	static MemoryMapper memory;
 	static Clock clock;
+	static CPU cpu;
 private:
 };
 
