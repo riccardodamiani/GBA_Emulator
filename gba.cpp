@@ -10,5 +10,7 @@ void GBA::Load(std::string rom_filename) {
 }
 
 void GBA::Run() {
-
+	while (1) {
+		GBA::cpu.runFor(16780);
+	}
 }
