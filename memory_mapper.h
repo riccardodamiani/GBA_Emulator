@@ -11,7 +11,22 @@
 struct realAddress {
 	uint8_t* memory;
 	uint32_t addr;
+	const int* accessTimings;
 };
+
+const int accessTimings[][3] = {
+	{1, 1, 1},	//BIOS ROM
+	{1, 1, 1},	//INTERNAL WRAM
+	{1, 1, 1},	//I/O
+	{1, 1, 1},	//OAM
+	{3, 3, 6},	//E-WRAM
+	{1, 1, 2},	//PALETTE RAM
+	{1, 1, 2},	//VRAM
+	{5, 5, 8},	//GAMEPAK ROM
+	{5, 5, 8},	//GAMEPAK FLASH
+	{5, 5, 5}	//GAMEPAK SRAM
+};
+
 
 class MemoryMapper {
 public:
