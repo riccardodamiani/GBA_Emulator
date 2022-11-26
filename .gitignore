@@ -1,0 +1,17 @@
+*
+
+!cartridge.cpp
+!cartridge.h
+!clock.cpp
+!clock.h
+!cpu.cpp
+!cpu.h
+!gba.cpp
+!gba.h
+!gba_emulator.cpp
+!io_registers.h
+!memory_mapper.cpp
+!memory_mapper.h
+
+!.gitignore
+!README.md
