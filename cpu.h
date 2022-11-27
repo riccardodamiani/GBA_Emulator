@@ -46,9 +46,12 @@ public:
 private:
 	Registers reg;
 
+	void next_instruction();
 	void execute();
 	void execute_arm();
 	void execute_thumb();
+
+	bool isBranchOrBranchWithLink(uint32_t opcode);
 
 };
 
