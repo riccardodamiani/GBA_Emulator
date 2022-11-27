@@ -1,6 +1,8 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <cstdint>
+
 struct CPSR_registers {
 	uint8_t mode : 5,	//M0-M4 modes
 		T : 1,		//state bit (0 = ARM, 1 = THUMB)
@@ -37,10 +39,16 @@ struct Registers {
 	uint32_t R13_und, R14_und, SPSR_und;
 };
 
-class CPU {
+class Cpu {
 public:
+	Cpu();
 	void runFor(uint32_t ticks);
 private:
+	Registers reg;
+
+	void execute();
+	void execute_arm();
+	void execute_thumb();
 
 };
 
