@@ -13,7 +13,7 @@ public:
 	static void Run();
 	static MemoryMapper memory;
 	static Clock clock;
-	static CPU cpu;
+	static Cpu cpu;
 private:
 };
 
