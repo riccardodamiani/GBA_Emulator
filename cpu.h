@@ -1,6 +1,23 @@
 #ifndef CPU_H
 #define CPU_H
 
+struct CPSR_registers {
+	uint8_t mode : 5,	//M0-M4 modes
+		T : 1,		//state bit (0 = ARM, 1 = THUMB)
+		F : 1,		//FIQ disable (0 = Enable, 1 = Disable)
+		I : 1;		//IRQ disable (0 = enable, 1 = disable)
+	uint16_t A : 1,		//abort disable (0 = enable, 1 = disable)
+		E : 1,		//endian
+		reserved : 14;
+	uint8_t J : 1,		//Jazelle Mode    (1=Jazelle Bytecode instructions) (if supported)
+		reserved2 : 2,
+		Q : 1,	//sticky overflow (not supported)
+		V : 1,		//Overflow Flag   (0=No Overflow, 1=Overflow)
+		C : 1,		//Carry Flag      (0=Borrow/No Carry, 1=Carry/No Borrow)
+		Z : 1,		//Z - Zero Flag       (0=Not Zero, 1=Zero)
+		N : 1;		//N - Sign Flag       (0=Not Signed, 1=Signed)
+};
+
 struct Registers {
 	//active registers
 	uint32_t R0, R1, R2, R3, R4, R5, R6, R7;
@@ -24,6 +41,7 @@ class CPU {
 public:
 	void runFor(uint32_t ticks);
 private:
+
 };
 
 #endif
