@@ -3,6 +3,12 @@
 
 #include <cstdint>
 
+enum ARM_opcode {
+	ARM_OP_INVALID,
+	ARM_OP_B,
+	ARM_OP_BL,
+};
+
 struct CPSR_registers {
 	uint8_t mode : 5,	//M0-M4 modes
 		T : 1,		//state bit (0 = ARM, 1 = THUMB)
@@ -47,11 +53,16 @@ private:
 	Registers reg;
 
 	void next_instruction();
-	void execute();
-	void execute_arm();
-	void execute_thumb();
+	void next_instruction_thumb();
+	void next_instruction_arm();
 
-	bool isBranchOrBranchWithLink(uint32_t opcode);
+	void execute();
+	void execute_arm(ARM_opcode instruction, uint32_t opcode);
+	//void execute_thumb();
+	ARM_opcode decode_arm(uint32_t opcode);
+
+	bool ARM_IsBranch(uint32_t opcode);
+	bool ARM_IsBranchWithLink(uint32_t opcode);
 
 };
 
