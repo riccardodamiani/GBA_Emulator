@@ -133,6 +133,10 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BL(opcode);
 		break;
 
+	case ARM_OP_CMP:
+		Arm_CMP(opcode);
+		break;
+
 	default:
 		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
 		system("pause");
@@ -244,12 +248,36 @@ ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
 
 }
 
+inline uint8_t Cpu::leftRotate(uint8_t n, int bits) {
+	return (n << bits) | (n >> (8 - bits));
+}
+
+inline uint16_t Cpu::leftRotate(uint16_t n, int bits) {
+	return (n << bits) | (n >> (16 - bits));
+}
+
+inline uint32_t Cpu::leftRotate(uint32_t n, int bits) {
+	return (n << bits) | (n >> (32 - bits));
+}
+
+inline uint8_t Cpu::rightRotate(uint8_t n, int bits) {
+	return (n >> bits) | (n << (8 - bits));
+}
+
+inline uint16_t Cpu::rightRotate(uint16_t n, int bits) {
+	return (n >> bits) | (n << (16 - bits));
+}
+
+inline uint32_t Cpu::rightRotate(uint32_t n, int bits) {
+	return (n >> bits) | (n << (32 - bits));
+}
+
+
 //branch
 void Cpu::Arm_B(uint32_t opcode) {
 	uint32_t offset_24Bit = opcode & 0xffffff;
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R15 += 8 + offset * 4;
-
 }
 
 //branch with link
@@ -258,5 +286,17 @@ void Cpu::Arm_BL(uint32_t opcode) {
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R15 += 8 + offset * 4;
 	reg.R14 = reg.R15 + 4;
+}
 
+void Cpu::Arm_CMP(uint32_t opcode) {
+	uint8_t I = (opcode >> 25) & 1;
+	uint8_t reg_1_code = (opcode >> 16) & 0x0f;
+
+	uint32_t *Rn = &((uint32_t*)&reg)[reg_1_code];
+	if (I) {
+
+	}
+	else {
+
+	}
 }

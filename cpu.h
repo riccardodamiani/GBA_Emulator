@@ -68,6 +68,14 @@ public:
 private:
 	Registers reg;
 
+	inline uint8_t leftRotate(uint8_t n, int bits);
+	inline uint16_t leftRotate(uint16_t n, int bits);
+	inline uint32_t leftRotate(uint32_t n, int bits);
+	inline uint8_t rightRotate(uint8_t n, int bits);
+	inline uint16_t rightRotate(uint16_t n, int bits);
+	inline uint32_t rightRotate(uint32_t n, int bits);
+
+
 	void next_instruction();
 	void next_instruction_thumb();
 	void next_instruction_arm();
@@ -83,6 +91,7 @@ private:
 	//implementation
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
+	inline void Arm_CMP(uint32_t opcode);
 
 };
 
