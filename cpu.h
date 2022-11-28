@@ -64,6 +64,10 @@ private:
 	bool ARM_IsBranch(uint32_t opcode);
 	bool ARM_IsBranchWithLink(uint32_t opcode);
 
+	//ARM instructions
+	inline void Arm_B(uint32_t opcode);
+	inline void Arm_BL(uint32_t opcode);
+
 };
 
 #endif

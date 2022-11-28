@@ -117,16 +117,17 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	if (!arm_checkInstructionCondition(opcode)) {	//doesn't meet the condition
 		reg.R15 += 4;
-		GBA::clock.addTicks(1);
+		//GBA::clock.addTicks(1);
 		return;
 	}
 
 	switch (instruction) {
-	case ARM_OP_B:
-
+	case ARM_OP_B:	//branch
+		Arm_B(opcode);
 		break;
 
-	case ARM_OP_BL:
+	case ARM_OP_BL:		//branch with link
+		Arm_BL(opcode);
 		break;
 
 	default:
@@ -162,18 +163,6 @@ bool Cpu::ARM_IsBranch(uint32_t opcode) {
 	uint32_t opcode_format = opcode & mask;
 
 	return format == opcode_format;
-		/*uint32_t offset_24Bit = opcode & 0xffffff;
-		int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
-		if (opcode & 0x1000000) {	//branch with link
-			reg.R15 += 8 + offset * 4;
-			reg.R14 = reg.R15 + 4;
-			return true;
-		}
-		//branch
-		reg.R15 += 8 + offset * 4;
-		return true;
-	}
-	return false;*/
 }
 
 
@@ -184,4 +173,21 @@ bool Cpu::ARM_IsBranchWithLink(uint32_t opcode) {
 	uint32_t opcode_format = opcode & mask;
 
 	return format == opcode_format;
+}
+
+//branch
+void Cpu::Arm_B(uint32_t opcode) {
+	uint32_t offset_24Bit = opcode & 0xffffff;
+	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
+	reg.R15 += 8 + offset * 4;
+
+}
+
+//branch with link
+void Cpu::Arm_BL(uint32_t opcode) {
+	uint32_t offset_24Bit = opcode & 0xffffff;
+	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
+	reg.R15 += 8 + offset * 4;
+	reg.R14 = reg.R15 + 4;
+
 }
