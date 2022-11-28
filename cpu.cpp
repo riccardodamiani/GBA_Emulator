@@ -3,6 +3,7 @@
 #include "clock.h"
 
 #include <cstdint>
+#include <iostream>
 
 Clock GBA::clock;
 
@@ -130,11 +131,17 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BL(opcode);
 		break;
 
+	case ARM_OP_INVALID:
+		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
+		system("pause");
+		exit(1);
+		break;
 	default:
+		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
+		system("pause");
+		exit(1);
 		break;
 	}
-
-	reg.R15 += 4;
 }
 
 /*void Cpu::execute_thumb() {
