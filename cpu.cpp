@@ -50,6 +50,7 @@ ARM_opcode Cpu::decode_arm(uint32_t opcode) {
 	ARM_opcode instr;
 
 	if (instr = ARM_IsBranch(opcode)) return instr;
+	if (instr = ARM_IsAluInst(opcode)) return instr;
 
 	return ARM_opcode::ARM_OP_INVALID;
 }
@@ -182,6 +183,70 @@ ARM_opcode Cpu::ARM_IsBranch(uint32_t opcode) {
 	}
 
 	return ARM_OP_INVALID;
+}
+
+ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
+	uint32_t mask =		0b0000'1100'0000'0000'0000'0000'0000'0000;
+	uint32_t format =	0b0000'0000'0000'0000'0000'0000'0000'0000;
+
+	uint32_t opcode_format = opcode & mask;
+
+	if(format != opcode_format)	//not alu instruction
+		return ARM_OP_INVALID;
+
+	switch ((opcode >> 21) & 0x0f) {
+	case 0:	//and
+		return ARM_OP_AND;
+		break;
+	case 1:	//xor
+		return ARM_OP_EOR;
+		break;
+	case 2:	//subtract
+		return ARM_OP_SUB;
+		break;
+	case 3:	//subtract reversed
+		return ARM_OP_RSB;
+		break;
+	case 4:	//add
+		return ARM_OP_ADD;
+		break;
+	case 5:	//add with carry
+		return ARM_OP_ADC;
+		break;
+	case 6:	//subtract with carry
+		return ARM_OP_SBC;
+		break;
+	case 7:	//sub cy. reversed
+		return ARM_OP_RSC;
+		break;
+	case 8:	//test
+		return ARM_OP_TST;
+		break;
+	case 9:	//test exclusive
+		return ARM_OP_TEQ;
+		break;
+	case 0xa:	//compare
+		return ARM_OP_CMP;
+		break;
+	case 0xb:	//compare negative
+		return ARM_OP_CMN;
+		break;
+	case 0xc:	//or
+		return ARM_OP_ORR;
+		break;
+	case 0xd:	//move
+		return ARM_OP_MOV;
+		break;
+	case 0xe:	//bit clear
+		return ARM_OP_BIC;
+		break;
+	case 0xf:	//not
+		return ARM_OP_MVN;
+		break;
+	}
+
+	return ARM_OP_INVALID;
+
 }
 
 //branch

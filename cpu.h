@@ -7,6 +7,22 @@ enum ARM_opcode {
 	ARM_OP_INVALID,
 	ARM_OP_B,
 	ARM_OP_BL,
+	ARM_OP_AND,
+	ARM_OP_EOR,
+	ARM_OP_SUB,
+	ARM_OP_RSB,
+	ARM_OP_ADD,
+	ARM_OP_ADC,
+	ARM_OP_SBC,
+	ARM_OP_RSC,
+	ARM_OP_TST,
+	ARM_OP_TEQ,
+	ARM_OP_CMP,
+	ARM_OP_CMN,
+	ARM_OP_ORR,
+	ARM_OP_MOV,
+	ARM_OP_BIC,
+	ARM_OP_MVN
 };
 
 struct CPSR_registers {
@@ -62,6 +78,7 @@ private:
 	ARM_opcode decode_arm(uint32_t opcode);
 
 	ARM_opcode ARM_IsBranch(uint32_t opcode);
+	ARM_opcode ARM_IsAluInst(uint32_t opcode);
 
 	//ARM instructions
 	inline void Arm_B(uint32_t opcode);
