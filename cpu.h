@@ -61,8 +61,7 @@ private:
 	//void execute_thumb();
 	ARM_opcode decode_arm(uint32_t opcode);
 
-	bool ARM_IsBranch(uint32_t opcode);
-	bool ARM_IsBranchWithLink(uint32_t opcode);
+	ARM_opcode ARM_IsBranch(uint32_t opcode);
 
 	//ARM instructions
 	inline void Arm_B(uint32_t opcode);

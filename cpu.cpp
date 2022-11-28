@@ -47,8 +47,9 @@ void Cpu::next_instruction() {
 
 ARM_opcode Cpu::decode_arm(uint32_t opcode) {
 
-	if (ARM_IsBranch(opcode)) return ARM_opcode::ARM_OP_B;
-	if (ARM_IsBranchWithLink(opcode)) return ARM_opcode::ARM_OP_BL;
+	ARM_opcode instr;
+
+	if (instr = ARM_IsBranch(opcode)) return instr;
 
 	return ARM_opcode::ARM_OP_INVALID;
 }
@@ -163,23 +164,24 @@ int32_t convert_24Bit_to_32Bit_signed(uint32_t val) {
 	return static_cast<int32_t>(val & 0xffffff);
 }
 
-bool Cpu::ARM_IsBranch(uint32_t opcode) {
-	uint32_t format = 0b0000'1010'0000'0000'0000'0000'0000'0000;
-	uint32_t mask = 0b0000'1110'0000'0000'0000'0000'0000'0000;
-
-	uint32_t opcode_format = opcode & mask;
-
-	return format == opcode_format;
-}
-
-
-bool Cpu::ARM_IsBranchWithLink(uint32_t opcode) {
-	uint32_t format = 0b0000'1011'0000'0000'0000'0000'0000'0000;
+ARM_opcode Cpu::ARM_IsBranch(uint32_t opcode) {
+	
+	uint32_t branch_format = 0b0000'1010'0000'0000'0000'0000'0000'0000;
+	uint32_t branch_with_link_format = 0b0000'1011'0000'0000'0000'0000'0000'0000;
 	uint32_t mask = 0b0000'1111'0000'0000'0000'0000'0000'0000;
 
 	uint32_t opcode_format = opcode & mask;
 
-	return format == opcode_format;
+	//branch
+	if (branch_format == opcode_format)
+		return ARM_OP_B;
+
+	//branch with link
+	if (branch_with_link_format == opcode_format) {
+		return ARM_OP_BL;
+	}
+
+	return ARM_OP_INVALID;
 }
 
 //branch
