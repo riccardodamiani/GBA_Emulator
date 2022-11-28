@@ -133,11 +133,6 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BL(opcode);
 		break;
 
-	case ARM_OP_INVALID:
-		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
-		system("pause");
-		exit(1);
-		break;
 	default:
 		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
 		system("pause");

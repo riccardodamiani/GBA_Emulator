@@ -72,15 +72,15 @@ private:
 	void next_instruction_thumb();
 	void next_instruction_arm();
 
+	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);
-	//void execute_thumb();
+	//decoding
 	ARM_opcode decode_arm(uint32_t opcode);
-
 	ARM_opcode ARM_IsBranch(uint32_t opcode);
 	ARM_opcode ARM_IsAluInst(uint32_t opcode);
 
-	//ARM instructions
+	//implementation
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
 
