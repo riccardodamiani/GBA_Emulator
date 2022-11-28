@@ -56,8 +56,8 @@ private:
 	void next_instruction_thumb();
 	void next_instruction_arm();
 
-	void execute();
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
+	bool arm_checkInstructionCondition(uint32_t opcode);
 	//void execute_thumb();
 	ARM_opcode decode_arm(uint32_t opcode);
 
