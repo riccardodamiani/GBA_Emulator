@@ -74,6 +74,7 @@ private:
 	inline uint8_t rightRotate(uint8_t n, int bits);
 	inline uint16_t rightRotate(uint16_t n, int bits);
 	inline uint32_t rightRotate(uint32_t n, int bits);
+	inline uint32_t arithmRight(uint32_t n, int bits);
 
 
 	void next_instruction();

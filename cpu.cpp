@@ -135,6 +135,7 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_CMP:
 		Arm_CMP(opcode);
+		reg.R15 += 4;
 		break;
 
 	default:
@@ -272,31 +273,81 @@ inline uint32_t Cpu::rightRotate(uint32_t n, int bits) {
 	return (n >> bits) | (n << (32 - bits));
 }
 
+inline uint32_t Cpu::arithmRight(uint32_t n, int bits) {
+	if (n & 0x80000000) {
+		return n >> bits;
+	}
+
+	uint64_t ones = ((uint64_t)1 << bits) - 1;
+	ones <<= (32 - bits);
+	return (n >> bits) | (uint32_t)ones;
+}
+
 
 //branch
-void Cpu::Arm_B(uint32_t opcode) {
+inline void Cpu::Arm_B(uint32_t opcode) {
 	uint32_t offset_24Bit = opcode & 0xffffff;
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R15 += 8 + offset * 4;
 }
 
 //branch with link
-void Cpu::Arm_BL(uint32_t opcode) {
+inline void Cpu::Arm_BL(uint32_t opcode) {
 	uint32_t offset_24Bit = opcode & 0xffffff;
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R15 += 8 + offset * 4;
 	reg.R14 = reg.R15 + 4;
 }
 
-void Cpu::Arm_CMP(uint32_t opcode) {
+inline void Cpu::Arm_CMP(uint32_t opcode) {
 	uint8_t I = (opcode >> 25) & 1;
 	uint8_t reg_1_code = (opcode >> 16) & 0x0f;
 
 	uint32_t *Rn = &((uint32_t*)&reg)[reg_1_code];
-	if (I) {
-
+	uint32_t val = 0;
+	if (I) {	//immidiate 2nd operand 
+		uint8_t Is = (opcode >> 8) & 0x0f;
+		uint32_t nn = opcode & 0xff;
+		val = rightRotate(nn, Is * 2);
 	}
 	else {
+		uint8_t Is;
+		if (opcode & 0x10) {	//bit 4 set: shift amount taken from a register
+			uint8_t shift_reg_code = (opcode >> 8) & 0x0f;
+			uint32_t* Rs = &((uint32_t*)&reg)[shift_reg_code];
+			Is = *Rs & 0xff;
+		}
+		else { //bit 4 clear: immidiate shift amount 
+			Is = (opcode >> 7) & 0x1f;
+		}
+		uint8_t operand_reg_code = opcode & 0x0f;
+		uint32_t* Rm = &((uint32_t*)&reg)[operand_reg_code];
+		uint8_t ST = (opcode >> 5) & 0x3;
+		switch (ST) {
+		case 0:		//logical left
+			//uint8_t c = (*Rm >> (32 - Is)) & 1;
+			val = *Rm << Is;
+			break;
 
+		case 1:		//logical right
+			val = *Rm >> Is;
+			break;
+
+		case 2:		//arithmetic right
+			val = arithmRight(*Rm, Is);
+			break;
+
+		case 3:		//rotate right
+			val = rightRotate(*Rm, Is);
+			break;
+		}
 	}
+
+	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
+	uint32_t result = *Rn - val;
+	flag->Z = result == 0;
+	flag->N = (result & 0x80000000) != 0;	//negative
+	flag->C = !(*Rn < val);	//carry = !borrow
+	flag->V = (((*Rn | val) ^ result) >> 31) & 1;	//overflow
+
 }
