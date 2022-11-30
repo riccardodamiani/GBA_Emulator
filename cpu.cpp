@@ -138,8 +138,14 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_MOV:
+		Arm_MOV(opcode);
+		reg.R15 += 4;
+		break;
+
 	default:
-		std::cout << "Error: Instruction not implemented: " << std::hex << opcode << std::endl;
+		std::cout << "!! Instruction not implemented: " << std::hex 
+			<< "op " << opcode << ", instruction " << instruction << std::endl;
 		system("pause");
 		exit(1);
 		break;
@@ -325,7 +331,6 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 		uint8_t ST = (opcode >> 5) & 0x3;
 		switch (ST) {
 		case 0:		//logical left
-			//uint8_t c = (*Rm >> (32 - Is)) & 1;
 			val = *Rm << Is;
 			break;
 
@@ -350,4 +355,78 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 	flag->C = !(*Rn < val);	//carry = !borrow
 	flag->V = (((*Rn | val) ^ result) >> 31) & 1;	//overflow
 
+}
+
+inline void Cpu::Arm_MOV(uint32_t opcode) {
+	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
+
+	uint8_t I = (opcode >> 25) & 1;
+	uint8_t S = (opcode >> 20) & 1;	//set condition code
+	uint8_t dest_reg_code = (opcode >> 12) & 0x0f;
+
+	uint32_t* Rd = &((uint32_t*)&reg)[dest_reg_code];
+	uint32_t val = 0;
+	uint8_t c = flag->C;
+
+	if (I) {	//immidiate 2nd operand 
+		uint8_t Is = (opcode >> 8) & 0x0f;
+		uint32_t nn = opcode & 0xff;
+		val = rightRotate(nn, Is * 2);
+	}
+	else {
+		uint8_t Is;
+
+		uint8_t operand_reg_code = opcode & 0x0f;
+		uint32_t* Rm = &((uint32_t*)&reg)[operand_reg_code];
+		uint32_t Rm_value = 0;
+
+		if (opcode & 0x10) {	//bit 4 set: shift amount taken from a register
+			uint8_t shift_reg_code = (opcode >> 8) & 0x0f;
+			uint32_t* Rs = &((uint32_t*)&reg)[shift_reg_code];
+			Is = *Rs & 0xff;
+			if(operand_reg_code == 0xf) Rm_value = 12;
+		}
+		else { //bit 4 clear: immidiate shift amount 
+			Is = (opcode >> 7) & 0x1f;
+			if (operand_reg_code == 0xf) Rm_value = 8;
+		}
+		
+		Rm_value += *Rm;
+
+		uint8_t ST = (opcode >> 5) & 0x3;
+		if (Is) {	//there is a shift
+			GBA::clock.addTicks(1);
+			switch (ST) {
+			case 0:		//logical left
+				c = (Rm_value >> (32 - Is)) & 1;	//carry = last lost bit
+				val = Rm_value << Is;
+				break;
+
+			case 1:		//logical right
+				c = (Rm_value >> (Is - 1)) & 1;	//carry = last lost bit
+				val = Rm_value >> Is;
+				break;
+
+			case 2:		//arithmetic right
+				c = (Rm_value >> (Is - 1)) & 1;	//carry = last lost bit
+				val = arithmRight(Rm_value, Is);
+				break;
+
+			case 3:		//rotate right
+				c = (Rm_value >> (Is - 1)) & 1;	//carry = last rotated bit
+				val = rightRotate(Rm_value, Is);
+				break;
+			}
+		}
+		else {	//no shift
+			val = *Rm;
+		}
+	}
+	*Rd = val;
+	
+	if (S & (dest_reg_code != 0xf)) {	//flags
+		flag->Z = val == 0;
+		flag->N = (val & 0x80000000) != 0;	//negative
+		flag->C = c;
+	}
 }

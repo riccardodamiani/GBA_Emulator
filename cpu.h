@@ -93,6 +93,7 @@ private:
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
 	inline void Arm_CMP(uint32_t opcode);
+	inline void Arm_MOV(uint32_t opcode);
 
 };
 
