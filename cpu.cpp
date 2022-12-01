@@ -418,8 +418,31 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 				break;
 			}
 		}
-		else {	//no shift
-			val = *Rm;
+		else {	//special shifts
+			switch (ST) {
+			case 0:		//logical left
+				c = flag->C;
+				val = Rm_value;
+				break;
+
+			case 1:		//logical right
+				c = (Rm_value >> 31) & 1;	//carry: 31th bit
+				val = 0;
+				break;
+
+			case 2:		//arithmetic right
+				c = (Rm_value >> 31) & 1;	//carry: 31th bit
+				val = (c == 0 ? 0 : 0xffffffff);
+				break;
+
+			case 3:		//rotate right extended
+				GBA::clock.addTicks(1);
+				uint8_t prev_carry = (Rm_value >> 31) & 1;
+				c = Rm_value & 1;
+				val = Rm_value >> 1;
+				val |= (prev_carry << 31);
+				break;
+			}
 		}
 	}
 	*Rd = val;
