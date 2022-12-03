@@ -90,6 +90,8 @@ private:
 	ARM_opcode ARM_IsAluInst(uint32_t opcode);
 
 	//implementation
+	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &c, uint8_t& s);
+	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2, uint8_t& c);
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
 	inline void Arm_CMP(uint32_t opcode);
