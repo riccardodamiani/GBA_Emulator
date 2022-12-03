@@ -536,6 +536,61 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 
 }
 
+inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t &c) {
+	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
+
+	if (shift_amount) {	//there is a shift
+		GBA::clock.addTicks(1);
+		switch (shiftType) {
+		case 0:		//logical left
+			c = (val >> (32 - shift_amount)) & 1;	//carry = last lost bit
+			result = val << shift_amount;
+			break;
+
+		case 1:		//logical right
+			c = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
+			result = val >> shift_amount;
+			break;
+
+		case 2:		//arithmetic right
+			c = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
+			result = arithmRight(val, shift_amount);
+			break;
+
+		case 3:		//rotate right
+			c = (val >> (shift_amount - 1)) & 1;	//carry = last rotated bit
+			result = rightRotate(val, shift_amount);
+			break;
+		}
+	}
+	else {	//special shifts
+		switch (shiftType) {
+		case 0:		//logical left
+			c = flag->C;
+			result = val;
+			break;
+
+		case 1:		//logical right
+			c = (val >> 31) & 1;	//carry: 31th bit
+			result = 0;
+			break;
+
+		case 2:		//arithmetic right
+			c = (val >> 31) & 1;	//carry: 31th bit
+			result = (c == 0 ? 0 : 0xffffffff);
+			break;
+
+		case 3:		//rotate right extended
+			GBA::clock.addTicks(1);
+			uint8_t prev_carry = (val >> 31) & 1;
+			c = val & 1;
+			result = val >> 1;
+			result |= (prev_carry << 31);
+			break;
+		}
+	}
+}
+
 inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t &c) {
 
 	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
@@ -558,8 +613,10 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t 
 	}
 
 	real_Rm += Rm;
-
+	
 	uint8_t ST = (opcode >> 5) & 0x3;
+	ARM_Shifter(ST, Is, real_Rm, oper2, c);
+	/*
 	if (Is) {	//there is a shift
 		GBA::clock.addTicks(1);
 		switch (ST) {
@@ -609,7 +666,7 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t 
 			oper2 |= (prev_carry << 31);
 			break;
 		}
-	}
+	}*/
 }
 
 inline void Cpu::Arm_CMP(uint32_t opcode) {
@@ -646,7 +703,69 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 }
 
 inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
+	struct param {
+		uint8_t _ : 2,
+			I : 1,
+			P : 1,
+			U : 1,
+			B : 1,
+			W : 1,
+			L : 1;
+	}param = {};
 
+	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
+	b = param.B;
+
+	//get the base address register
+	uint8_t base_reg_code = (opcode >> 16) & 0x0f;
+	uint32_t *Rn = &((uint32_t*)&reg)[base_reg_code];
+	*src_dest_reg = Rn;
+	uint32_t Rn_value = *Rn;
+	if (base_reg_code == 0x0f) Rn_value += 8;	//R15 + 8
+
+	//get src/dst register
+	uint8_t src_dst_reg_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rd = &((uint32_t*)&reg)[src_dst_reg_code];
+	uint32_t offset = 0;
+
+	if (param.I) {
+		//get shift register
+		uint8_t offset_reg_code = opcode & 0x0f;
+		uint32_t Rm = ((uint32_t*)&reg)[offset_reg_code];
+
+		uint8_t Is = (opcode >> 7) & 0x1f;
+		uint8_t ST = (opcode >> 5) & 0x3;
+		uint8_t c = 0;
+
+		ARM_Shifter(ST, Is, Rm, offset, c);
+	}
+	else {
+		offset = opcode & 0xfff;
+	}
+
+	
+	if (param.P) {	//add offset before transfer
+		if (param.U) {
+			Rn_value += offset;
+		}
+		else {
+			Rn_value -= offset;
+		}
+		address = Rn_value;
+		if(param.W)	//write back
+			*Rn = address;
+	}
+	else {
+		address = Rn_value;
+		if (param.U) {
+			Rn_value += offset;
+		}
+		else {
+			Rn_value -= offset;
+		}
+		if (param.W)	//write back
+			*Rn = Rn_value;
+	}
 }
 
 inline void Cpu::Arm_LDR(uint32_t opcode) {
@@ -655,5 +774,13 @@ inline void Cpu::Arm_LDR(uint32_t opcode) {
 
 	ARM_SDT_unpacker(opcode, address, &dest_reg, b);
 
+	if (b) {
+		*dest_reg = GBA::memory.read_8(address);
+	}
+	else {
+		uint8_t disalignment = address % 4;
+		uint32_t val = rightRotate(GBA::memory.read_32(address - disalignment), disalignment * 8);
+		*dest_reg = val;
+	}
 
 }

@@ -112,6 +112,8 @@ private:
 	ARM_opcode ARM_IsAluInst(uint32_t opcode);	//data processing
 	ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//signle data transfer
 
+	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t& c);
+
 	//branches implementation
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
