@@ -114,13 +114,13 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		break;
 
 	case FIQ:
-		reg.R8_fiq = reg.R8;
-		reg.R9_fiq = reg.R9;
-		reg.R10_fiq = reg.R10;
-		reg.R11_fiq = reg.R11;
-		reg.R12_fiq = reg.R12;
-		reg.R13_fiq = reg.R13;
-		reg.R14_fiq = reg.R14;
+		reg.R8 = reg.R8_fiq;
+		reg.R9 = reg.R9_fiq;
+		reg.R10 = reg.R10_fiq;
+		reg.R11 = reg.R11_fiq;
+		reg.R12 = reg.R12_fiq;
+		reg.R13 = reg.R13_fiq;
+		reg.R14 = reg.R14_fiq;
 		psr->mode = newMode;
 		break;
 
@@ -309,12 +309,12 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BL(opcode);
 		break;
 
-	case ARM_OP_CMP:
+	case ARM_OP_CMP:		//cmp
 		Arm_CMP(opcode);
 		reg.R15 += 4;
 		break;
 
-	case ARM_OP_MOV:
+	case ARM_OP_MOV:		//mov
 		Arm_MOV(opcode);
 		reg.R15 += 4;
 		break;
