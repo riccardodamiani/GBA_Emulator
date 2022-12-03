@@ -163,7 +163,7 @@ void Cpu::setPrivilegeMode(PrivilegeMode mode) {
 	CPSR_registers* flag = (CPSR_registers*) & reg.CPSR;
 	PrivilegeMode currentPM = (PrivilegeMode)flag->mode;
 
-	if (currentPM == mode)
+	if (currentPM == mode)	//same mode
 		return;
 
 	saveBankReg(currentPM);
@@ -225,8 +225,9 @@ ARM_opcode Cpu::decode_arm(uint32_t opcode) {
 
 	ARM_opcode instr;
 
-	if (instr = ARM_IsBranch(opcode)) return instr;
-	if (instr = ARM_IsAluInst(opcode)) return instr;
+	if (instr = ARM_IsBranch(opcode)) return instr;		//branches
+	if (instr = ARM_IsAluInst(opcode)) return instr;	//data processing
+	if (instr = ARM_IsSDTInst(opcode)) return instr;	//single store/load
 
 	return ARM_opcode::ARM_OP_INVALID;
 }
@@ -316,6 +317,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_MOV:		//mov
 		Arm_MOV(opcode);
+		reg.R15 += 4;
+		break;
+
+	case ARM_OP_LDR:		//load register
+		Arm_LDR(opcode);
 		reg.R15 += 4;
 		break;
 
@@ -424,6 +430,28 @@ ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
 		break;
 	case 0xf:	//not
 		return ARM_OP_MVN;
+		break;
+	}
+
+	return ARM_OP_INVALID;
+
+}
+
+ARM_opcode Cpu::ARM_IsSDTInst(uint32_t opcode) {
+	uint32_t mask = 0b0000'1100'0000'0000'0000'0000'0000'0000;
+	uint32_t format = 0b0000'0100'0000'0000'0000'0000'0000'0000;
+
+	uint32_t opcode_format = opcode & mask;
+
+	if (format != opcode_format)	//not signle data transfer instruction
+		return ARM_OP_INVALID;
+
+	switch ((opcode >> 20) & 1) {	//20th bit = load/store bit
+	case 0:	//and
+		return ARM_OP_STR;
+		break;
+	case 1:	//xor
+		return ARM_OP_LDR;
 		break;
 	}
 
@@ -615,4 +643,17 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 			reg.CPSR = reg.SPSR;
 		}
 	}
+}
+
+inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
+
+}
+
+inline void Cpu::Arm_LDR(uint32_t opcode) {
+	uint32_t address, *dest_reg;
+	uint8_t b;
+
+	ARM_SDT_unpacker(opcode, address, &dest_reg, b);
+
+
 }

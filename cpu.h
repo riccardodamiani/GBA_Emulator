@@ -22,7 +22,9 @@ enum ARM_opcode {
 	ARM_OP_ORR,
 	ARM_OP_MOV,
 	ARM_OP_BIC,
-	ARM_OP_MVN
+	ARM_OP_MVN,
+	ARM_OP_LDR,
+	ARM_OP_STR
 };
 
 struct CPSR_registers {
@@ -106,16 +108,23 @@ private:
 	bool arm_checkInstructionCondition(uint32_t opcode);
 	//decoding
 	ARM_opcode decode_arm(uint32_t opcode);
-	ARM_opcode ARM_IsBranch(uint32_t opcode);
-	ARM_opcode ARM_IsAluInst(uint32_t opcode);
+	ARM_opcode ARM_IsBranch(uint32_t opcode);	//branches
+	ARM_opcode ARM_IsAluInst(uint32_t opcode);	//data processing
+	ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//signle data transfer
 
-	//implementation
-	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &c, uint8_t& s);
-	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2, uint8_t& c);
+	//branches implementation
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
+
+	//ALU implementation
+	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &c, uint8_t& s);
+	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2, uint8_t& c);
 	inline void Arm_CMP(uint32_t opcode);
 	inline void Arm_MOV(uint32_t opcode);
+
+	//single transfer implementations
+	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b);
+	inline void Arm_LDR(uint32_t opcode);
 
 };
 
