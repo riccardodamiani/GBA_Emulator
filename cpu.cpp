@@ -616,57 +616,6 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t 
 	
 	uint8_t ST = (opcode >> 5) & 0x3;
 	ARM_Shifter(ST, Is, real_Rm, oper2, c);
-	/*
-	if (Is) {	//there is a shift
-		GBA::clock.addTicks(1);
-		switch (ST) {
-		case 0:		//logical left
-			c = (real_Rm >> (32 - Is)) & 1;	//carry = last lost bit
-			oper2 = real_Rm << Is;
-			break;
-
-		case 1:		//logical right
-			c = (real_Rm >> (Is - 1)) & 1;	//carry = last lost bit
-			oper2 = real_Rm >> Is;
-			break;
-
-		case 2:		//arithmetic right
-			c = (real_Rm >> (Is - 1)) & 1;	//carry = last lost bit
-			oper2 = arithmRight(real_Rm, Is);
-			break;
-
-		case 3:		//rotate right
-			c = (real_Rm >> (Is - 1)) & 1;	//carry = last rotated bit
-			oper2 = rightRotate(real_Rm, Is);
-			break;
-		}
-	}
-	else {	//special shifts
-		switch (ST) {
-		case 0:		//logical left
-			c = flag->C;
-			oper2 = real_Rm;
-			break;
-
-		case 1:		//logical right
-			c = (real_Rm >> 31) & 1;	//carry: 31th bit
-			oper2 = 0;
-			break;
-
-		case 2:		//arithmetic right
-			c = (real_Rm >> 31) & 1;	//carry: 31th bit
-			oper2 = (c == 0 ? 0 : 0xffffffff);
-			break;
-
-		case 3:		//rotate right extended
-			GBA::clock.addTicks(1);
-			uint8_t prev_carry = (real_Rm >> 31) & 1;
-			c = real_Rm & 1;
-			oper2 = real_Rm >> 1;
-			oper2 |= (prev_carry << 31);
-			break;
-		}
-	}*/
 }
 
 inline void Cpu::Arm_CMP(uint32_t opcode) {
