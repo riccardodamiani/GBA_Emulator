@@ -42,6 +42,16 @@ struct CPSR_registers {
 		N : 1;		//N - Sign Flag       (0=Not Signed, 1=Signed)
 };
 
+enum PrivilegeMode {
+	USER = 0x10,
+	FIQ = 0x11,
+	IRQ = 0x12,
+	SUPERVISOR = 0x13,
+	ABORT = 0x17,
+	UNDEFINED = 0x1b,
+	SYSTEM = 0x1f	
+};
+
 struct Registers {
 	//active registers
 	uint32_t R0, R1, R2, R3, R4, R5, R6, R7;
@@ -81,6 +91,16 @@ private:
 	void next_instruction_thumb();
 	void next_instruction_arm();
 
+	void Reset();
+	void RaiseIRQ();
+	void RaiseFIQ();
+	void RaiseUndefined();
+	void RaiseSWI();
+
+	void setPrivilegeMode(PrivilegeMode mode);
+	void saveBankReg(PrivilegeMode currentMode);
+	void getBankReg(PrivilegeMode newMode);
+	
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);

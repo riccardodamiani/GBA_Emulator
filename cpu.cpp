@@ -8,7 +8,7 @@
 Clock GBA::clock;
 
 Cpu::Cpu() {
-	reg = {};
+	Reset();
 }
 
 void Cpu::runFor(uint32_t ticks) {
@@ -20,6 +20,182 @@ void Cpu::runFor(uint32_t ticks) {
 		next_instruction();
 	}
 }
+
+void Cpu::saveBankReg(PrivilegeMode currentMode) {
+	CPSR_registers* psr = (CPSR_registers*)&reg.CPSR;
+
+	switch (currentMode) {
+	case SUPERVISOR:
+		reg.R8_std = reg.R8;
+		reg.R9_std = reg.R9;
+		reg.R10_std = reg.R10;
+		reg.R11_std = reg.R11;
+		reg.R12_std = reg.R12;
+		reg.R13_svc = reg.R13;
+		reg.R14_svc = reg.R14;
+		break;
+
+	case IRQ:
+		reg.R8_std = reg.R8;
+		reg.R9_std = reg.R9;
+		reg.R10_std = reg.R10;
+		reg.R11_std = reg.R11;
+		reg.R12_std = reg.R12;
+		reg.R13_irq = reg.R13;
+		reg.R14_irq = reg.R14;
+		break;
+
+	case FIQ:
+		reg.R8_fiq = reg.R8;
+		reg.R9_fiq = reg.R9;
+		reg.R10_fiq = reg.R10;
+		reg.R11_fiq = reg.R11;
+		reg.R12_fiq = reg.R12;
+		reg.R13_fiq = reg.R13;
+		reg.R14_fiq = reg.R14;
+		break;
+
+	case UNDEFINED:
+		reg.R8_std = reg.R8;
+		reg.R9_std = reg.R9;
+		reg.R10_std = reg.R10;
+		reg.R11_std = reg.R11;
+		reg.R12_std = reg.R12;
+		reg.R13_und = reg.R13;
+		reg.R14_und = reg.R14;
+		break;
+
+	case ABORT:
+		reg.R8_std = reg.R8;
+		reg.R9_std = reg.R9;
+		reg.R10_std = reg.R10;
+		reg.R11_std = reg.R11;
+		reg.R12_std = reg.R12;
+		reg.R13_abt = reg.R13;
+		reg.R14_abt = reg.R14;
+		break;
+
+	case USER: case SYSTEM:
+		reg.R8_std = reg.R8;
+		reg.R9_std = reg.R9;
+		reg.R10_std = reg.R10;
+		reg.R11_std = reg.R11;
+		reg.R12_std = reg.R12;
+		reg.R13_std = reg.R13;
+		reg.R14_std = reg.R14;
+		break;
+	}
+}
+
+void Cpu::getBankReg(PrivilegeMode newMode) {
+	CPSR_registers* psr = (CPSR_registers*)&reg.CPSR;
+
+	switch (newMode) {
+	case SUPERVISOR:
+		reg.R8 = reg.R8_std;
+		reg.R9 = reg.R9_std;
+		reg.R10 = reg.R10_std;
+		reg.R11 = reg.R11_std;
+		reg.R12 = reg.R12_std;
+		reg.R13 = reg.R13_svc;
+		reg.R14 = reg.R14_svc;
+		psr->mode = newMode;
+		break;
+
+	case IRQ:
+		reg.R8 = reg.R8_std;
+		reg.R9 = reg.R9_std;
+		reg.R10 = reg.R10_std;
+		reg.R11 = reg.R11_std;
+		reg.R12 = reg.R12_std;
+		reg.R13 = reg.R13_irq;
+		reg.R14 = reg.R14_irq;
+		psr->mode = newMode;
+		break;
+
+	case FIQ:
+		reg.R8_fiq = reg.R8;
+		reg.R9_fiq = reg.R9;
+		reg.R10_fiq = reg.R10;
+		reg.R11_fiq = reg.R11;
+		reg.R12_fiq = reg.R12;
+		reg.R13_fiq = reg.R13;
+		reg.R14_fiq = reg.R14;
+		psr->mode = newMode;
+		break;
+
+	case UNDEFINED:
+		reg.R8 = reg.R8_std;
+		reg.R9 = reg.R9_std;
+		reg.R10 = reg.R10_std;
+		reg.R11 = reg.R11_std;
+		reg.R12 = reg.R12_std;
+		reg.R13 = reg.R13_und;
+		reg.R14 = reg.R14_und;
+		psr->mode = newMode;
+		break;
+
+	case ABORT:
+		reg.R8 = reg.R8_std;
+		reg.R9 = reg.R9_std;
+		reg.R10 = reg.R10_std;
+		reg.R11 = reg.R11_std;
+		reg.R12 = reg.R12_std;
+		reg.R13 = reg.R13_abt;
+		reg.R14 = reg.R14_abt;
+		psr->mode = newMode;
+		break;
+
+	case USER: case SYSTEM:
+		reg.R8 = reg.R8_std;
+		reg.R9 = reg.R9_std;
+		reg.R10 = reg.R10_std;
+		reg.R11 = reg.R11_std;
+		reg.R12 = reg.R12_std;
+		reg.R13 = reg.R13_std;
+		reg.R14 = reg.R14_std;
+		psr->mode = newMode;
+		break;
+	}
+}
+
+void Cpu::setPrivilegeMode(PrivilegeMode mode) {
+	CPSR_registers* flag = (CPSR_registers*) & reg.CPSR;
+	PrivilegeMode currentPM = (PrivilegeMode)flag->mode;
+
+	if (currentPM == mode)
+		return;
+
+	saveBankReg(currentPM);
+	getBankReg(mode);
+
+}
+
+void Cpu::Reset() {
+
+	reg = {};
+	getBankReg(SUPERVISOR);
+
+	GBA::clock.clear();
+	
+}
+
+void Cpu::RaiseIRQ() {
+
+}
+
+void Cpu::RaiseFIQ() {
+
+}
+
+void Cpu::RaiseUndefined() {
+
+}
+
+void Cpu::RaiseSWI() {
+
+}
+
 
 void Cpu::next_instruction_arm() {
 
@@ -310,7 +486,7 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 
 	uint8_t I = (opcode >> 25) & 1;
-	uint8_t s = (opcode >> 20) & 1;	//set condition code
+	s = (opcode >> 20) & 1;	//set condition code
 
 	//get destination register
 	uint8_t dest_reg_code = (opcode >> 12) & 0x0f;
@@ -324,10 +500,11 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 		uint8_t Is = (opcode >> 8) & 0x0f;
 		uint32_t nn = opcode & 0xff;
 		oper2 = rightRotate(nn, Is * 2);
+		return;
 	}
-	else {	//operand 2 is a register
-		ARM_ALU_oper2_getter(opcode, oper2, c);
-	}
+	
+	//operand 2 is a register
+	ARM_ALU_oper2_getter(opcode, oper2, c);
 
 }
 
