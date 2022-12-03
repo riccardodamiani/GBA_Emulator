@@ -6,6 +6,7 @@ public:
 	Clock();
 	void addTicks(unsigned long long ticks);
 	unsigned long long getTicks();
+	void clear();
 private:
 	unsigned long long _ticks;
 };

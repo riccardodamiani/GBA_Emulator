@@ -11,3 +11,7 @@ void Clock::addTicks(unsigned long long ticks) {
 unsigned long long Clock::getTicks() {
 	return _ticks;
 }
+
+void Clock::clear() {
+	_ticks = 0;
+}
