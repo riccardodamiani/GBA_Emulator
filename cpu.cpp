@@ -325,6 +325,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_TEQ:	//test xor
+		Arm_TEQ(opcode);
+		reg.R15 += 4;
+		break;
+
 	default:
 		std::cout << "!! Instruction not implemented: " << std::hex 
 			<< "op " << opcode << ", instruction " << instruction << std::endl;
@@ -618,6 +623,7 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t 
 	ARM_Shifter(ST, Is, real_Rm, oper2, c);
 }
 
+//arithmetic operation
 inline void Cpu::Arm_CMP(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
 	uint8_t c, s;
@@ -632,13 +638,16 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 
 }
 
+//logical operation
 inline void Cpu::Arm_MOV(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
 	uint8_t c, s;
+	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
+	c = flag->C;
+
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
 	*dest_reg = oper2;
 	
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
 			flag->Z = oper2 == 0;
@@ -648,6 +657,25 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 		else {
 			reg.CPSR = reg.SPSR;
 		}
+	}
+}
+
+//tests operand1 XOR operand2
+//logical operation
+inline void Cpu::Arm_TEQ(uint32_t opcode) {
+	uint32_t oper1, oper2, *dest_reg;
+	uint8_t c, s;
+	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
+	c = flag->C;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+
+	uint32_t result = oper1 ^ oper2;
+
+	if (s) {	//flags
+		flag->Z = result == 0;
+		flag->N = (result & 0x80000000) != 0;	//negative
+		flag->C = c;
 	}
 }
 
@@ -716,6 +744,7 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 			*Rn = Rn_value;
 	}
 }
+
 
 inline void Cpu::Arm_LDR(uint32_t opcode) {
 	uint32_t address, *dest_reg;

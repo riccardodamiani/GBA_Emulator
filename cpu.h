@@ -123,6 +123,7 @@ private:
 	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2, uint8_t& c);
 	inline void Arm_CMP(uint32_t opcode);
 	inline void Arm_MOV(uint32_t opcode);
+	inline void Arm_TEQ(uint32_t opcode);
 
 	//single transfer implementations
 	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b);
