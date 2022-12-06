@@ -24,7 +24,9 @@ enum ARM_opcode {
 	ARM_OP_BIC,
 	ARM_OP_MVN,
 	ARM_OP_LDR,
-	ARM_OP_STR
+	ARM_OP_STR,
+	ARM_OP_MSR,
+	ARM_OP_MRS
 };
 
 struct CPSR_registers {
@@ -110,7 +112,8 @@ private:
 	ARM_opcode decode_arm(uint32_t opcode);
 	ARM_opcode ARM_IsBranch(uint32_t opcode);	//branches
 	ARM_opcode ARM_IsAluInst(uint32_t opcode);	//data processing
-	ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//signle data transfer
+	ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//single data transfer
+	ARM_opcode ARM_IsMSR_MRS(uint32_t opcode);	//
 
 	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t& c);
 

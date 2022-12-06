@@ -416,6 +416,8 @@ ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
 		return ARM_OP_TST;
 		break;
 	case 9:	//test exclusive
+		ARM_opcode inst;
+		if (inst = ARM_IsMSR_MRS(opcode)) return inst;	//check MSR, MRS instructions
 		return ARM_OP_TEQ;
 		break;
 	case 0xa:	//compare
@@ -437,6 +439,28 @@ ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
 		return ARM_OP_MVN;
 		break;
 	}
+
+	return ARM_OP_INVALID;
+
+}
+
+ARM_opcode Cpu::ARM_IsMSR_MRS(uint32_t opcode) {
+	uint32_t mrs_mask =		0b0000'1111'1011'1111'0000'1111'1111'1111;
+	uint32_t msr_mask =		0b0000'1111'1011'1111'1111'1111'1111'0000;
+	uint32_t msri_mask =	0b0000'1101'1011'1111'1111'0000'0000'0000;
+
+	uint32_t mrs_format =	0b0000'0001'0000'1111'0000'0000'0000'0000;
+	uint32_t msr_format =	0b0000'0001'0010'1001'1111'0000'0000'0000;
+	uint32_t msri_format =	0b0000'0001'0010'1000'1111'0000'0000'0000;
+
+	uint32_t opcode_format = opcode & mrs_mask;
+	if (opcode_format == mrs_format) return ARM_OP_MRS;
+
+	opcode_format = opcode & msr_mask;
+	if (opcode_format == msr_format) return ARM_OP_MSR;
+
+	opcode_format = opcode & msri_mask;
+	if (opcode_format == msri_format) return ARM_OP_MSR;
 
 	return ARM_OP_INVALID;
 
