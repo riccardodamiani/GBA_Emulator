@@ -22,7 +22,6 @@ void Cpu::runFor(uint32_t ticks) {
 }
 
 void Cpu::saveBankReg(PrivilegeMode currentMode) {
-	CPSR_registers* psr = (CPSR_registers*)&reg.CPSR;
 
 	switch (currentMode) {
 	case SUPERVISOR:
@@ -328,6 +327,10 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 	case ARM_OP_TEQ:	//test xor
 		Arm_TEQ(opcode);
 		reg.R15 += 4;
+		break;
+
+	case ARM_OP_MSR:
+		Arm_MSR(opcode);
 		break;
 
 	default:
@@ -700,6 +703,62 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 		flag->Z = result == 0;
 		flag->N = (result & 0x80000000) != 0;	//negative
 		flag->C = c;
+	}
+}
+
+//
+inline void Cpu::Arm_MSR(uint32_t opcode) {
+	uint32_t Rm = 0;
+	uint8_t Pd = (opcode >> 22) & 1;
+
+	uint32_t out_mask = 0;
+	if ((opcode >> 19) & 1) out_mask |= 0b1111'1111'0000'0000'0000'0000'0000'0000;	//flag field
+	if ((opcode >> 18) & 1) out_mask |= 0b0000'0000'1111'1111'0000'0000'0000'0000;	//status field (reserved. Should not be changed)
+	if ((opcode >> 17) & 1) out_mask |= 0b0000'0000'0000'0000'1111'1111'0000'0000;	//extention field (reserved. Should not be changed)
+	if ((opcode >> 16) & 1) out_mask |= 0b0000'0000'0000'0000'0000'0000'1111'1111;	//control field
+
+
+	if ((opcode >> 16) & 1) {	//MSR
+		uint8_t reg_code = opcode & 0x0f;
+		Rm = ((uint32_t*)&reg)[reg_code];
+	}
+	else {	//MSR immidiate
+		uint8_t I = (opcode >> 25) & 1;
+	
+		if (I) {
+			uint8_t reg_code = opcode & 0x0f;
+			Rm = ((uint32_t*)&reg)[reg_code];
+		}
+		else {
+			uint32_t imm = opcode & 0xff;
+			uint8_t Is = (opcode >> 8) & 0x0f;
+			Rm = rightRotate(imm, Is * 2);
+		}
+	}
+
+	if (Pd) {	//dest = SPSR
+		reg.SPSR = (reg.SPSR & (~out_mask));
+		reg.SPSR |= Rm & out_mask;
+	}
+	else {
+		//dest = CPSR
+		reg.CPSR = (reg.CPSR & (~out_mask));
+		reg.CPSR |= Rm & out_mask;
+	}
+}
+
+inline void Cpu::Arm_MRS(uint32_t opcode) {
+
+	uint8_t reg_code = (opcode >> 12) & 0x0f;
+	uint32_t &Rd = ((uint32_t*)&reg)[reg_code];
+	uint8_t Pd = (opcode >> 22) & 1;
+
+	if (Pd) {	//dest = SPSR
+		Rd = reg.SPSR;
+	}
+	else {
+		//dest = CPSR
+		Rd = reg.CPSR;
 	}
 }
 
