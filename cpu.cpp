@@ -7,7 +7,8 @@
 
 Clock GBA::clock;
 
-Cpu::Cpu() {
+Cpu::Cpu()
+{
 	Reset();
 }
 
@@ -87,7 +88,6 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 }
 
 void Cpu::getBankReg(PrivilegeMode newMode) {
-	CPSR_registers* psr = (CPSR_registers*)&reg.CPSR;
 
 	switch (newMode) {
 	case SUPERVISOR:
@@ -98,7 +98,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_std;
 		reg.R13 = reg.R13_svc;
 		reg.R14 = reg.R14_svc;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 
 	case IRQ:
@@ -109,7 +109,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_std;
 		reg.R13 = reg.R13_irq;
 		reg.R14 = reg.R14_irq;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 
 	case FIQ:
@@ -120,7 +120,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_fiq;
 		reg.R13 = reg.R13_fiq;
 		reg.R14 = reg.R14_fiq;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 
 	case UNDEFINED:
@@ -131,7 +131,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_std;
 		reg.R13 = reg.R13_und;
 		reg.R14 = reg.R14_und;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 
 	case ABORT:
@@ -142,7 +142,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_std;
 		reg.R13 = reg.R13_abt;
 		reg.R14 = reg.R14_abt;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 
 	case USER: case SYSTEM:
@@ -153,7 +153,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R12 = reg.R12_std;
 		reg.R13 = reg.R13_std;
 		reg.R14 = reg.R14_std;
-		psr->mode = newMode;
+		reg.CPSR_f->mode = newMode;
 		break;
 	}
 }
@@ -166,8 +166,7 @@ void Cpu::setPrivilegeMode(PrivilegeMode currentMode, PrivilegeMode mode) {
 
 
 void Cpu::setPrivilegeMode(PrivilegeMode mode) {
-	CPSR_registers* flag = (CPSR_registers*) & reg.CPSR;
-	PrivilegeMode currentPM = (PrivilegeMode)flag->mode;
+	PrivilegeMode currentPM = (PrivilegeMode)reg.CPSR_f->mode;
 
 	if (currentPM == mode)	//same mode
 		return;
@@ -180,6 +179,7 @@ void Cpu::setPrivilegeMode(PrivilegeMode mode) {
 void Cpu::Reset() {
 
 	reg = {};
+	reg.CPSR_f = (CPSR_registers*)&reg.CPSR;
 	getBankReg(SUPERVISOR);
 
 	GBA::clock.clear();
@@ -217,9 +217,8 @@ void Cpu::next_instruction_thumb() {
 
 //execute the next instruction
 void Cpu::next_instruction() {
-	CPSR_registers* status = (CPSR_registers *)&reg.CPSR;
 
-	if (status->T) {	//thumb
+	if (reg.CPSR_f->T) {	//thumb
 		next_instruction_thumb();
 		return;
 	}
@@ -240,52 +239,51 @@ ARM_opcode Cpu::decode_arm(uint32_t opcode) {
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
 	uint8_t condition = (opcode >> 28) & 0x0f;
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 
 	bool condition_met = false;
 
 	switch (condition) {
 	case 0:	//EQ (z = 1)
-		condition_met = flag->Z == 1;
+		condition_met = reg.CPSR_f->Z == 1;
 		break;
 	case 1:		//NE (z = 0)
-		condition_met = flag->Z == 0;
+		condition_met = reg.CPSR_f->Z == 0;
 		break;
 	case 2:		//CS/HS (c = 1)
-		condition_met = flag->C == 1;
+		condition_met = reg.CPSR_f->C == 1;
 		break;
 	case 3:		//CC/LO	(c = 0)
-		condition_met = flag->C == 0;
+		condition_met = reg.CPSR_f->C == 0;
 		break;
 	case 4:		//MI (N = 1) negative
-		condition_met = flag->N == 1;
+		condition_met = reg.CPSR_f->N == 1;
 		break;
 	case 5:		//PL (N = 0) >= 0
-		condition_met = flag->N == 0;
+		condition_met = reg.CPSR_f->N == 0;
 		break;
 	case 6:		//VS (V = 1) overflow
-		condition_met = flag->V == 1;
+		condition_met = reg.CPSR_f->V == 1;
 		break;
 	case 7:		//VC (V = 0) no overflow
-		condition_met = flag->V == 0;
+		condition_met = reg.CPSR_f->V == 0;
 		break;
 	case 8:		//HI (C = 1 or Z = 0)	unsigned higher
-		condition_met = (flag->C == 1) || (flag->Z == 0);
+		condition_met = (reg.CPSR_f->C == 1) || (reg.CPSR_f->Z == 0);
 		break;
 	case 9:		//LS (C = 0 or Z=1)	unsigned lower or same
-		condition_met = (flag->C == 0) || (flag->Z == 1);
+		condition_met = (reg.CPSR_f->C == 0) || (reg.CPSR_f->Z == 1);
 		break;
 	case 0xa:	//GE (N = V) signed greater or equal
-		condition_met = flag->N == flag->V;
+		condition_met = reg.CPSR_f->N == reg.CPSR_f->V;
 		break;
 	case 0xb:	//LT (N!=V)	signed less than
-		condition_met = flag->N != flag->V;
+		condition_met = reg.CPSR_f->N != reg.CPSR_f->V;
 		break;
 	case 0xc:	//GT (Z=0 and N=V)	signed greater than
-		condition_met = (flag->Z == 0) && (flag->N == flag->V);
+		condition_met = (reg.CPSR_f->Z == 0) && (reg.CPSR_f->N == reg.CPSR_f->V);
 		break;
 	case 0xd:	//LE (Z=1 or N!=V)	signed less or equal
-		condition_met = (flag->Z == 1) || (flag->N != flag->V);
+		condition_met = (reg.CPSR_f->Z == 1) || (reg.CPSR_f->N != reg.CPSR_f->V);
 		break;
 	case 0xe:	//AL always
 		condition_met = true;
@@ -299,7 +297,6 @@ bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
 }
 
 void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
-	CPSR_registers* status = (CPSR_registers*)&reg.CPSR;
 
 	if (!arm_checkInstructionCondition(opcode)) {	//doesn't meet the condition
 		reg.R15 += 4;
@@ -338,6 +335,7 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_MSR:
 		Arm_MSR(opcode);
+		reg.R15 += 4;
 		break;
 
 	default:
@@ -550,7 +548,6 @@ inline void Cpu::Arm_BL(uint32_t opcode) {
 
 
 inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t& oper1, uint32_t& oper2, uint8_t& c, uint8_t &s) {
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 
 	uint8_t I = (opcode >> 25) & 1;
 	s = (opcode >> 20) & 1;	//set condition code
@@ -576,7 +573,6 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 }
 
 inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t &c) {
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 
 	if (shift_amount) {	//there is a shift
 		GBA::clock.addTicks(1);
@@ -605,7 +601,7 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 	else {	//special shifts
 		switch (shiftType) {
 		case 0:		//logical left
-			c = flag->C;
+			c = reg.CPSR_f->C;
 			result = val;
 			break;
 
@@ -631,8 +627,6 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 }
 
 inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t &c) {
-
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 
 	//get operand 2 register
 	uint8_t operand_reg_code = opcode & 0x0f;
@@ -663,12 +657,11 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 	uint8_t c, s;
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
 
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
 	uint32_t result = oper1 - oper2;
-	flag->Z = result == 0;
-	flag->N = (result & 0x80000000) != 0;	//negative
-	flag->C = !(oper1 < oper2);	//carry = !borrow
-	flag->V = (((oper1 | oper2) ^ result) >> 31) & 1;	//overflow
+	reg.CPSR_f->Z = result == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = !(oper1 < oper2);	//carry = !borrow
+	reg.CPSR_f->V = (((oper1 | oper2) ^ result) >> 31) & 1;	//overflow
 
 }
 
@@ -676,17 +669,16 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 inline void Cpu::Arm_MOV(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
 	uint8_t c, s;
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
-	c = flag->C;
+	c = reg.CPSR_f->C;
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
 	*dest_reg = oper2;
 	
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
-			flag->Z = oper2 == 0;
-			flag->N = (oper2 & 0x80000000) != 0;	//negative
-			flag->C = c;
+			reg.CPSR_f->Z = oper2 == 0;
+			reg.CPSR_f->N = (oper2 & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = c;
 		}
 		else {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
@@ -700,17 +692,16 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 inline void Cpu::Arm_TEQ(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
 	uint8_t c, s;
-	CPSR_registers* flag = (CPSR_registers*)&reg.CPSR;
-	c = flag->C;
+	c = reg.CPSR_f->C;
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
 
 	uint32_t result = oper1 ^ oper2;
 
 	if (s) {	//flags
-		flag->Z = result == 0;
-		flag->N = (result & 0x80000000) != 0;	//negative
-		flag->C = c;
+		reg.CPSR_f->Z = result == 0;
+		reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+		reg.CPSR_f->C = c;
 	}
 }
 

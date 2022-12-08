@@ -61,6 +61,7 @@ struct Registers {
 	uint32_t R0, R1, R2, R3, R4, R5, R6, R7;
 	uint32_t R8, R9, R10, R11, R12, R13, R14, R15;
 	uint32_t CPSR, SPSR;
+	CPSR_registers *CPSR_f;
 	//standard banked registers
 	uint32_t R8_std, R9_std, R10_std, R11_std, R12_std, R13_std, R14_std;
 	//fiq banked registers
