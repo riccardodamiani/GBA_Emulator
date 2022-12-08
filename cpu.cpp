@@ -785,13 +785,14 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 	//get the base address register
 	uint8_t base_reg_code = (opcode >> 16) & 0x0f;
 	uint32_t *Rn = &((uint32_t*)&reg)[base_reg_code];
-	*src_dest_reg = Rn;
 	uint32_t Rn_value = *Rn;
 	if (base_reg_code == 0x0f) Rn_value += 8;	//R15 + 8
 
 	//get src/dst register
-	uint8_t src_dst_reg_code = (opcode >> 16) & 0x0f;
+	uint8_t src_dst_reg_code = (opcode >> 12) & 0x0f;
 	uint32_t* Rd = &((uint32_t*)&reg)[src_dst_reg_code];
+	*src_dest_reg = Rd;
+
 	uint32_t offset = 0;
 
 	if (param.I) {	//offset in register
