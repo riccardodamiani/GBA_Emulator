@@ -562,8 +562,8 @@ inline void Cpu::Arm_B(uint32_t opcode) {
 inline void Cpu::Arm_BL(uint32_t opcode) {
 	uint32_t offset_24Bit = opcode & 0xffffff;
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
-	reg.R15 += 8 + offset * 4;
 	reg.R14 = reg.R15 + 4;
+	reg.R15 += 8 + offset * 4;
 }
 
 
