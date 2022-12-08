@@ -158,6 +158,13 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 	}
 }
 
+
+void Cpu::setPrivilegeMode(PrivilegeMode currentMode, PrivilegeMode mode) {
+	saveBankReg(currentMode);
+	getBankReg(mode);
+}
+
+
 void Cpu::setPrivilegeMode(PrivilegeMode mode) {
 	CPSR_registers* flag = (CPSR_registers*) & reg.CPSR;
 	PrivilegeMode currentPM = (PrivilegeMode)flag->mode;

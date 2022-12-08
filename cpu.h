@@ -102,6 +102,7 @@ private:
 	void RaiseSWI();
 
 	void setPrivilegeMode(PrivilegeMode mode);
+	void setPrivilegeMode(PrivilegeMode currentMode, PrivilegeMode mode);
 	void saveBankReg(PrivilegeMode currentMode);
 	void getBankReg(PrivilegeMode newMode);
 	
