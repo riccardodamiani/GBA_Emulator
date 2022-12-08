@@ -785,13 +785,13 @@ inline void Cpu::Arm_MRS(uint32_t opcode) {
 
 inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
 	struct param {
-		uint8_t _ : 2,
-			I : 1,	//immidiate
-			P : 1,	//offset before/after transfer
-			U : 1,	//add/subtract offset
-			B : 1,	//trensfer byte/word
+		uint8_t L : 1,
 			W : 1,	//write back address
-			L : 1;
+			B : 1,	//trensfer byte/word
+			U : 1,	//add/subtract offset
+			P : 1,	//offset before/after transfer
+			I : 1,	//immidiate
+			_ : 2;
 	}param = {};
 
 	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
