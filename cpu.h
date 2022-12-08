@@ -136,6 +136,7 @@ private:
 	//single transfer implementations
 	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b);
 	inline void Arm_LDR(uint32_t opcode);
+	inline void Arm_STR(uint32_t opcode);
 
 };
 

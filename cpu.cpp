@@ -328,6 +328,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_STR:	//store register
+		Arm_STR(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_TEQ:	//test xor
 		Arm_TEQ(opcode);
 		reg.R15 += 4;
@@ -766,11 +771,11 @@ inline void Cpu::Arm_MRS(uint32_t opcode) {
 inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
 	struct param {
 		uint8_t _ : 2,
-			I : 1,
-			P : 1,
-			U : 1,
-			B : 1,
-			W : 1,
+			I : 1,	//immidiate
+			P : 1,	//offset before/after transfer
+			U : 1,	//add/subtract offset
+			B : 1,	//trensfer byte/word
+			W : 1,	//write back address
 			L : 1;
 	}param = {};
 
@@ -789,8 +794,7 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 	uint32_t* Rd = &((uint32_t*)&reg)[src_dst_reg_code];
 	uint32_t offset = 0;
 
-	if (param.I) {
-		//get shift register
+	if (param.I) {	//offset in register
 		uint8_t offset_reg_code = opcode & 0x0f;
 		uint32_t Rm = ((uint32_t*)&reg)[offset_reg_code];
 
@@ -800,10 +804,9 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 
 		ARM_Shifter(ST, Is, Rm, offset, c);
 	}
-	else {
+	else {	//offset in immidiate 12 bits
 		offset = opcode & 0xfff;
 	}
-
 	
 	if (param.P) {	//add offset before transfer
 		if (param.U) {
@@ -829,20 +832,38 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 	}
 }
 
-
+//load data from address to a register
 inline void Cpu::Arm_LDR(uint32_t opcode) {
 	uint32_t address, *dest_reg;
-	uint8_t b;
+	uint8_t b;	//load byte
 
 	ARM_SDT_unpacker(opcode, address, &dest_reg, b);
 
-	if (b) {
+	if (b) {	//load byte
 		*dest_reg = GBA::memory.read_8(address);
 	}
-	else {
+	else {	//load 32bit word
 		uint8_t disalignment = address % 4;
 		uint32_t val = rightRotate(GBA::memory.read_32(address - disalignment), disalignment * 8);
 		*dest_reg = val;
 	}
 
+}
+
+//store data from a register to a address
+inline void Cpu::Arm_STR(uint32_t opcode) {
+	uint32_t address, *src_reg;
+	uint8_t b;	//store byte
+
+	ARM_SDT_unpacker(opcode, address, &src_reg, b);
+
+	if (b) {	//store byte
+		GBA::memory.write_8(address, *src_reg & 0xff);
+	}
+	else {	//store 32bit word
+		/*uint8_t disalignment = address % 4;
+		uint32_t val = rightRotate(GBA::memory.read_32(address - disalignment), disalignment * 8);
+		*dest_reg = val;*/
+		GBA::memory.write_32(address, *src_reg);
+	}
 }
