@@ -689,6 +689,7 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 			flag->C = c;
 		}
 		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
 			reg.CPSR = reg.SPSR;
 		}
 	}
