@@ -426,19 +426,34 @@ ARM_opcode Cpu::ARM_IsAluInst(uint32_t opcode) {
 		return ARM_OP_RSC;
 		break;
 	case 8:	//test
+	{
+		ARM_opcode inst;
+		if (inst = ARM_IsMSR_MRS(opcode)) return inst;	//check MSR, MRS instructions
 		return ARM_OP_TST;
 		break;
+	}
 	case 9:	//test exclusive
+	{
 		ARM_opcode inst;
 		if (inst = ARM_IsMSR_MRS(opcode)) return inst;	//check MSR, MRS instructions
 		return ARM_OP_TEQ;
 		break;
+	}
 	case 0xa:	//compare
+	{
+		ARM_opcode inst;
+		if (inst = ARM_IsMSR_MRS(opcode)) return inst;	//check MSR, MRS instructions
 		return ARM_OP_CMP;
 		break;
+	}
+		
 	case 0xb:	//compare negative
+	{
+		ARM_opcode inst;
+		if (inst = ARM_IsMSR_MRS(opcode)) return inst;	//check MSR, MRS instructions
 		return ARM_OP_CMN;
 		break;
+	}
 	case 0xc:	//or
 		return ARM_OP_ORR;
 		break;
@@ -801,7 +816,7 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 
 		uint8_t Is = (opcode >> 7) & 0x1f;
 		uint8_t ST = (opcode >> 5) & 0x3;
-		uint8_t c = 0;
+		uint8_t c = 0;		//not used
 
 		ARM_Shifter(ST, Is, Rm, offset, c);
 	}

@@ -30,14 +30,14 @@ enum ARM_opcode {
 };
 
 struct CPSR_registers {
-	uint8_t mode : 5,	//M0-M4 modes
+	uint32_t mode : 5,	//M0-M4 modes
 		T : 1,		//state bit (0 = ARM, 1 = THUMB)
 		F : 1,		//FIQ disable (0 = Enable, 1 = Disable)
-		I : 1;		//IRQ disable (0 = enable, 1 = disable)
-	uint16_t A : 1,		//abort disable (0 = enable, 1 = disable)
+		I : 1,		//IRQ disable (0 = enable, 1 = disable)
+		A : 1,		//abort disable (0 = enable, 1 = disable)
 		E : 1,		//endian
-		reserved : 14;
-	uint8_t J : 1,		//Jazelle Mode    (1=Jazelle Bytecode instructions) (if supported)
+		reserved : 14,
+		J : 1,		//Jazelle Mode    (1=Jazelle Bytecode instructions) (if supported)
 		reserved2 : 2,
 		Q : 1,	//sticky overflow (not supported)
 		V : 1,		//Overflow Flag   (0=No Overflow, 1=Overflow)
