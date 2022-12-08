@@ -749,8 +749,10 @@ inline void Cpu::Arm_MSR(uint32_t opcode) {
 	}
 	else {
 		//dest = CPSR
+		PrivilegeMode prevMode = (PrivilegeMode)((CPSR_registers*)&reg.CPSR)->mode;
 		reg.CPSR = (reg.CPSR & (~out_mask));
 		reg.CPSR |= Rm & out_mask;
+		setPrivilegeMode(prevMode, (PrivilegeMode)((CPSR_registers*)&reg.CPSR)->mode);
 	}
 }
 
