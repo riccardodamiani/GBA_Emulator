@@ -31,7 +31,11 @@ enum ARM_opcode {
 };
 
 enum THUMB_opcode {
-	THUMB_OP_INVALID
+	THUMB_OP_INVALID,
+	THUMB_OP_MOV_I,
+	THUMB_OP_CMP_I,
+	THUMB_OP_ADD_I,
+	THUMB_OP_SUB_I
 };
 
 struct CPSR_registers {

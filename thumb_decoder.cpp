@@ -59,6 +59,21 @@ THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
 
 //move/compare/add/subtract immidiate
 THUMB_opcode ThumbDecoder::decode_1(uint16_t opcode) {
+
+	switch ((opcode >> 11) & 0b11) {
+	case 0:	//MOV
+		return THUMB_OP_MOV_I;
+		break;
+	case 1:	//CMP
+		return THUMB_OP_CMP_I;
+		break;
+	case 2:	//ADD
+		return THUMB_OP_ADD_I;
+		break;
+	case 3:	//SUB
+		return THUMB_OP_SUB_I;
+		break;
+	}
 	return THUMB_OP_INVALID;
 }
 
