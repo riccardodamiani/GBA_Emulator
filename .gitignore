@@ -12,6 +12,8 @@
 !io_registers.h
 !memory_mapper.cpp
 !memory_mapper.h
+!thumb_decoder.h
+!thumb_decoder.cpp
 
 !.gitignore
 !README.md

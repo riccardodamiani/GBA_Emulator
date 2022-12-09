@@ -114,9 +114,6 @@ private:
 
 	//THUMB instructions
 	void execute_thumb(THUMB_opcode instruction, uint16_t opcode);
-
-	//decoding
-	THUMB_opcode decode_thumb(uint32_t opcode);
 	
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);

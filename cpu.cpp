@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "gba.h"
 #include "clock.h"
+#include "thumb_decoder.h"
 
 #include <cstdint>
 #include <iostream>
@@ -218,7 +219,7 @@ void Cpu::next_instruction_thumb() {
 
 	uint16_t opcode = GBA::memory.read_16(reg.R15);
 
-	THUMB_opcode instruction = decode_thumb(opcode);
+	THUMB_opcode instruction = ThumbDecoder::decode(opcode);
 	execute_thumb(instruction, opcode);
 }
 
@@ -242,6 +243,10 @@ ARM_opcode Cpu::decode_arm(uint32_t opcode) {
 	if (instr = ARM_IsSDTInst(opcode)) return instr;	//single store/load
 
 	return ARM_opcode::ARM_OP_INVALID;
+}
+
+void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
+
 }
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
@@ -368,17 +373,6 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 	}
 }
 
-void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
-	
-}
-
-THUMB_opcode decode_thumb(uint32_t opcode) {
-
-	THUMB_opcode instruction;
-
-
-	return THUMB_OP_INVALID;
-}
 
 int32_t convert_24Bit_to_32Bit_signed(uint32_t val) {
 
