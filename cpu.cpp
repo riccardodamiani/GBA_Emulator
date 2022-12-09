@@ -323,6 +323,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_ADD:	//add
+		Arm_ADD(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_LDR:		//load register
 		Arm_LDR(opcode);
 		reg.R15 += 4;
