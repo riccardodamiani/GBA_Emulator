@@ -52,34 +52,34 @@ THUMB_opcode ThumbDecoder::decode(uint16_t opcode) {
 }
 
 THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_1(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_3(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 
 THUMB_opcode ThumbDecoder::decode_4(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_5(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_6(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
 
 THUMB_opcode ThumbDecoder::decode_7(uint16_t opcode) {
-
+	return THUMB_OP_INVALID;
 }
