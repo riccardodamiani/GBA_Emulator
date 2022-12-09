@@ -681,7 +681,8 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 	reg.CPSR_f->Z = result == 0;
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(oper1 < oper2);	//carry = !borrow
-	reg.CPSR_f->V = (((oper1 | oper2) ^ result) >> 31) & 1;	//overflow
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
 
 }
 
@@ -723,6 +724,27 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 		reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 		reg.CPSR_f->C = c;
 	}
+}
+
+//arithmetic operation
+//operand1 + operand2
+inline void Cpu::Arm_ADD(uint32_t opcode) {
+	uint32_t oper1, oper2, * dest_reg;
+	uint8_t c, s;
+	c = reg.CPSR_f->C;	//not used
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	uint64_t result = (uint64_t)oper1 + (uint64_t)oper2;
+	*dest_reg = oper1 + oper2;
+
+	if (s) {
+		reg.CPSR_f->Z = *dest_reg == 0;
+		reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
+		reg.CPSR_f->C = (result >> 32) & 1;	//carry
+		//if oper1 and oper2 have same sign but result have different sign: overflow
+		reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
+	}
+
 }
 
 //
