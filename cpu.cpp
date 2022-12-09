@@ -236,6 +236,15 @@ void Cpu::next_instruction() {
 }
 
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
+	switch (instruction) {
+
+	default:
+		std::cout << "!! Thumb instruction not implemented: " << std::hex
+			<< "op " << opcode << ", instruction 0x" << instruction << std::endl;
+		system("pause");
+		exit(1);
+		break;
+	}
 
 }
 
@@ -355,8 +364,8 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		break;
 
 	default:
-		std::cout << "!! Instruction not implemented: " << std::hex 
-			<< "op " << opcode << ", instruction " << instruction << std::endl;
+		std::cout << "!! Arm instruction not implemented: " << std::hex 
+			<< "op " << opcode << ", instruction 0x" << instruction << std::endl;
 		system("pause");
 		exit(1);
 		break;
