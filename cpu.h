@@ -30,6 +30,10 @@ enum ARM_opcode {
 	ARM_OP_MRS
 };
 
+enum THUMB_opcode {
+	THUMB_OP_INVALID
+};
+
 struct CPSR_registers {
 	uint32_t mode : 5,	//M0-M4 modes
 		T : 1,		//state bit (0 = ARM, 1 = THUMB)
@@ -107,6 +111,12 @@ private:
 	void setPrivilegeMode(PrivilegeMode currentMode, PrivilegeMode mode);
 	void saveBankReg(PrivilegeMode currentMode);
 	void getBankReg(PrivilegeMode newMode);
+
+	//THUMB instructions
+	void execute_thumb(THUMB_opcode instruction, uint16_t opcode);
+
+	//decoding
+	THUMB_opcode decode_thumb(uint32_t opcode);
 	
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);

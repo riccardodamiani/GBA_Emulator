@@ -205,6 +205,7 @@ void Cpu::RaiseSWI() {
 
 void Cpu::next_instruction_arm() {
 
+	reg.R15 -= reg.R15 % 4;	//align R15
 	uint32_t opcode = GBA::memory.read_32(reg.R15);
 
 	ARM_opcode instruction = decode_arm(opcode);
@@ -213,6 +214,12 @@ void Cpu::next_instruction_arm() {
 
 void Cpu::next_instruction_thumb() {
 
+	reg.R15 -= reg.R15 % 2;	//align R15
+
+	uint16_t opcode = GBA::memory.read_16(reg.R15);
+
+	THUMB_opcode instruction = decode_thumb(opcode);
+	execute_thumb(instruction, opcode);
 }
 
 //execute the next instruction
@@ -361,16 +368,17 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 	}
 }
 
-/*void Cpu::execute_thumb() {
-	CPSR_registers* status = (CPSR_registers*)&reg.CPSR;
+void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
+	
+}
 
-	//align R15
-	reg.R15 -= reg.R15 % 2;
+THUMB_opcode decode_thumb(uint32_t opcode) {
 
-	uint16_t instruction = GBA::memory.read_16(reg.R15);
+	THUMB_opcode instruction;
 
-	reg.R15 += 2;
-}*/
+
+	return THUMB_OP_INVALID;
+}
 
 int32_t convert_24Bit_to_32Bit_signed(uint32_t val) {
 
@@ -592,7 +600,7 @@ inline void Cpu::Arm_BX(uint32_t opcode) {
 	uint32_t thumb = Rn & 1;
 
 	//note: only bx instruction is defined in ARMv4t
-	Rn -= thumb;
+	reg.R15 = Rn - thumb;
 	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
 }
 
