@@ -118,12 +118,6 @@ private:
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);
-	//decoding
-	ARM_opcode decode_arm(uint32_t opcode);
-	ARM_opcode ARM_IsBranch(uint32_t opcode);	//branches
-	ARM_opcode ARM_IsAluInst(uint32_t opcode);	//data processing
-	ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//single data transfer
-	ARM_opcode ARM_IsMSR_MRS(uint32_t opcode);	//
 
 	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t& c);
 
