@@ -313,6 +313,10 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BL(opcode);
 		break;
 
+	case ARM_OP_BX:	//branch and exchange
+		Arm_BX(opcode);
+		break;
+
 	case ARM_OP_CMP:		//cmp
 		Arm_CMP(opcode);
 		reg.R15 += 4;
@@ -378,10 +382,13 @@ int32_t convert_24Bit_to_32Bit_signed(uint32_t val) {
 
 ARM_opcode Cpu::ARM_IsBranch(uint32_t opcode) {
 	
-	uint32_t branch_format = 0b0000'1010'0000'0000'0000'0000'0000'0000;
-	uint32_t branch_with_link_format = 0b0000'1011'0000'0000'0000'0000'0000'0000;
-	uint32_t mask = 0b0000'1111'0000'0000'0000'0000'0000'0000;
+	uint32_t branch_format =			0b0000'1010'0000'0000'0000'0000'0000'0000;
+	uint32_t branch_with_link_format =	0b0000'1011'0000'0000'0000'0000'0000'0000;
+	uint32_t brench_exchange_format =	0b0000'0001'0010'1111'1111'1111'0000'0000;
 
+	uint32_t mask =					0b0000'1111'0000'0000'0000'0000'0000'0000;
+	uint32_t brench_exchange_mask = 0b0000'1111'1111'1111'1111'1111'0000'0000;
+	
 	uint32_t opcode_format = opcode & mask;
 
 	//branch
@@ -392,6 +399,10 @@ ARM_opcode Cpu::ARM_IsBranch(uint32_t opcode) {
 	if (branch_with_link_format == opcode_format) {
 		return ARM_OP_BL;
 	}
+
+	opcode_format = opcode & brench_exchange_mask;
+	if (brench_exchange_format == opcode_format)
+		return ARM_OP_BX;
 
 	return ARM_OP_INVALID;
 }
@@ -571,6 +582,20 @@ inline void Cpu::Arm_BL(uint32_t opcode) {
 	reg.R15 += 8 + offset * 4;
 }
 
+//branch and exchange
+inline void Cpu::Arm_BX(uint32_t opcode) {
+	//get operand register
+	uint8_t op_reg_code = opcode & 0x0f;
+	uint32_t Rn = ((uint32_t*)&reg)[op_reg_code];	//operand register
+	if (op_reg_code == 0xf) Rn += 8;
+
+	uint32_t thumb = Rn & 1;
+
+	//note: only bx instruction is defined in ARMv4t
+	Rn -= thumb;
+	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
+}
+
 
 inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t& oper1, uint32_t& oper2, uint8_t& c, uint8_t &s) {
 
@@ -584,6 +609,7 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 	//get operator 1 register
 	uint8_t reg_1_code = (opcode >> 16) & 0x0f;
 	oper1 = ((uint32_t*)&reg)[reg_1_code];
+	if (reg_1_code == 0xf) oper1 += 8;
 
 	if (I) {	//immidiate 2nd operand 
 		uint8_t Is = (opcode >> 8) & 0x0f;

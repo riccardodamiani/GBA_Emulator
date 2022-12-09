@@ -7,6 +7,7 @@ enum ARM_opcode {
 	ARM_OP_INVALID,
 	ARM_OP_B,
 	ARM_OP_BL,
+	ARM_OP_BX,
 	ARM_OP_AND,
 	ARM_OP_EOR,
 	ARM_OP_SUB,
@@ -122,6 +123,7 @@ private:
 	//branches implementation
 	inline void Arm_B(uint32_t opcode);
 	inline void Arm_BL(uint32_t opcode);
+	inline void Arm_BX(uint32_t opcode);
 
 	//ALU implementation
 	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &c, uint8_t& s);
