@@ -332,7 +332,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	case THUMB_OP_BLE:
 		if (thumbCheckCondition(opcode)) {
 			int8_t offset_8 = (int8_t)(opcode & 0xff);
-			int16_t offset = (offset_8 * 2) + 4;
+			int16_t offset = ((int16_t)offset_8 * 2) + 4;
 			reg.R15 += offset;
 			break;
 		}
