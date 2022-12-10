@@ -104,6 +104,7 @@ THUMB_opcode ThumbDecoder::decode_1(uint16_t opcode) {
 //load store sign-extended byte/halfword
 THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 
+	//load pc-relative
 	uint16_t ldr_pc_format =	0b0100'1000'0000'0000;
 	uint16_t ldr_pc_mask =		0b1111'1000'0000'0000;
 
@@ -111,9 +112,10 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 		return THUMB_OP_LDR_PC;
 	}
 
+	//load/store register ofsset
 	uint16_t ldr_str_format =	0b0101'0000'0000'0000;
 	uint16_t ldr_str_mask =		0b1111'0010'0000'0000;
-
+	
 	if ((opcode & ldr_str_mask) == ldr_str_format) {	//load store register offset
 		switch ((opcode >> 10) & 0b11) {
 		case 0:
@@ -127,6 +129,30 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 			break;
 		case 3:
 			return THUMB_OP_LDRB_O;	//load byte register offset
+			break;
+		}
+	}
+
+	//high register operation/branch
+	uint16_t hi_reg_bx_str_format = 0b0100'0100'0000'0000;
+	uint16_t hi_reg_bx_str_mask = 0b1111'1100'0000'0000;
+
+	if ((opcode & hi_reg_bx_str_mask) == hi_reg_bx_str_format) {
+		switch ((opcode >> 8) & 0b11) {
+		case 0:
+			return THUMB_OP_ADD_HRR;
+			break;
+		case 1:
+			return THUMB_OP_CMP_HRR;
+			break;
+		case 2:
+			if ((opcode & 0b11111111) == 0b11000000) {//nop
+				return THUMB_OP_NOP;
+			}
+			return THUMB_OP_MOV_HRR;
+			break;
+		case 3:
+			return THUMB_OP_BX;
 			break;
 		}
 	}

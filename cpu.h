@@ -60,7 +60,12 @@ enum THUMB_opcode {
 	THUMB_OP_BLT,
 	THUMB_OP_BGT,
 	THUMB_OP_BLE,
-	THUMB_OP_SWI	//software interrupt
+	THUMB_OP_SWI,	//software interrupt
+	THUMB_OP_ADD_HRR,	//high register add
+	THUMB_OP_CMP_HRR,	//high register compare
+	THUMB_OP_MOV_HRR,	//high register move
+	THUMB_OP_NOP,	//nop (MOV r8, r8)
+	THUMB_OP_BX,	//branch exchange
 };
 
 struct CPSR_registers {
