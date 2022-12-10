@@ -32,6 +32,7 @@ enum ARM_opcode {
 
 enum THUMB_opcode {
 	THUMB_OP_INVALID,
+	THUMB_OP_UNDEFINED,
 	THUMB_OP_MOV_I,	//mov/cmp/add/sub immidiate
 	THUMB_OP_CMP_I,
 	THUMB_OP_ADD_I,
@@ -44,7 +45,22 @@ enum THUMB_opcode {
 	THUMB_OP_ADD_RR,	//add register-register
 	THUMB_OP_SUB_RR,	//sub register-register
 	THUMB_OP_ADD_RI,	//add register-immidiate
-	THUMB_OP_SUB_RI	//sub register-immidiate
+	THUMB_OP_SUB_RI,	//sub register-immidiate
+	THUMB_OP_BEQ,	//conditional branches
+	THUMB_OP_BNE,
+	THUMB_OP_BCS,
+	THUMB_OP_BCC,
+	THUMB_OP_BMI,
+	THUMB_OP_BPL,
+	THUMB_OP_BVS,
+	THUMB_OP_BVC,
+	THUMB_OP_BHI,
+	THUMB_OP_BLS,
+	THUMB_OP_BGE,
+	THUMB_OP_BLT,
+	THUMB_OP_BGT,
+	THUMB_OP_BLE,
+	THUMB_OP_SWI	//software interrupt
 };
 
 struct CPSR_registers {

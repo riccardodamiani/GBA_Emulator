@@ -157,6 +157,62 @@ THUMB_opcode ThumbDecoder::decode_5(uint16_t opcode) {
 //conditional branch
 //software interrupt
 THUMB_opcode ThumbDecoder::decode_6(uint16_t opcode) {
+	uint16_t branch_pc_format = 0b1101'0000'0000'0000;
+	uint16_t branch_pc_mask =	0b1111'0000'0000'0000;
+
+	if ((opcode & branch_pc_mask) == branch_pc_format) {	//conditional branch
+		switch ((opcode >> 8) & 0b1111) {
+		case 0:
+			return THUMB_OP_BEQ;
+			break;
+		case 1:
+			return THUMB_OP_BNE;
+			break;
+		case 2:
+			return THUMB_OP_BCS;
+			break;
+		case 3:
+			return THUMB_OP_BCC;
+			break;
+		case 4:
+			return THUMB_OP_BMI;
+			break;
+		case 5:
+			return THUMB_OP_BPL;
+			break;
+		case 6:
+			return THUMB_OP_BVS;
+			break;
+		case 7:
+			return THUMB_OP_BVC;
+			break;
+		case 8:
+			return THUMB_OP_BHI;
+			break;
+		case 9:
+			return THUMB_OP_BLS;
+			break;
+		case 0xa:
+			return THUMB_OP_BGE;
+			break;
+		case 0xb:
+			return THUMB_OP_BLT;
+			break;
+		case 0xc:
+			return THUMB_OP_BGT;
+			break;
+		case 0xd:
+			return THUMB_OP_BLE;
+			break;
+		case 0xe:
+			return THUMB_OP_UNDEFINED;
+			break;
+		case 0xf:	//software interrupt: bits 8-11 must be 1s
+			return THUMB_OP_SWI;
+			break;
+		}
+	}
+
 	return THUMB_OP_INVALID;
 }
 
