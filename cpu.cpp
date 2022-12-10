@@ -235,6 +235,59 @@ void Cpu::next_instruction() {
 	next_instruction_arm();
 }
 
+bool Cpu::thumbCheckCondition(uint16_t opcode) {
+	uint8_t condition = (opcode >> 8) & 0x0f;
+
+	bool condition_met = false;
+
+	switch (condition) {
+	case 0:	//EQ (z = 1)
+		condition_met = reg.CPSR_f->Z == 1;
+		break;
+	case 1:		//NE (z = 0)
+		condition_met = reg.CPSR_f->Z == 0;
+		break;
+	case 2:		//CS/HS (c = 1)
+		condition_met = reg.CPSR_f->C == 1;
+		break;
+	case 3:		//CC/LO	(c = 0)
+		condition_met = reg.CPSR_f->C == 0;
+		break;
+	case 4:		//MI (N = 1) negative
+		condition_met = reg.CPSR_f->N == 1;
+		break;
+	case 5:		//PL (N = 0) >= 0
+		condition_met = reg.CPSR_f->N == 0;
+		break;
+	case 6:		//VS (V = 1) overflow
+		condition_met = reg.CPSR_f->V == 1;
+		break;
+	case 7:		//VC (V = 0) no overflow
+		condition_met = reg.CPSR_f->V == 0;
+		break;
+	case 8:		//HI (C = 1 or Z = 0)	unsigned higher
+		condition_met = (reg.CPSR_f->C == 1) || (reg.CPSR_f->Z == 0);
+		break;
+	case 9:		//LS (C = 0 or Z=1)	unsigned lower or same
+		condition_met = (reg.CPSR_f->C == 0) || (reg.CPSR_f->Z == 1);
+		break;
+	case 0xa:	//GE (N = V) signed greater or equal
+		condition_met = reg.CPSR_f->N == reg.CPSR_f->V;
+		break;
+	case 0xb:	//LT (N!=V)	signed less than
+		condition_met = reg.CPSR_f->N != reg.CPSR_f->V;
+		break;
+	case 0xc:	//GT (Z=0 and N=V)	signed greater than
+		condition_met = (reg.CPSR_f->Z == 0) && (reg.CPSR_f->N == reg.CPSR_f->V);
+		break;
+	case 0xd:	//LE (Z=1 or N!=V)	signed less or equal
+		condition_met = (reg.CPSR_f->Z == 1) || (reg.CPSR_f->N != reg.CPSR_f->V);
+		break;
+	}
+
+	return condition_met;
+}
+
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	
 	switch (instruction) {
@@ -260,6 +313,29 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_STR_O:	//store register offset
 		Thumb_STR_O(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_BEQ:	//conditional branches
+	case THUMB_OP_BNE:
+	case THUMB_OP_BCS:
+	case THUMB_OP_BCC:
+	case THUMB_OP_BMI:
+	case THUMB_OP_BPL:
+	case THUMB_OP_BVS:
+	case THUMB_OP_BVC:
+	case THUMB_OP_BHI:
+	case THUMB_OP_BLS:
+	case THUMB_OP_BGE:
+	case THUMB_OP_BLT:
+	case THUMB_OP_BGT:
+	case THUMB_OP_BLE:
+		if (thumbCheckCondition(opcode)) {
+			int8_t offset_8 = (int8_t)(opcode & 0xff);
+			int16_t offset = (offset_8 * 2) + 4;
+			reg.R15 += offset;
+			break;
+		}
 		reg.R15 += 2;
 		break;
 

@@ -48,7 +48,7 @@ enum THUMB_opcode {
 	THUMB_OP_SUB_RI,	//sub register-immidiate
 	THUMB_OP_BEQ,	//conditional branches
 	THUMB_OP_BNE,
-	THUMB_OP_BCS,
+	THUMB_OP_BCS,	
 	THUMB_OP_BCC,
 	THUMB_OP_BMI,
 	THUMB_OP_BPL,
@@ -143,6 +143,8 @@ private:
 
 	//THUMB instructions
 	void execute_thumb(THUMB_opcode instruction, uint16_t opcode);
+	bool thumbCheckCondition(uint16_t opcode);
+
 	//THUMB.1
 	inline void Thumb_ADD_RR(uint32_t opcode);
 	inline void Thumb_ADD_RI(uint32_t opcode);
