@@ -242,6 +242,17 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		Thumb_MOV_I(opcode);
 		reg.R15 += 2;
 		break;
+
+	case THUMB_OP_LDR_PC:
+		Thumb_LDR_PC(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_STR_O:
+		Thumb_STR_O(opcode);
+		reg.R15 += 2;
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -255,13 +266,40 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 //move immidiate
 inline void Cpu::Thumb_MOV_I(uint32_t opcode) {
 	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
-	uint32_t *Rn = &((uint32_t*)&reg)[Rd_reg_code];	//operand register
+	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//operand register
 	
 	uint8_t nn = opcode & 0xff;
-	*Rn = nn;
+	*Rd = nn;
 
 	reg.CPSR_f->Z = nn == 0;
-	reg.CPSR_f->N = (nn & 0x80) > 0;
+	reg.CPSR_f->N = (nn & 0x80) != 0;
+}
+
+//load pc-relative
+inline void Cpu::Thumb_LDR_PC(uint32_t opcode) {
+	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint16_t offset = (opcode & 0xff) * 4;
+	uint32_t address = ((reg.R15 + 4) & ~2) + offset;
+
+	*Rd = GBA::memory.read_32(address);
+
+}
+
+//store register offset 
+inline void Cpu::Thumb_STR_O(uint32_t opcode) {
+	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
+
+	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_reg_code];	//base address register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	GBA::memory.write_32(Rb + Ro, Rd);
+
 }
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {

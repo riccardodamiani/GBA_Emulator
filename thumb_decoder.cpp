@@ -54,6 +54,7 @@ THUMB_opcode ThumbDecoder::decode(uint16_t opcode) {
 //move shifted register
 //add/subtract
 THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
+
 	return THUMB_OP_INVALID;
 }
 
@@ -83,6 +84,34 @@ THUMB_opcode ThumbDecoder::decode_1(uint16_t opcode) {
 //load/store with register offset
 //load store sign-extended byte/halfword
 THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
+
+	uint16_t ldr_pc_format =	0b0100'1000'0000'0000;
+	uint16_t ldr_pc_mask =		0b1111'1000'0000'0000;
+
+	if ((opcode & ldr_pc_mask) == ldr_pc_format) {	//load pc-relative
+		return THUMB_OP_LDR_PC;
+	}
+
+	uint16_t ldr_str_format =	0b0101'0000'0000'0000;
+	uint16_t ldr_str_mask =		0b1111'0010'0000'0000;
+
+	if ((opcode & ldr_str_mask) == ldr_str_format) {	//load store register offset
+		switch ((opcode >> 10) & 0b11) {
+		case 0:
+			return THUMB_OP_STR_O;	//store register offset
+			break;
+		case 1:
+			return THUMB_OP_STRB_O;	//store byte register offset
+			break;
+		case 2:
+			return THUMB_OP_LDR_O;	//load register offset
+			break;
+		case 3:
+			return THUMB_OP_LDRB_O;	//load byte register offset
+			break;
+		}
+	}
+
 	return THUMB_OP_INVALID;
 }
 
