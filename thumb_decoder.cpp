@@ -54,6 +54,25 @@ THUMB_opcode ThumbDecoder::decode(uint16_t opcode) {
 //move shifted register
 //add/subtract
 THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
+	uint16_t add_sub_format =	0b0001'1000'0000'0000;
+	uint16_t add_sub_mask =		0b1111'1000'0000'0000;
+
+	if ((opcode & add_sub_mask) == add_sub_format) {	//load pc-relative
+		switch ((opcode >> 9) & 0b11) {
+		case 0:
+			return THUMB_OP_ADD_R;	//add register
+			break;
+		case 1:
+			return THUMB_OP_SUB_R;	//sub register
+			break;
+		case 2:
+			return THUMB_OP_ADD_I;	//add immidiate
+			break;
+		case 3:
+			return THUMB_OP_SUB_I;	//sub immidiate
+			break;
+		}
+	}
 
 	return THUMB_OP_INVALID;
 }
