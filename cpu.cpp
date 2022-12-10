@@ -350,7 +350,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 }
 
 //add register-register
-inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
+inline void Cpu::Thumb_ADD_RR(uint16_t opcode) {
 	uint8_t Rn_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Rn = ((uint32_t*)&reg)[Rn_reg_code];	//operand register
 
@@ -372,7 +372,7 @@ inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
 }
 
 //add register-immidiate
-inline void Cpu::Thumb_ADD_RI(uint32_t opcode) {
+inline void Cpu::Thumb_ADD_RI(uint16_t opcode) {
 	uint32_t nn = (opcode >> 6) & 0b111;	//operand immidiate
 
 	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
@@ -392,7 +392,7 @@ inline void Cpu::Thumb_ADD_RI(uint32_t opcode) {
 }
 
 //move immidiate
-inline void Cpu::Thumb_MOV_I(uint32_t opcode) {
+inline void Cpu::Thumb_MOV_I(uint16_t opcode) {
 	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//operand register
 	
@@ -404,7 +404,7 @@ inline void Cpu::Thumb_MOV_I(uint32_t opcode) {
 }
 
 //load pc-relative
-inline void Cpu::Thumb_LDR_PC(uint32_t opcode) {
+inline void Cpu::Thumb_LDR_PC(uint16_t opcode) {
 	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
 	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
@@ -416,7 +416,7 @@ inline void Cpu::Thumb_LDR_PC(uint32_t opcode) {
 }
 
 //store register offset 
-inline void Cpu::Thumb_STR_O(uint32_t opcode) {
+inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
 
@@ -429,6 +429,7 @@ inline void Cpu::Thumb_STR_O(uint32_t opcode) {
 	GBA::memory.write_32(Rb + Ro, Rd);
 
 }
+
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
 	uint8_t condition = (opcode >> 28) & 0x0f;
