@@ -360,7 +360,7 @@ inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
 	uint8_t Rd_reg_code = opcode & 0b111;
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
-	uint64_t result = Rs + Rn;
+	uint64_t result = (uint64_t)Rs + (uint64_t)Rn;
 	*Rd = (uint32_t)result;
 
 	reg.CPSR_f->Z = *Rd == 0;
@@ -381,7 +381,7 @@ inline void Cpu::Thumb_ADD_RI(uint32_t opcode) {
 	uint8_t Rd_reg_code = opcode & 0b111;
 	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
-	uint64_t result = Rs + nn;
+	uint64_t result = (uint64_t)Rs + (uint64_t)nn;
 	*Rd = (uint32_t)result;
 
 	reg.CPSR_f->Z = *Rd == 0;
