@@ -151,17 +151,20 @@ private:
 	bool thumbCheckCondition(uint16_t opcode);
 
 	//THUMB.1
-	inline void Thumb_ADD_RR(uint32_t opcode);
-	inline void Thumb_ADD_RI(uint32_t opcode);
+	inline void Thumb_ADD_RR(uint16_t opcode);
+	inline void Thumb_ADD_RI(uint16_t opcode);
 
 	//THUMB.3
-	inline void Thumb_MOV_I(uint32_t opcode);
+	inline void Thumb_MOV_I(uint16_t opcode);
 
 	//THUMB.6
-	inline void Thumb_LDR_PC(uint32_t opcode);
+	inline void Thumb_LDR_PC(uint16_t opcode);
+
+	//THUMB.5
+	inline void Thumb_BX(uint16_t opcode);
 
 	//THUMB.7
-	inline void Thumb_STR_O(uint32_t opcode);
+	inline void Thumb_STR_O(uint16_t opcode);
 	
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);

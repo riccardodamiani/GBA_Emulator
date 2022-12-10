@@ -316,6 +316,10 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_BX:
+		Thumb_BX(opcode);
+		break;
+
 	case THUMB_OP_BEQ:	//conditional branches
 	case THUMB_OP_BNE:
 	case THUMB_OP_BCS:
@@ -430,6 +434,19 @@ inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 
 }
 
+//branch exchange
+inline void Cpu::Thumb_BX(uint16_t opcode) {
+	//get operand register
+	uint8_t op_reg_code = (opcode >> 3) & 0b111;
+	op_reg_code |= (opcode & 0b1000000) >> 3;
+	uint32_t Rs = ((uint32_t*)&reg)[op_reg_code];	//operand register
+	if (op_reg_code == 0xf) Rs = (Rs + 4) & ~2;
+
+	uint32_t thumb = Rs & 1;
+
+	reg.R15 = Rs - thumb;
+	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
+}
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
 	uint8_t condition = (opcode >> 28) & 0x0f;
