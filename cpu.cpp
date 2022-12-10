@@ -238,22 +238,27 @@ void Cpu::next_instruction() {
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	
 	switch (instruction) {
-	case THUMB_OP_ADD_RR:
+	case THUMB_OP_ADD_RR:	//add register + register
 		Thumb_ADD_RR(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_MOV_I:
+	case THUMB_OP_ADD_RI:	//add register + immidiate
+		Thumb_ADD_RI(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_MOV_I:	//move immidiate
 		Thumb_MOV_I(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_LDR_PC:
+	case THUMB_OP_LDR_PC:	//load pc-relative
 		Thumb_LDR_PC(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_STR_O:
+	case THUMB_OP_STR_O:	//store register offset
 		Thumb_STR_O(opcode);
 		reg.R15 += 2;
 		break;
@@ -268,6 +273,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 }
 
+//add register-register
 inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
 	uint8_t Rn_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Rn = ((uint32_t*)&reg)[Rn_reg_code];	//operand register
@@ -287,6 +293,26 @@ inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
 	//if oper1 and oper2 have same sign but result have different sign: overflow
 	reg.CPSR_f->V = (((~(Rn ^ Rs)) & (Rs ^ *Rd)) >> 31) & 1;
 
+}
+
+//add register-immidiate
+inline void Cpu::Thumb_ADD_RI(uint32_t opcode) {
+	uint32_t nn = (opcode >> 6) & 0b111;	//operand immidiate
+
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint64_t result = Rs + nn;
+	*Rd = (uint32_t)result;
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = (result >> 32) & 1;	//carry
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(nn ^ Rs)) & (Rs ^ *Rd)) >> 31) & 1;
 }
 
 //move immidiate
