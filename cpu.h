@@ -41,10 +41,10 @@ enum THUMB_opcode {
 	THUMB_OP_STRB_O,
 	THUMB_OP_LDR_O,	//load register offset
 	THUMB_OP_LDRB_O,
-	THUMB_OP_ADD_R,	//add register
-	THUMB_OP_SUB_R,	//sub register
-	THUMB_OP_ADD_I,	//add immidiate
-	THUMB_OP_SUB_I	//sub immidiate
+	THUMB_OP_ADD_RR,	//add register-register
+	THUMB_OP_SUB_RR,	//sub register-register
+	THUMB_OP_ADD_RI,	//add register-immidiate
+	THUMB_OP_SUB_RI	//sub register-immidiate
 };
 
 struct CPSR_registers {
@@ -128,7 +128,7 @@ private:
 	//THUMB instructions
 	void execute_thumb(THUMB_opcode instruction, uint16_t opcode);
 	//THUMB.1
-	inline void Thumb_ADD_R(uint32_t opcode);
+	inline void Thumb_ADD_RR(uint32_t opcode);
 
 	//THUMB.3
 	inline void Thumb_MOV_I(uint32_t opcode);

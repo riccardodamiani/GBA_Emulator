@@ -238,8 +238,8 @@ void Cpu::next_instruction() {
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	
 	switch (instruction) {
-	case THUMB_OP_ADD_R:
-		Thumb_ADD_R(opcode);
+	case THUMB_OP_ADD_RR:
+		Thumb_ADD_RR(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -268,7 +268,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 }
 
-inline void Cpu::Thumb_ADD_R(uint32_t opcode) {
+inline void Cpu::Thumb_ADD_RR(uint32_t opcode) {
 	uint8_t Rn_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Rn = ((uint32_t*)&reg)[Rn_reg_code];	//operand register
 
