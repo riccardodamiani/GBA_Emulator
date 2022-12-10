@@ -127,11 +127,16 @@ private:
 
 	//THUMB instructions
 	void execute_thumb(THUMB_opcode instruction, uint16_t opcode);
+	//THUMB.1
+	inline void Thumb_ADD_R(uint32_t opcode);
 
 	//THUMB.3
 	inline void Thumb_MOV_I(uint32_t opcode);
 
+	//THUMB.6
 	inline void Thumb_LDR_PC(uint32_t opcode);
+
+	//THUMB.7
 	inline void Thumb_STR_O(uint32_t opcode);
 	
 	//ARM instructions
