@@ -176,6 +176,16 @@ THUMB_opcode ThumbDecoder::decode_4(uint16_t opcode) {
 //add offset stack pointer
 //push pop
 THUMB_opcode ThumbDecoder::decode_5(uint16_t opcode) {
+
+	uint16_t push_pop_format =	0b1011'0100'0000'0000;
+	uint16_t push_pop_mask =	0b1111'0110'0000'0000;
+
+	if ((opcode & push_pop_mask) == push_pop_format) {	//push/pop
+		if (opcode & 0x800) {
+			return THUMB_OP_POP;
+		}
+		return THUMB_OP_PUSH;
+	}
 	return THUMB_OP_INVALID;
 }
 

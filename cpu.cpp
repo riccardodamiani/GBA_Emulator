@@ -227,6 +227,10 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
+	if (reg.R15 == 0xb0) {
+		reg.R15 = reg.R15;
+	}
+
 	if (reg.CPSR_f->T) {	//thumb
 		next_instruction_thumb();
 		return;
