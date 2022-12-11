@@ -186,6 +186,17 @@ THUMB_opcode ThumbDecoder::decode_5(uint16_t opcode) {
 		}
 		return THUMB_OP_PUSH;
 	}
+
+	uint16_t add_sp_pop_format = 0b1011'0000'0000'0000;
+	uint16_t add_sp_pop_mask =	 0b1111'1111'0000'0000;
+
+	if ((opcode & add_sp_pop_mask) == add_sp_pop_format) {	//add/sub sp
+		if (opcode & 0x80) {
+			return THUMB_OP_SUB_SP;
+		}
+		return THUMB_OP_ADD_SP;
+	}
+
 	return THUMB_OP_INVALID;
 }
 

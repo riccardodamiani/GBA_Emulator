@@ -67,7 +67,9 @@ enum THUMB_opcode {
 	THUMB_OP_NOP,	//nop (MOV r8, r8)
 	THUMB_OP_BX,	//branch exchange
 	THUMB_OP_PUSH,	//push
-	THUMB_OP_POP	//pop
+	THUMB_OP_POP,	//pop
+	THUMB_OP_ADD_SP,	//add offset to sp
+	THUMB_OP_SUB_SP		//sub offset to sp
 };
 
 struct CPSR_registers {
