@@ -3,7 +3,8 @@ Open source gba emulator in C++. Still a work in progress.
 
 ## Progress  
 Done:
-* Bios loading 
+* Bios loading
+* Game rom loading
 
 Not yet supported:  
 * GamePak 
