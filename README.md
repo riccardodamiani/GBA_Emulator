@@ -3,13 +3,19 @@ Open source gba emulator in C++. Still a work in progress.
 
 ## Progress  
 Done:
-* Gba memory mapping (kinda)
-* Bios  
+* Bios loading 
 
 Not yet supported:  
 * GamePak 
 * Video
 * Audio 
+* Cpu interrupts
+* Cpu timings
+* Dma
+* Keypad inputs
+* Serial communication
+* Timers
 
 In progress:
-* Cpu (~15% done)
+* Cpu instruction sets (~20% done)
+* Gba memory mapping
