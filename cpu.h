@@ -167,6 +167,9 @@ private:
 
 	//THUMB.7
 	inline void Thumb_STR_O(uint16_t opcode);
+
+	//THUMB.14
+	inline void Thumb_PUSH(uint16_t opcode);
 	
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);

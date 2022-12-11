@@ -347,6 +347,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_PUSH:
+		Thumb_PUSH(opcode);
+		reg.R15 += 2;
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -450,6 +455,25 @@ inline void Cpu::Thumb_BX(uint16_t opcode) {
 
 	reg.R15 = Rs - thumb;
 	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
+}
+
+//push
+inline void Cpu::Thumb_PUSH(uint16_t opcode) {
+
+	uint8_t registers_to_push = opcode & 0xff;
+
+	if (opcode & 0x100) {
+		reg.R13 -= 4;
+		GBA::memory.write_32(reg.R13, reg.R14);
+	}
+
+	for (int i = 7; i >= 0; i--) {
+		if ((registers_to_push >> i) & 1) {
+			reg.R13 -= 4;
+			uint32_t* r = &((uint32_t*)&reg)[i];
+			GBA::memory.write_32(reg.R13, *r);
+		}
+	}
 }
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
