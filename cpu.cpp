@@ -347,6 +347,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_SUB_SP:
+		Thumb_SUB_SP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_PUSH:
 		Thumb_PUSH(opcode);
 		reg.R15 += 2;
@@ -474,6 +479,13 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 			GBA::memory.write_32(reg.R13, *r);
 		}
 	}
+}
+
+//sub offset sp
+inline void Cpu::Thumb_SUB_SP(uint16_t opcode) {
+	uint8_t nn = opcode & 0x7f;
+
+	reg.R13 -= (uint16_t)nn * 4;
 }
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
