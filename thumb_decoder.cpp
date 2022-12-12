@@ -169,6 +169,13 @@ THUMB_opcode ThumbDecoder::decode_3(uint16_t opcode) {
 //load store halfword
 //load/store sp-relative
 THUMB_opcode ThumbDecoder::decode_4(uint16_t opcode) {
+
+	if (opcode & 0x1000) {	//store/load SP-relative
+		if(opcode & 0x800)
+			return THUMB_OP_LDR_SP;
+		return THUMB_OP_STR_SP;
+	}
+	
 	return THUMB_OP_INVALID;
 }
 
