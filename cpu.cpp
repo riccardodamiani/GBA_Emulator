@@ -325,6 +325,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_STR_SP:
+		Thumb_STR_SP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_BX:
 		Thumb_BX(opcode);
 		break;
@@ -498,10 +503,21 @@ inline void Cpu::Thumb_LDR_SP(uint16_t opcode) {
 	uint8_t dst_reg_code = (opcode >> 8) & 0b111;
 	uint32_t *dst_reg = &((uint32_t*)&reg)[dst_reg_code];	//destination register
 
-	uint8_t offset = opcode & 0xff;
-	uint32_t address = reg.R13 + (uint32_t)offset * 4;
+	uint32_t offset = opcode & 0xff;
+	uint32_t address = reg.R13 + offset * 4;
 
 	*dst_reg = GBA::memory.read_32(address);
+}
+
+//store sp-relative
+inline void Cpu::Thumb_STR_SP(uint16_t opcode) {
+	uint8_t src_reg_code = (opcode >> 8) & 0b111;
+	uint32_t src_reg = ((uint32_t*)&reg)[src_reg_code];	//source register
+
+	uint32_t offset = opcode & 0xff;
+	uint32_t address = reg.R13 + offset * 4;
+
+	GBA::memory.write_32(address, src_reg);
 }
 
 bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {

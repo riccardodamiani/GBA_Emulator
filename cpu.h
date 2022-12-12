@@ -174,6 +174,7 @@ private:
 
 	//THUMB.11
 	inline void Thumb_LDR_SP(uint16_t opcode);
+	inline void Thumb_STR_SP(uint16_t opcode);
 
 	//THUMB.13
 	inline void Thumb_SUB_SP(uint16_t opcode);
