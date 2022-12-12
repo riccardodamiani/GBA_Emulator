@@ -104,6 +104,18 @@ THUMB_opcode ThumbDecoder::decode_1(uint16_t opcode) {
 //load store sign-extended byte/halfword
 THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 
+	//alu operation
+	uint16_t alu_format =	0b0100'0000'0000'0000;
+	uint16_t alu_mask =		0b1111'1100'0000'0000;
+
+	if ((opcode & alu_mask) == alu_format) {
+		switch ((opcode >> 6) & 0b1111) {
+		case 0xf:	//MVN
+			return THUMB_OP_MVN;
+			break;
+		}
+	}
+
 	//load pc-relative
 	uint16_t ldr_pc_format =	0b0100'1000'0000'0000;
 	uint16_t ldr_pc_mask =		0b1111'1000'0000'0000;

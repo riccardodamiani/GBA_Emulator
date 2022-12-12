@@ -42,6 +42,8 @@ enum THUMB_opcode {
 	THUMB_OP_STRB_O,
 	THUMB_OP_LDR_O,	//load register offset
 	THUMB_OP_LDRB_O,
+	//Alu operations
+	THUMB_OP_MVN,	//MVN
 	THUMB_OP_ADD_RR,	//add register-register
 	THUMB_OP_SUB_RR,	//sub register-register
 	THUMB_OP_ADD_RI,	//add register-immidiate
@@ -162,6 +164,9 @@ private:
 
 	//THUMB.3
 	inline void Thumb_MOV_I(uint16_t opcode);
+
+	//THUMB.4
+	inline void Thumb_MVN(uint16_t opcode);
 
 	//THUMB.6
 	inline void Thumb_LDR_PC(uint16_t opcode);
