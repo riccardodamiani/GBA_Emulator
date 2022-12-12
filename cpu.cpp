@@ -447,7 +447,7 @@ inline void Cpu::Thumb_MOV_I(uint16_t opcode) {
 	*Rd = nn;
 
 	reg.CPSR_f->Z = nn == 0;
-	reg.CPSR_f->N = (nn & 0x80) != 0;
+	reg.CPSR_f->N = (nn & 0x80000000) != 0;
 }
 
 //load pc-relative
