@@ -33,6 +33,7 @@ enum ARM_opcode {
 enum THUMB_opcode {
 	THUMB_OP_INVALID,
 	THUMB_OP_UNDEFINED,
+	THUMB_OP_LSL,	//logical/arithm shift left
 	THUMB_OP_MOV_I,	//mov/cmp/add/sub immidiate
 	THUMB_OP_CMP_I,
 	THUMB_OP_ADD_I,
