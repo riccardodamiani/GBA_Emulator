@@ -372,6 +372,10 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_BL:
+		Thumb_BL(opcode);
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -508,6 +512,18 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 			GBA::memory.write_32(reg.R13, *r);
 		}
 	}
+}
+
+//long branch with link
+inline void Cpu::Thumb_BL(uint16_t opcode) {
+
+	uint32_t msb = opcode & 0x7ff;
+
+	uint16_t next_opcode = GBA::memory.read_16(reg.R15 + 2);
+	uint32_t lsb = next_opcode & 0x7ff;
+
+	reg.R15 = reg.R15 + 4 + (msb << 12) + (lsb << 1);
+
 }
 
 //sub offset sp

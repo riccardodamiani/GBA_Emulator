@@ -188,6 +188,9 @@ private:
 	//THUMB.14
 	inline void Thumb_PUSH(uint16_t opcode);
 	
+	//THUMB.19
+	inline void Thumb_BL(uint16_t opcode);
+
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);
