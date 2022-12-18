@@ -76,6 +76,10 @@ enum THUMB_opcode {
 	THUMB_OP_LDR_SP,	//load sp-relative
 	THUMB_OP_BL_F,	//long branch with link
 	THUMB_OP_BL_LR_IMM,
+	THUMB_OP_STR_I,	//load/store immidiate
+	THUMB_OP_LDR_I,
+	THUMB_OP_STRB_I,
+	THUMB_OP_LDRB_I
 };
 
 struct CPSR_registers {

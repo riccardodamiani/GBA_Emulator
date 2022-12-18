@@ -174,6 +174,21 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 
 //load store with immidiate offset
 THUMB_opcode ThumbDecoder::decode_3(uint16_t opcode) {
+	switch ((opcode >> 11) & 0b11) {
+	case 0:
+		return THUMB_OP_STR_I;
+		break;
+	case 1:
+		return THUMB_OP_LDR_I;
+		break;
+	case 2:
+		return THUMB_OP_STRB_I;
+		break;
+	case 3:
+		return THUMB_OP_LDRB_I;
+		break;
+	}
+
 	return THUMB_OP_INVALID;
 }
 
