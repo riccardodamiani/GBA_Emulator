@@ -190,7 +190,8 @@ private:
 	inline void Thumb_PUSH(uint16_t opcode);
 	
 	//THUMB.19
-	inline void Thumb_BL(uint16_t opcode);
+	inline void Thumb_BL_1(uint16_t opcode);
+	inline void Thumb_BL_2(uint16_t opcode);
 
 	//ARM instructions
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);

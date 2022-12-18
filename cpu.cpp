@@ -372,8 +372,13 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_BL:
-		Thumb_BL(opcode);
+	case THUMB_OP_BL_F:
+		Thumb_BL_1(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_BL_LR_IMM:
+		Thumb_BL_2(opcode);
 		break;
 
 	default:
@@ -514,16 +519,20 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 	}
 }
 
-//long branch with link
-inline void Cpu::Thumb_BL(uint16_t opcode) {
+//first instruction of long branch with link: LR = PC + 4 + Imm
+inline void Cpu::Thumb_BL_1(uint16_t opcode) {
 
 	uint32_t msb = opcode & 0x7ff;
+	reg.R14 = reg.R15 + 4 + (msb << 12);
+}
 
-	uint16_t next_opcode = GBA::memory.read_16(reg.R15 + 2);
-	uint32_t lsb = next_opcode & 0x7ff;
+//second instruction of long branch with link: PC = LR + Imm
+inline void Cpu::Thumb_BL_2(uint16_t opcode) {
 
-	reg.R15 = reg.R15 + 4 + (msb << 12) + (lsb << 1);
-
+	uint32_t lsb = opcode & 0x7ff;
+	uint32_t tempR14 = reg.R15 + 2;
+	reg.R15 = reg.R14 + (lsb << 1);
+	reg.R14 = tempR14 | 0b1;
 }
 
 //sub offset sp
