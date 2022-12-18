@@ -522,8 +522,8 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 //first instruction of long branch with link: LR = PC + 4 + Imm
 inline void Cpu::Thumb_BL_1(uint16_t opcode) {
 
-	uint32_t msb = opcode & 0x7ff;
-	reg.R14 = reg.R15 + 4 + (msb << 12);
+	uint32_t msb = (opcode & 0x7ff) << 12;
+	reg.R14 = (reg.R15 + 4 + msb) & 0x7fffff;
 }
 
 //second instruction of long branch with link: PC = LR + Imm
@@ -689,7 +689,7 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 }
 
 
-int32_t convert_24Bit_to_32Bit_signed(uint32_t val) {
+int32_t Cpu::convert_24Bit_to_32Bit_signed(uint32_t val) {
 
 	if (val & 0x800000) {
 		return static_cast<int32_t>(val | 0xff000000);

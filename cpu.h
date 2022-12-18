@@ -132,6 +132,8 @@ public:
 private:
 	Registers reg;
 
+	int32_t convert_24Bit_to_32Bit_signed(uint32_t val);
+
 	inline uint8_t leftRotate(uint8_t n, int bits);
 	inline uint16_t leftRotate(uint16_t n, int bits);
 	inline uint32_t leftRotate(uint32_t n, int bits);
