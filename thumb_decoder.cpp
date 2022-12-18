@@ -287,7 +287,10 @@ THUMB_opcode ThumbDecoder::decode_6(uint16_t opcode) {
 THUMB_opcode ThumbDecoder::decode_7(uint16_t opcode) {
 
 	if (opcode & 0x1000) {	//long branch with link
-		return THUMB_OP_BL;
+		if (opcode & 0x800) {	//PC = LR + Imm
+			return THUMB_OP_BL_LR_IMM;
+		}
+		return THUMB_OP_BL_F;	//LR = PC + 4 + Imm
 	}
 
 	return THUMB_OP_INVALID;
