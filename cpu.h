@@ -76,7 +76,7 @@ enum THUMB_opcode {
 	THUMB_OP_LDR_SP,	//load sp-relative
 	THUMB_OP_BL_F,	//long branch with link
 	THUMB_OP_BL_LR_IMM,
-	THUMB_OP_STR_I,	//load/store immidiate
+	THUMB_OP_STR_I,	//load/store immidiate offset
 	THUMB_OP_LDR_I,
 	THUMB_OP_STRB_I,
 	THUMB_OP_LDRB_I
@@ -184,6 +184,9 @@ private:
 
 	//THUMB.7
 	inline void Thumb_STR_O(uint16_t opcode);
+
+	//THUMB.9
+	inline void Thumb_STR_I(uint16_t opcode);
 
 	//THUMB.11
 	inline void Thumb_LDR_SP(uint16_t opcode);

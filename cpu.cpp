@@ -381,6 +381,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		Thumb_BL_2(opcode);
 		break;
 
+	case THUMB_OP_STR_I:	//store immidate offset
+		Thumb_STR_I(opcode);
+		reg.R15 += 2;
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -484,6 +489,19 @@ inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 
 	GBA::memory.write_32(Rb + Ro, Rd);
 
+}
+
+//store immidate offset
+inline void Cpu::Thumb_STR_I(uint16_t opcode) {
+	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_reg_code];	//base address register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//source register
+
+	uint8_t offset = ((opcode >> 6) & 0b11111) * 4;
+
+	GBA::memory.write_32(Rb + offset, Rd);
 }
 
 //branch exchange
