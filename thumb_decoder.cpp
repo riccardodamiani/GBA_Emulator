@@ -285,5 +285,10 @@ THUMB_opcode ThumbDecoder::decode_6(uint16_t opcode) {
 //unconditional branch
 //long branch with link
 THUMB_opcode ThumbDecoder::decode_7(uint16_t opcode) {
+
+	if (opcode & 0x1000) {	//long branch with link
+		return THUMB_OP_BL;
+	}
+
 	return THUMB_OP_INVALID;
 }

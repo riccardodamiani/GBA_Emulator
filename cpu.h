@@ -73,7 +73,8 @@ enum THUMB_opcode {
 	THUMB_OP_ADD_SP,	//add offset to sp
 	THUMB_OP_SUB_SP,		//sub offset to sp
 	THUMB_OP_STR_SP,	//store sp-relative
-	THUMB_OP_LDR_SP	//load sp-relative
+	THUMB_OP_LDR_SP,	//load sp-relative
+	THUMB_OP_BL,	//long branch with link
 };
 
 struct CPSR_registers {
