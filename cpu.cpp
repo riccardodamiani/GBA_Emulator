@@ -295,6 +295,11 @@ bool Cpu::thumbCheckCondition(uint16_t opcode) {
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	
 	switch (instruction) {
+	case THUMB_OP_LSL:	//logic/arithm shift left
+		Thumb_LSL(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_ADD_RR:	//add register + register
 		Thumb_ADD_RR(opcode);
 		reg.R15 += 2;
@@ -394,6 +399,26 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		break;
 	}
 
+}
+
+//logic/arithm shift left
+inline void Cpu::Thumb_LSL(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint8_t offset = (opcode >> 6) & 0b11111;
+	if (offset == 0) {
+		*Rd = Rs;
+		return;
+	}
+
+	*Rd = Rs << offset;
+	reg.CPSR_f->C = (Rs >> (32 - offset)) & 1;
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = *Rd & 0x80000000;
 }
 
 //add register-register
