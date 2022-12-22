@@ -75,6 +75,8 @@ enum THUMB_opcode {
 	THUMB_OP_SUB_SP,		//sub offset to sp
 	THUMB_OP_STR_SP,	//store sp-relative
 	THUMB_OP_LDR_SP,	//load sp-relative
+	THUMB_OP_LDRH,	//load halfword
+	THUMB_OP_STRH,	//store halfword
 	THUMB_OP_BL_F,	//long branch with link
 	THUMB_OP_BL_LR_IMM,
 	THUMB_OP_STR_I,	//load/store immidiate offset

@@ -212,7 +212,12 @@ THUMB_opcode ThumbDecoder::decode_4(uint16_t opcode) {
 		return THUMB_OP_STR_SP;
 	}
 	
-	return THUMB_OP_INVALID;
+	//load/store halfword
+	if (opcode & 0x800)
+		return THUMB_OP_LDRH;
+	return THUMB_OP_STRH;
+
+	//return THUMB_OP_INVALID;
 }
 
 //get relative address
