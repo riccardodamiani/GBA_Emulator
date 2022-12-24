@@ -351,6 +351,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_MOV_HRR:
+		Thumb_MOV_HRR(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_BX:
 		Thumb_BX(opcode);
 		break;
@@ -590,6 +595,21 @@ inline void Cpu::Thumb_STR_I(uint16_t opcode) {
 	uint8_t offset = ((opcode >> 6) & 0b11111) * 4;
 
 	GBA::memory.write_32(Rb + offset, Rd);
+}
+
+//move hi register
+inline void Cpu::Thumb_MOV_HRR(uint16_t opcode) {
+	//get operand register
+	uint8_t src_reg_code = (opcode >> 3) & 0b111;
+	src_reg_code |= (opcode & 0b1000000) >> 3;
+	uint32_t Rs = ((uint32_t*)&reg)[src_reg_code];	//operand register
+	if (src_reg_code == 0xf) Rs += 4;
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	src_reg_code |= (opcode & 0b10000000) >> 4;
+	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd = Rs;
 }
 
 //branch exchange
