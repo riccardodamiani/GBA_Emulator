@@ -299,6 +299,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		Thumb_LSL_IMM(opcode);
 		reg.R15 += 2;
 		break;
+	
+	case THUMB_OP_LSR_IMM:	//logical right shift
+		Thumb_LSR_IMM(opcode);
+		reg.R15 += 2;
+		break;
 
 	case THUMB_OP_ADD_RR:	//add register + register
 		Thumb_ADD_RR(opcode);
@@ -428,6 +433,25 @@ inline void Cpu::Thumb_LSL_IMM(uint16_t opcode) {
 
 	*Rd = Rs << offset;
 	reg.CPSR_f->C = (Rs >> (32 - offset)) & 1;
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = *Rd & 0x80000000;
+}
+
+//logical right shift
+inline void Cpu::Thumb_LSR_IMM(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint8_t offset = (opcode >> 6) & 0b11111;
+	if (offset == 0) {
+		offset = 32;
+	}
+
+	*Rd = Rs >> offset;
+	reg.CPSR_f->C = (Rs >> (offset - 1)) & 1;
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = *Rd & 0x80000000;
 }

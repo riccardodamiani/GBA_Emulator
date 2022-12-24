@@ -188,6 +188,7 @@ private:
 
 	//THUMB.1
 	inline void Thumb_LSL_IMM(uint16_t opcode);
+	inline void Thumb_LSR_IMM(uint16_t opcode);
 
 	//THUMB.2
 	inline void Thumb_ADD_RR(uint16_t opcode);
