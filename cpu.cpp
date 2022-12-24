@@ -600,14 +600,14 @@ inline void Cpu::Thumb_STR_I(uint16_t opcode) {
 //move hi register
 inline void Cpu::Thumb_MOV_HRR(uint16_t opcode) {
 	//get operand register
-	uint8_t src_reg_code = (opcode >> 3) & 0b111;
-	src_reg_code |= (opcode & 0b1000000) >> 3;
-	uint32_t Rs = ((uint32_t*)&reg)[src_reg_code];	//operand register
-	if (src_reg_code == 0xf) Rs += 4;
-
 	uint8_t Rd_reg_code = opcode & 0b111;
-	src_reg_code |= (opcode & 0b10000000) >> 4;
+	Rd_reg_code |= (opcode & 0b10000000) >> 4;
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	Rs_reg_code |= (opcode & 0b1000000) >> 3;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+	if (Rs_reg_code == 0xf) Rs += 4;
 
 	*Rd = Rs;
 }
