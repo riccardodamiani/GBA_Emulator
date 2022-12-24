@@ -33,7 +33,7 @@ enum ARM_opcode {
 enum THUMB_opcode {
 	THUMB_OP_INVALID,
 	THUMB_OP_UNDEFINED,
-	THUMB_OP_LSL,	//logical/arithm shift left
+	THUMB_OP_LSL_IMM,	//logical/arithm shift left
 	THUMB_OP_MOV_I,	//mov/cmp/add/sub immidiate
 	THUMB_OP_CMP_I,
 	THUMB_OP_ADD_I,
@@ -186,7 +186,7 @@ private:
 	bool thumbCheckCondition(uint16_t opcode);
 
 	//THUMB.1
-	inline void Thumb_LSL(uint16_t opcode);
+	inline void Thumb_LSL_IMM(uint16_t opcode);
 
 	//THUMB.2
 	inline void Thumb_ADD_RR(uint16_t opcode);
@@ -196,6 +196,7 @@ private:
 	inline void Thumb_MOV_I(uint16_t opcode);
 
 	//THUMB.4
+	inline void Thumb_TST(uint16_t opcode);
 	inline void Thumb_MVN(uint16_t opcode);
 
 	//THUMB.6

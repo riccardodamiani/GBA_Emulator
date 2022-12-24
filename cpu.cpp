@@ -295,8 +295,8 @@ bool Cpu::thumbCheckCondition(uint16_t opcode) {
 void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 	
 	switch (instruction) {
-	case THUMB_OP_LSL:	//logic/arithm shift left
-		Thumb_LSL(opcode);
+	case THUMB_OP_LSL_IMM:	//logic/arithm shift left
+		Thumb_LSL_IMM(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -307,6 +307,12 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_ADD_RI:	//add register + immidiate
 		Thumb_ADD_RI(opcode);
+		reg.R15 += 2;
+		break;
+
+		//alu operations
+	case THUMB_OP_TST:
+		Thumb_TST(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -407,7 +413,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 }
 
 //logic/arithm shift left
-inline void Cpu::Thumb_LSL(uint16_t opcode) {
+inline void Cpu::Thumb_LSL_IMM(uint16_t opcode) {
 	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
 	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
 
@@ -468,6 +474,7 @@ inline void Cpu::Thumb_ADD_RI(uint16_t opcode) {
 	reg.CPSR_f->V = (((~(nn ^ Rs)) & (Rs ^ *Rd)) >> 31) & 1;
 }
 
+//thumb alu operations 
 //MVN
 inline void Cpu::Thumb_MVN(uint16_t opcode) {
 	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
@@ -480,6 +487,20 @@ inline void Cpu::Thumb_MVN(uint16_t opcode) {
 
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+}
+
+//TST
+inline void Cpu::Thumb_TST(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint32_t result = Rd & Rs;
+
+	reg.CPSR_f->Z = result == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;
 }
 
 //move immidiate

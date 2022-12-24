@@ -57,7 +57,7 @@ THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
 
 	switch ((opcode >> 11) & 0b11) {
 	case 0:		//LSL: logical/arithm shift left
-		return THUMB_OP_LSL;
+		return THUMB_OP_LSL_IMM;
 		break;
 	case 1:		//LSR: logical shift right
 		break;
@@ -122,7 +122,6 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 		case 0:
 			return THUMB_OP_AND;
 			break;
-
 		case 1:
 			return THUMB_OP_EOR;
 			break;
