@@ -119,6 +119,52 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 
 	if ((opcode & alu_mask) == alu_format) {
 		switch ((opcode >> 6) & 0b1111) {
+		case 0:
+			return THUMB_OP_AND;
+			break;
+
+		case 1:
+			return THUMB_OP_EOR;
+			break;
+		case 2:
+			return THUMB_OP_LSL;
+			break;
+		case 3:
+			return THUMB_OP_LSR;
+			break;
+		case 4:
+			return THUMB_OP_ASR;
+			break;
+		case 5:
+			return THUMB_OP_ADC;
+			break;
+		case 6:
+			return THUMB_OP_SBC;
+			break;
+		case 7:
+			return THUMB_OP_ROR;
+			break;
+		case 8:	//tst
+			return THUMB_OP_TST;
+			break;
+		case 9:
+			return THUMB_OP_NEG;
+			break;
+		case 0xa:
+			return THUMB_OP_CMP;
+			break;
+		case 0xb:
+			return THUMB_OP_CMN;
+			break;
+		case 0xc:
+			return THUMB_OP_ORR;
+			break;
+		case 0xd:
+			return THUMB_OP_MUL;
+			break;
+		case 0xe:
+			return THUMB_OP_BIC;
+			break;
 		case 0xf:	//MVN
 			return THUMB_OP_MVN;
 			break;

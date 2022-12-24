@@ -44,7 +44,23 @@ enum THUMB_opcode {
 	THUMB_OP_LDR_O,	//load register offset
 	THUMB_OP_LDRB_O,
 	//Alu operations
+	THUMB_OP_AND,
+	THUMB_OP_EOR,
+	THUMB_OP_LSL,
+	THUMB_OP_LSR,
+	THUMB_OP_ASR,
+	THUMB_OP_ADC,
+	THUMB_OP_SBC,
+	THUMB_OP_ROR,
+	THUMB_OP_TST,	//TST
+	THUMB_OP_NEG,
+	THUMB_OP_CMP,
+	THUMB_OP_CMN,
+	THUMB_OP_ORR,
+	THUMB_OP_MUL,
+	THUMB_OP_BIC,
 	THUMB_OP_MVN,	//MVN
+
 	THUMB_OP_ADD_RR,	//add register-register
 	THUMB_OP_SUB_RR,	//sub register-register
 	THUMB_OP_ADD_RI,	//add register-immidiate
