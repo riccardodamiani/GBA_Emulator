@@ -60,6 +60,7 @@ THUMB_opcode ThumbDecoder::decode_0(uint16_t opcode) {
 		return THUMB_OP_LSL_IMM;
 		break;
 	case 1:		//LSR: logical shift right
+		return THUMB_OP_LSR_IMM;
 		break;
 	case 2:		//ASR: arithm shift left
 		break;

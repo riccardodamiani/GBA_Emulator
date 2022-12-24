@@ -34,6 +34,7 @@ enum THUMB_opcode {
 	THUMB_OP_INVALID,
 	THUMB_OP_UNDEFINED,
 	THUMB_OP_LSL_IMM,	//logical/arithm shift left
+	THUMB_OP_LSR_IMM,	//logical right shift
 	THUMB_OP_MOV_I,	//mov/cmp/add/sub immidiate
 	THUMB_OP_CMP_I,
 	THUMB_OP_ADD_I,
