@@ -822,6 +822,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_BIC:	//bic
+		Arm_BIC(opcode);
+		reg.R15 += 4;
+		break;
+
 	/*case ARM_OP_LDM:		//load data block (pop)
 		Arm_LDM(opcode);
 		reg.R15 += 4;
