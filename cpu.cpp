@@ -1091,9 +1091,15 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 	uint32_t result = oper1 ^ oper2;
 
 	if (s) {	//flags
-		reg.CPSR_f->Z = result == 0;
-		reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
-		reg.CPSR_f->C = c;
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = result == 0;
+			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = c;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
 	}
 }
 
@@ -1109,13 +1115,41 @@ inline void Cpu::Arm_ADD(uint32_t opcode) {
 	*dest_reg = oper1 + oper2;
 
 	if (s) {
-		reg.CPSR_f->Z = *dest_reg == 0;
-		reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
-		reg.CPSR_f->C = (result >> 32) & 1;	//carry
-		//if oper1 and oper2 have same sign but result have different sign: overflow
-		reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = *dest_reg == 0;
+			reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = (result >> 32) & 1;	//carry
+			//if oper1 and oper2 have same sign but result have different sign: overflow
+			reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
 	}
 
+}
+
+//bit clear. Logical operation
+inline void Cpu::Arm_BIC(uint32_t opcode) {
+	uint32_t oper1, oper2, * dest_reg;
+	uint8_t c, s;
+	c = reg.CPSR_f->C;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	*dest_reg = oper1 & ~oper2;
+
+	if (s) {
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = *dest_reg == 0;
+			reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = c;	//carry
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
 }
 
 //
