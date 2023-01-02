@@ -229,6 +229,9 @@ private:
 	//THUMB.14
 	inline void Thumb_PUSH(uint16_t opcode);
 	
+	//THUMB.18
+	inline void Thumb_B(uint16_t opcode);
+
 	//THUMB.19
 	inline void Thumb_BL_1(uint16_t opcode);
 	inline void Thumb_BL_2(uint16_t opcode);

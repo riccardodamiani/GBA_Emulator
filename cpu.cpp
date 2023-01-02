@@ -361,6 +361,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+
+	case THUMB_OP_B:
+		Thumb_B(opcode);
+		break;
+
 	case THUMB_OP_BX:
 		Thumb_BX(opcode);
 		break;
@@ -662,6 +667,19 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 			GBA::memory.write_32(reg.R13, *r);
 		}
 	}
+}
+
+//unconditional branch
+inline void Cpu::Thumb_B(uint16_t opcode) {
+	uint32_t uoffset = (opcode & 0x7ff) * 2;
+
+	int16_t offset = uoffset;
+	if (uoffset & 0x800) {
+		offset |= 0xf000;
+	}
+	offset += 4;
+
+	reg.R15 += offset;
 }
 
 //first instruction of long branch with link: LR = PC + 4 + Imm
