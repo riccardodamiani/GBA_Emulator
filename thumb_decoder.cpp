@@ -368,5 +368,8 @@ THUMB_opcode ThumbDecoder::decode_7(uint16_t opcode) {
 		return THUMB_OP_BL_F;	//LR = PC + 4 + Imm
 	}
 
+	//unconditional branch
+	return THUMB_OP_B;
+
 	return THUMB_OP_INVALID;
 }
