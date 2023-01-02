@@ -6,6 +6,7 @@ ARM_opcode ArmDecoder::decode(uint32_t opcode) {
 	if (instr = ARM_IsBranch(opcode)) return instr;		//branches
 	if (instr = ARM_IsAluInst(opcode)) return instr;	//data processing
 	if (instr = ARM_IsSDTInst(opcode)) return instr;	//single store/load
+	if (instr = ARM_IsBlockDataTransfer(opcode)) return instr;	//block data transfer (push/pop)
 
 	return ARM_opcode::ARM_OP_INVALID;
 }
@@ -149,15 +150,24 @@ ARM_opcode ArmDecoder::ARM_IsSDTInst(uint32_t opcode) {
 	if (format != opcode_format)	//not signle data transfer instruction
 		return ARM_OP_INVALID;
 
-	switch ((opcode >> 20) & 1) {	//20th bit = load/store bit
-	case 0:	//and
-		return ARM_OP_STR;
-		break;
-	case 1:	//xor
+	if ((opcode >> 20) & 1) {	//20th bit = load/store bit
 		return ARM_OP_LDR;
-		break;
 	}
+	return ARM_OP_STR;
+	
+}
 
-	return ARM_OP_INVALID;
+ARM_opcode ArmDecoder::ARM_IsBlockDataTransfer(uint32_t opcode) {
+	uint32_t mask = 0b0000'1110'0000'0000'0000'0000'0000'0000;
+	uint32_t format = 0b0000'1000'0000'0000'0000'0000'0000'0000;
 
+	uint32_t opcode_format = opcode & mask;
+
+	if (format != opcode_format)
+		return ARM_OP_INVALID;
+
+	if ((opcode >> 20) & 1) {	//20th bit = load/store bit
+		return ARM_OP_LDM;
+	}
+	return ARM_OP_STM;
 }

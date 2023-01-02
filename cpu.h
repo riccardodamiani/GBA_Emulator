@@ -24,6 +24,8 @@ enum ARM_opcode {
 	ARM_OP_MOV,
 	ARM_OP_BIC,
 	ARM_OP_MVN,
+	ARM_OP_STM,
+	ARM_OP_LDM,
 	ARM_OP_LDR,
 	ARM_OP_STR,
 	ARM_OP_MSR,
