@@ -827,6 +827,16 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_TEQ:	//test xor
+		Arm_TEQ(opcode);
+		reg.R15 += 4;
+		break;
+
+	case ARM_OP_TST:	//test and
+		Arm_TST(opcode);
+		reg.R15 += 4;
+		break;
+
 	/*case ARM_OP_LDM:		//load data block (pop)
 		Arm_LDM(opcode);
 		reg.R15 += 4;
@@ -844,11 +854,6 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_STR:	//store register
 		Arm_STR(opcode);
-		reg.R15 += 4;
-		break;
-
-	case ARM_OP_TEQ:	//test xor
-		Arm_TEQ(opcode);
 		reg.R15 += 4;
 		break;
 
@@ -1108,6 +1113,28 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 	}
 }
 
+//test. Logical operation
+inline void Cpu::Arm_TST(uint32_t opcode) {
+	uint32_t oper1, oper2, * dest_reg;
+	uint8_t c, s;
+	c = reg.CPSR_f->C;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	uint32_t result = oper1 & oper2;
+
+	if (s) {	//flags
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = result == 0;
+			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = c;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
+}
+
 //arithmetic operation
 //operand1 + operand2
 inline void Cpu::Arm_ADD(uint32_t opcode) {
@@ -1156,6 +1183,7 @@ inline void Cpu::Arm_BIC(uint32_t opcode) {
 		}
 	}
 }
+
 
 //
 inline void Cpu::Arm_MSR(uint32_t opcode) {
