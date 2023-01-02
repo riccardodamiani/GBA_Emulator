@@ -822,6 +822,16 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	/*case ARM_OP_LDM:		//load data block (pop)
+		Arm_LDM(opcode);
+		reg.R15 += 4;
+		break;*/
+
+	case ARM_OP_STM:	//store data block (push)
+		Arm_STM(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_LDR:		//load register
 		Arm_LDR(opcode);
 		reg.R15 += 4;
@@ -1265,4 +1275,80 @@ inline void Cpu::Arm_STR(uint32_t opcode) {
 		*dest_reg = val;*/
 		GBA::memory.write_32(address, *src_reg);
 	}
+}
+
+uint32_t countSetBits(uint32_t word) {
+	int count = 0;
+	while (word){
+		word = word & (word - 1);    // clear the least significant bit set
+		count++;
+	}
+	return count;
+}
+
+uint8_t reverse8(uint8_t b) {
+	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+	return b;
+}
+
+uint16_t reverse16(uint16_t word) {
+	return (reverse8(word & 0xff) << 8) |
+		(reverse8((word >> 8) & 0xff));
+}
+
+//store block data
+inline void Cpu::Arm_STM(uint32_t opcode) {
+	struct param {
+		uint8_t L : 1,
+			W : 1,	//write back address
+			S : 1,	//PSR, force user mode
+			U : 1,	//add/subtract offset
+			P : 1,	//offset before/after transfer
+			I : 1,	//immidiate
+			_ : 2;
+	}param = {};
+
+	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
+	uint16_t reg_list = opcode & 0xffff;
+	if(param.U == 0) reg_list = reverse16(reg_list);	//decrement
+
+	//set correct register bank
+	PrivilegeMode prevMod = (PrivilegeMode)reg.CPSR_f->mode;
+	if (param.S) {
+		setPrivilegeMode(USER);
+	}
+
+	//base register
+	uint8_t Rn_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rn = &((uint32_t*)&reg)[Rn_code];		
+
+	uint32_t address = *Rn;
+	int32_t offset = param.U == 1 ? 4 : -4;
+	
+	if (param.P) {	//pre: add offset before transfer
+		for (int i = 0; i < 16; i++) {
+			if ((reg_list >> i) & 1) {
+				address += offset;
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+			}
+		}
+	}
+	else {
+		//post: add offset after transfer
+		for (int i = 0; i < 16; i++) {
+			if ((reg_list >> i) & 1) {
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+				address += offset;
+			}
+		}
+	}
+	
+	if (param.W) {	//write back
+		*Rn = address;
+	}
+
+	//restore register bank
+	setPrivilegeMode(prevMod);
 }

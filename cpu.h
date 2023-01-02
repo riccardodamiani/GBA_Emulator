@@ -265,6 +265,9 @@ private:
 	inline void Arm_LDR(uint32_t opcode);
 	inline void Arm_STR(uint32_t opcode);
 
+	//block data transfer
+	inline void Arm_STM(uint32_t opcode);
+
 };
 
 #endif
