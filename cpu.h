@@ -200,6 +200,7 @@ private:
 	//THUMB.4
 	inline void Thumb_TST(uint16_t opcode);
 	inline void Thumb_MVN(uint16_t opcode);
+	inline void Thumb_ORR(uint16_t opcode);
 
 	//THUMB.5
 	inline void Thumb_BX(uint16_t opcode);

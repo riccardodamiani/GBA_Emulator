@@ -326,6 +326,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ORR:	//or
+		Thumb_ORR(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_MOV_I:	//move immidiate
 		Thumb_MOV_I(opcode);
 		reg.R15 += 2;
@@ -513,6 +518,20 @@ inline void Cpu::Thumb_MVN(uint16_t opcode) {
 	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
 	*Rd = ~Rs;
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+}
+
+//OR logical
+inline void  Cpu::Thumb_ORR(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd |= Rs;
 
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
