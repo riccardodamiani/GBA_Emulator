@@ -947,7 +947,7 @@ inline void Cpu::Arm_BX(uint32_t opcode) {
 }
 
 
-inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t& oper1, uint32_t& oper2, uint8_t& c, uint8_t &s) {
+inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &s) {
 
 	uint8_t I = (opcode >> 25) & 1;
 	s = (opcode >> 20) & 1;	//set condition code
@@ -964,37 +964,46 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 	if (I) {	//immidiate 2nd operand 
 		uint8_t Is = (opcode >> 8) & 0x0f;
 		uint32_t nn = opcode & 0xff;
-		oper2 = rightRotate(nn, Is * 2);
+		if (Is != 0) {
+			oper2 = rightRotate(nn, Is * 2);
+			shifter_carry_out = (oper2 >> 31) & 1;
+		}
+		else {
+			shifter_carry_out = reg.CPSR_f->C;
+			oper2 = nn;
+		}
+		
 		return;
 	}
 	
 	//operand 2 is a register
-	ARM_ALU_oper2_getter(opcode, oper2, c);
+	ARM_ALU_oper2_getter(opcode, oper2);
 
 }
 
-inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t &c) {
+inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result) {
 
+	shifter_carry_out = reg.CPSR_f->C;
 	if (shift_amount) {	//there is a shift
 		GBA::clock.addTicks(1);
 		switch (shiftType) {
 		case 0:		//logical left
-			c = (val >> (32 - shift_amount)) & 1;	//carry = last lost bit
+			shifter_carry_out = (val >> (32 - shift_amount)) & 1;	//carry = last lost bit
 			result = val << shift_amount;
 			break;
 
 		case 1:		//logical right
-			c = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
+			shifter_carry_out = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
 			result = val >> shift_amount;
 			break;
 
 		case 2:		//arithmetic right
-			c = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
+			shifter_carry_out = (val >> (shift_amount - 1)) & 1;	//carry = last lost bit
 			result = arithmRight(val, shift_amount);
 			break;
 
 		case 3:		//rotate right
-			c = (val >> (shift_amount - 1)) & 1;	//carry = last rotated bit
+			shifter_carry_out = (val >> (shift_amount - 1)) & 1;	//carry = last rotated bit
 			result = rightRotate(val, shift_amount);
 			break;
 		}
@@ -1002,24 +1011,24 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 	else {	//special shifts
 		switch (shiftType) {
 		case 0:		//logical left
-			c = reg.CPSR_f->C;
+			shifter_carry_out = reg.CPSR_f->C;
 			result = val;
 			break;
 
 		case 1:		//logical right
-			c = (val >> 31) & 1;	//carry: 31th bit
+			shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
 			result = 0;
 			break;
 
 		case 2:		//arithmetic right
-			c = (val >> 31) & 1;	//carry: 31th bit
-			result = (c == 0 ? 0 : 0xffffffff);
+			shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
+			result = (shifter_carry_out == 0 ? 0 : 0xffffffff);
 			break;
 
 		case 3:		//rotate right extended
 			GBA::clock.addTicks(1);
 			uint8_t prev_carry = (val >> 31) & 1;
-			c = val & 1;
+			shifter_carry_out = val & 1;
 			result = val >> 1;
 			result |= (prev_carry << 31);
 			break;
@@ -1027,13 +1036,13 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 	}
 }
 
-inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t &c) {
+inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2) {
 
 	//get operand 2 register
 	uint8_t operand_reg_code = opcode & 0x0f;
 	uint32_t Rm = ((uint32_t*)&reg)[operand_reg_code];
-	uint32_t real_Rm = 0;
-	uint8_t Is;
+	uint32_t real_Rm = 0;	//register value corrected in case of R15
+	uint8_t Is;	//shift amount
 
 	if (opcode & 0x10) {	//bit 4 set: shift amount taken from a register
 		uint8_t shift_reg_code = (opcode >> 8) & 0x0f;
@@ -1048,15 +1057,15 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2, uint8_t 
 
 	real_Rm += Rm;
 	
-	uint8_t ST = (opcode >> 5) & 0x3;
-	ARM_Shifter(ST, Is, real_Rm, oper2, c);
+	uint8_t ST = (opcode >> 5) & 0x3;	//shift type
+	ARM_Shifter(ST, Is, real_Rm, oper2);
 }
 
 //arithmetic operation
 inline void Cpu::Arm_CMP(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
-	uint8_t c, s;
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	uint8_t s;
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 
 	uint32_t result = oper1 - oper2;
 	reg.CPSR_f->Z = result == 0;
@@ -1070,17 +1079,16 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 //logical operation
 inline void Cpu::Arm_MOV(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
-	uint8_t c, s;
-	c = reg.CPSR_f->C;
+	uint8_t s;
 
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	*dest_reg = oper2;
 	
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
 			reg.CPSR_f->Z = oper2 == 0;
 			reg.CPSR_f->N = (oper2 & 0x80000000) != 0;	//negative
-			reg.CPSR_f->C = c;
+			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
@@ -1093,10 +1101,9 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 //logical operation
 inline void Cpu::Arm_TEQ(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
-	uint8_t c, s;
-	c = reg.CPSR_f->C;
+	uint8_t s;
 
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 
 	uint32_t result = oper1 ^ oper2;
 
@@ -1104,7 +1111,7 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 		if (dest_reg != &reg.R15) {
 			reg.CPSR_f->Z = result == 0;
 			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
-			reg.CPSR_f->C = c;
+			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
@@ -1116,17 +1123,16 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 //test. Logical operation
 inline void Cpu::Arm_TST(uint32_t opcode) {
 	uint32_t oper1, oper2, * dest_reg;
-	uint8_t c, s;
-	c = reg.CPSR_f->C;
+	uint8_t s;
 
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint32_t result = oper1 & oper2;
 
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
 			reg.CPSR_f->Z = result == 0;
 			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
-			reg.CPSR_f->C = c;
+			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
@@ -1139,10 +1145,9 @@ inline void Cpu::Arm_TST(uint32_t opcode) {
 //operand1 + operand2
 inline void Cpu::Arm_ADD(uint32_t opcode) {
 	uint32_t oper1, oper2, * dest_reg;
-	uint8_t c, s;
-	c = reg.CPSR_f->C;	//not used
+	uint8_t s;
 
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint64_t result = (uint64_t)oper1 + (uint64_t)oper2;
 	*dest_reg = oper1 + oper2;
 
@@ -1165,17 +1170,16 @@ inline void Cpu::Arm_ADD(uint32_t opcode) {
 //bit clear. Logical operation
 inline void Cpu::Arm_BIC(uint32_t opcode) {
 	uint32_t oper1, oper2, * dest_reg;
-	uint8_t c, s;
-	c = reg.CPSR_f->C;
+	uint8_t s;
 
-	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, c, s);
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	*dest_reg = oper1 & ~oper2;
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
 			reg.CPSR_f->Z = *dest_reg == 0;
 			reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
-			reg.CPSR_f->C = c;	//carry
+			reg.CPSR_f->C = shifter_carry_out;	//carry
 		}
 		else {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
@@ -1276,9 +1280,8 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 
 		uint8_t Is = (opcode >> 7) & 0x1f;
 		uint8_t ST = (opcode >> 5) & 0x3;
-		uint8_t c = 0;		//not used
 
-		ARM_Shifter(ST, Is, Rm, offset, c);
+		ARM_Shifter(ST, Is, Rm, offset);
 	}
 	else {	//offset in immidiate 12 bits
 		offset = opcode & 0xfff;

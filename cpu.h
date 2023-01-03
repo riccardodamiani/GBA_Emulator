@@ -158,6 +158,7 @@ public:
 	void runFor(uint32_t ticks);
 private:
 	Registers reg;
+	uint8_t shifter_carry_out;
 
 	int32_t convert_24Bit_to_32Bit_signed(uint32_t val);
 
@@ -242,7 +243,7 @@ private:
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);
 
-	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, uint8_t& c);
+	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result);
 
 	//branches implementation
 	inline void Arm_B(uint32_t opcode);
@@ -250,13 +251,14 @@ private:
 	inline void Arm_BX(uint32_t opcode);
 
 	//ALU implementation
-	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t &c, uint8_t& s);
-	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2, uint8_t& c);
+	inline void ARM_ALU_unpacker(uint32_t opcode, uint32_t **destReg, uint32_t& oper1, uint32_t& oper2, uint8_t& s);
+	inline void ARM_ALU_oper2_getter(uint32_t opcode, uint32_t &oper2);
 	inline void Arm_CMP(uint32_t opcode);
 	inline void Arm_MOV(uint32_t opcode);
 	inline void Arm_TEQ(uint32_t opcode);
 	inline void Arm_ADD(uint32_t opcode);
 	inline void Arm_BIC(uint32_t opcode);
+	inline void Arm_TST(uint32_t opcode);
 
 	inline void Arm_MSR(uint32_t opcode);
 	inline void Arm_MRS(uint32_t opcode);
