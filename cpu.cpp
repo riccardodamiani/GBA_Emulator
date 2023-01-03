@@ -837,10 +837,10 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
-	/*case ARM_OP_LDM:		//load data block (pop)
+	case ARM_OP_LDM:		//load data block (pop)
 		Arm_LDM(opcode);
 		reg.R15 += 4;
-		break;*/
+		break;
 
 	case ARM_OP_STM:	//store data block (push)
 		Arm_STM(opcode);
@@ -1368,6 +1368,48 @@ uint16_t reverse16(uint16_t word) {
 		(reverse8((word >> 8) & 0xff));
 }
 
+inline void Cpu::Arm_STM_DEC(uint8_t paramP, uint16_t reg_list, uint32_t &address) {
+
+	if (paramP) {	//pre: add offset before transfer
+		for (int i = 15; i >= 0; i--) {
+			if ((reg_list >> i) & 1) {
+				address -= 4;
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+			}
+		}
+	}
+	else {
+		//post: add offset after transfer
+		for (int i = 15; i >= 0; i--) {
+			if ((reg_list >> i) & 1) {
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+				address -= 4;
+			}
+		}
+	}
+}
+
+inline void Cpu::Arm_STM_INC(uint8_t paramP, uint16_t reg_list, uint32_t& address) {
+
+	if (paramP) {	//pre: add offset before transfer
+		for (int i = 0; i < 16; i++) {
+			if ((reg_list >> i) & 1) {
+				address += 4;
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+			}
+		}
+	}
+	else {
+		//post: add offset after transfer
+		for (int i = 0; i < 16; i++) {
+			if ((reg_list >> i) & 1) {
+				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+				address += 4;
+			}
+		}
+	}
+}
+
 //store block data
 inline void Cpu::Arm_STM(uint32_t opcode) {
 	struct param {
@@ -1382,7 +1424,6 @@ inline void Cpu::Arm_STM(uint32_t opcode) {
 
 	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
 	uint16_t reg_list = opcode & 0xffff;
-	if(param.U == 0) reg_list = reverse16(reg_list);	//decrement
 
 	//set correct register bank
 	PrivilegeMode prevMod = (PrivilegeMode)reg.CPSR_f->mode;
@@ -1393,15 +1434,51 @@ inline void Cpu::Arm_STM(uint32_t opcode) {
 	//base register
 	uint8_t Rn_code = (opcode >> 16) & 0x0f;
 	uint32_t* Rn = &((uint32_t*)&reg)[Rn_code];		
-
 	uint32_t address = *Rn;
-	int32_t offset = param.U == 1 ? 4 : -4;
+
+	if (param.U) {
+		Arm_STM_INC(param.P, reg_list, address);
+	}
+	else {
+		Arm_STM_DEC(param.P, reg_list, address);
+	}
 	
-	if (param.P) {	//pre: add offset before transfer
+	if (param.W) {	//write back
+		*Rn = address;
+	}
+
+	//restore register bank
+	setPrivilegeMode(prevMod);
+}
+
+inline void Cpu::Arm_LDM_DEC(uint8_t paramP, uint16_t reg_list, uint32_t& address) {
+
+	if (paramP) {	//pre: add offset before transfer
+		for (int i = 15; i >= 0; i--) {
+			if ((reg_list >> i) & 1) {
+				address -= 4;
+				((uint32_t*)&reg)[i] = GBA::memory.read_32(address);
+			}
+		}
+	}
+	else {
+		//post: add offset after transfer
+		for (int i = 15; i >= 0; i--) {
+			if ((reg_list >> i) & 1) {
+				((uint32_t*)&reg)[i] = GBA::memory.read_32(address);
+				address -= 4;
+			}
+		}
+	}
+}
+
+inline void Cpu::Arm_LDM_INC(uint8_t paramP, uint16_t reg_list, uint32_t& address) {
+
+	if (paramP) {	//pre: add offset before transfer
 		for (int i = 0; i < 16; i++) {
 			if ((reg_list >> i) & 1) {
-				address += offset;
-				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
+				address += 4;
+				((uint32_t*)&reg)[i] = GBA::memory.read_32(address);
 			}
 		}
 	}
@@ -1409,12 +1486,52 @@ inline void Cpu::Arm_STM(uint32_t opcode) {
 		//post: add offset after transfer
 		for (int i = 0; i < 16; i++) {
 			if ((reg_list >> i) & 1) {
-				GBA::memory.write_32(address, ((uint32_t*)&reg)[i]);
-				address += offset;
+				((uint32_t*)&reg)[i] = GBA::memory.read_32(address);
+				address += 4;
 			}
 		}
 	}
-	
+}
+
+//load block data
+inline void Cpu::Arm_LDM(uint32_t opcode) {
+	struct param {
+		uint8_t L : 1,
+			W : 1,	//write back address
+			S : 1,	//PSR, force user mode
+			U : 1,	//add/subtract offset
+			P : 1,	//offset before/after transfer
+			I : 1,	//immidiate
+			_ : 2;
+	}param = {};
+
+	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
+	uint16_t reg_list = opcode & 0xffff;
+
+	//set correct register bank
+	PrivilegeMode prevMod = (PrivilegeMode)reg.CPSR_f->mode;
+	if (param.S) {
+		if (reg_list & 0x8000) {	//R15 in register list
+			reg.CPSR = reg.SPSR;
+			prevMod = (PrivilegeMode)reg.CPSR_f->mode;	//to avoid the mode to be wrongly changed at the end of this function
+		}
+		else {	//user register bank
+			setPrivilegeMode(USER);
+		}
+	}
+
+	//base register
+	uint8_t Rn_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rn = &((uint32_t*)&reg)[Rn_code];
+	uint32_t address = *Rn;
+
+	if (param.U) {
+		Arm_LDM_INC(param.P, reg_list, address);
+	}
+	else {
+		Arm_LDM_DEC(param.P, reg_list, address);
+	}
+
 	if (param.W) {	//write back
 		*Rn = address;
 	}

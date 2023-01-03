@@ -270,7 +270,11 @@ private:
 
 	//block data transfer
 	inline void Arm_STM(uint32_t opcode);
-
+	inline void Arm_STM_DEC(uint8_t paramP, uint16_t reg_list, uint32_t& address);
+	inline void Arm_STM_INC(uint8_t paramP, uint16_t reg_list, uint32_t& address);
+	inline void Arm_LDM(uint32_t opcode);
+	inline void Arm_LDM_DEC(uint8_t paramP, uint16_t reg_list, uint32_t& address);
+	inline void Arm_LDM_INC(uint8_t paramP, uint16_t reg_list, uint32_t& address);
 };
 
 #endif
