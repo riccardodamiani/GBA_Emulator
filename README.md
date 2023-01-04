@@ -18,5 +18,5 @@ Not yet supported:
 * Timers
 
 In progress:
-* Cpu instruction sets (~20% done)
+* Arm/Thumb instruction sets (~50% done)
 * Gba memory mapping
