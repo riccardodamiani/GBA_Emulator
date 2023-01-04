@@ -82,7 +82,7 @@ struct Io_registers {
 	uint16_t SOUNDBIAS;		//Sound PWM Control
 	uint8_t NOT_USED_9[6];
 
-	uint8_t WAVE_RAM[0x20];		//Channel 3 Wave Pattern RAM (2 banks!!)
+	uint8_t WAVE_RAM[0x10];		//Channel 3 Wave Pattern RAM (2 banks!!)
 	uint32_t FIFO_A;		//Channel A FIFO, Data 0-3
 	uint32_t FIFO_B;		//Channel B FIFO, Data 0-3
 	uint8_t NOT_USED_10[8];
@@ -126,14 +126,14 @@ struct Io_registers {
 	uint8_t NOT_USED_12[0x10];
 
 	//SERIAL COMMUNICATION (1)
-	uint32_t SIODATA32;		//SIO Data (Normal-32bit Mode; shared with below)
+	//uint32_t SIODATA32;		//SIO Data (Normal-32bit Mode; shared with below)
 	uint16_t SIOMULTI0;		//SIO Data 0 (Parent)    (Multi-Player Mode)
 	uint16_t SIOMULTI1;		//SIO Data 1 (1st Child)    (Multi-Player Mode)
 	uint16_t SIOMULTI2;		//SIO Data 2 (2nd Child)    (Multi-Player Mode)
 	uint16_t SIOMULTI3;		//SIO Data 3 (3rd Child)    (Multi-Player Mode)
 	uint16_t SIOCNT;		//SIO Control Register
-	uint16_t SIOMLT_SEND;	//SIO Data (Local of MultiPlayer; shared below)
-	uint16_t SIODATA8;		//SIO Data (Normal-8bit and UART Mode)
+	uint16_t SIOMLT_SEND_DATA8;	//SIO Data (Local of MultiPlayer; shared below)
+	//uint16_t SIODATA8;		//SIO Data (Normal-8bit and UART Mode)
 
 	uint8_t NOT_USED_13[4];
 
@@ -144,9 +144,9 @@ struct Io_registers {
 	//SERIAL COMMUNICATION (2)
 	uint16_t RCNT;		//SIO Mode Select/General Purpose Data
 	uint16_t IR;		//Ancient - Infrared Register (Prototypes only)
-	uint16_t NOT_USED_14;
+	uint8_t NOT_USED_14[8];
 	uint16_t JOYCNT;		//SIO JOY Bus Control
-	uint16_t NOT_USED_15;
+	uint8_t NOT_USED_15[14];
 	uint32_t JOY_RECV;		//SIO JOY Bus Receive Data
 	uint32_t JOY_TRANS;		//SIO JOY Bus Transmit Data
 	uint16_t JOYSTAT;		//SIO JOY Bus Receive Status
@@ -163,8 +163,8 @@ struct Io_registers {
 	uint8_t POSTFLG;		//Undocumented - Post Boot Flag
 	uint8_t HALTCNT;		//Undocumented - Power Down Control
 
-	uint8_t NOT_USED_19[0xfc];
-
+	uint8_t NOT_USED_19[0xfe];	//0x4000302 - 0x40003ff
+	uint8_t NOT_USED_20[0x404];	//0x4000400 - 0x4000803
 };	
 
 #endif
