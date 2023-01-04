@@ -336,6 +336,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_SUB_I:	//sub immidiate
+		Thumb_SUB_I(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_LDR_PC:	//load pc-relative
 		Thumb_LDR_PC(opcode);
 		reg.R15 += 2;
@@ -566,6 +571,24 @@ inline void Cpu::Thumb_MOV_I(uint16_t opcode) {
 
 	reg.CPSR_f->Z = nn == 0;
 	reg.CPSR_f->N = (nn & 0x80000000) != 0;
+}
+
+//sub immidiate.
+//TODO: for overflow flag maybe we should consider 2nd operand as negative
+inline void Cpu::Thumb_SUB_I(uint16_t opcode) {
+	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//operand register
+
+	uint32_t nn = opcode & 0xff;
+	uint32_t result = *Rd - nn;
+
+	reg.CPSR_f->Z = result == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = !(*Rd < nn);	//carry = !borrow
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(*Rd ^ nn)) & (*Rd ^ result)) >> 31) & 1;
+
+	*Rd = result;
 }
 
 //load pc-relative
@@ -1062,6 +1085,7 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2) {
 }
 
 //arithmetic operation
+//TODO: for overflow flag maybe we should consider 2nd operand as negative
 inline void Cpu::Arm_CMP(uint32_t opcode) {
 	uint32_t oper1, oper2, *dest_reg;
 	uint8_t s;

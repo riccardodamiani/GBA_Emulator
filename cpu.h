@@ -200,6 +200,7 @@ private:
 
 	//THUMB.3
 	inline void Thumb_MOV_I(uint16_t opcode);
+	inline void Thumb_SUB_I(uint16_t opcode);
 
 	//THUMB.4
 	inline void Thumb_TST(uint16_t opcode);
