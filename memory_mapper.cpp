@@ -159,7 +159,9 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 		break;
 
 	case 4:	//io registers
-		return { (uint8_t*) &_ioReg, gba_address & 0x3fe, accessTimings[2] };
+		if ((gba_address & 0xfff) > 0x803) 
+			return { nullptr, 0, nullptr };	//avoid overflow in io registers
+		return { (uint8_t*) &_ioReg, gba_address & 0xfff, accessTimings[2] };	//0x3fe??
 		break;
 
 	case 5:	//palette ram
