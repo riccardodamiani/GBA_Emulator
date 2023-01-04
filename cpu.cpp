@@ -341,6 +341,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ADD_I:	//add immidiate
+		Thumb_ADD_I(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_SUB_I:	//sub immidiate
 		Thumb_SUB_I(opcode);
 		reg.R15 += 2;
@@ -620,6 +625,23 @@ inline void Cpu::Thumb_SUB_I(uint16_t opcode) {
 	reg.CPSR_f->V = (((~(*Rd ^ nn)) & (*Rd ^ result)) >> 31) & 1;
 
 	*Rd = result;
+}
+
+//add immidiate
+inline void Cpu::Thumb_ADD_I(uint16_t opcode) {
+	uint8_t Rd_reg_code = (opcode >> 8) & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//operand register
+
+	uint32_t nn = opcode & 0xff;
+	uint32_t oper1 = *Rd;
+	uint64_t result = (uint64_t)oper1 + (uint64_t)nn;
+	*Rd = result;
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = (result >> 32) & 1;	//carry
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(oper1 ^ nn)) & (nn ^ *Rd)) >> 31) & 1;
 }
 
 //load pc-relative
