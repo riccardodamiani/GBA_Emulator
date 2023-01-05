@@ -821,7 +821,12 @@ inline void Cpu::Thumb_B(uint16_t opcode) {
 inline void Cpu::Thumb_BL_1(uint16_t opcode) {
 
 	uint32_t msb = (opcode & 0x7ff) << 12;
+	
 	reg.R14 = (reg.R15 + 4 + msb) & 0x7fffff;
+
+	if (reg.R14 & 0x400000) {	//is negative (consider R14 as a 23 bit signed integer)
+		reg.R14 |= 0xff800000;
+	}
 }
 
 //second instruction of long branch with link: PC = LR + Imm
