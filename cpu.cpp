@@ -376,11 +376,15 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_MOV_HRR:
+	case THUMB_OP_MOV_HRR:	//move high registers
 		Thumb_MOV_HRR(opcode);
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_CMP_HRR:	//compare high registers
+		Thumb_CMP_HRR(opcode);
+		reg.R15 += 2;
+		break;
 
 	case THUMB_OP_B:
 		Thumb_B(opcode);
@@ -772,6 +776,28 @@ inline void Cpu::Thumb_MOV_HRR(uint16_t opcode) {
 	if (Rs_reg_code == 0xf) Rs += 4;
 
 	*Rd = Rs;
+}
+
+//compare hi registers
+inline void Cpu::Thumb_CMP_HRR(uint16_t opcode) {
+	//get operand register
+	uint8_t Rd_reg_code = opcode & 0b111;
+	Rd_reg_code |= (opcode & 0b10000000) >> 4;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
+	if (Rd_reg_code == 0xf) Rd += 4;
+
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	Rs_reg_code |= (opcode & 0b1000000) >> 3;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+	if (Rs_reg_code == 0xf) Rs += 4;
+
+	uint32_t result = Rd - Rs;
+
+	reg.CPSR_f->Z = result == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = !(Rd < Rs);	//carry = !borrow
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(Rd ^ Rs)) & (Rd ^ result)) >> 31) & 1;
 }
 
 //branch exchange
