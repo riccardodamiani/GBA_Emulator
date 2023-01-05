@@ -181,7 +181,7 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 			uint8_t bankNr = (_ioReg.SOUND3CNT_L >> 6) & 1;
 			return { &wave_ram_banks[bankNr][0], localAddr - 0x90, accessTimings[2] };
 		}
-		return { (uint8_t*)&_ioReg, gba_address, accessTimings[2] };	//0x3fe??
+		return { (uint8_t*)&_ioReg, localAddr, accessTimings[2] };	//0x3fe??
 		break;
 	}
 	case 5:	//palette ram
