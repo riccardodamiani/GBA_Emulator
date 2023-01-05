@@ -225,6 +225,7 @@ private:
 
 	//THUMB.10
 	inline void Thumb_STRH_I(uint16_t opcode);
+	inline void Thumb_LDRH_I(uint16_t opcode);
 
 	//THUMB.11
 	inline void Thumb_LDR_SP(uint16_t opcode);
