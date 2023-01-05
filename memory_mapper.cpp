@@ -140,50 +140,74 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 }
 
 realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
-	uint8_t mem_chunk = (gba_address >> 24) & 0xff;
+	uint8_t mem_chunk = (gba_address >> 24) & 0xff;	//8 msb
+	uint32_t localAddr = gba_address & 0xffffff;	//24 lsb
 
 	switch (mem_chunk) {
 	case 0:		//bios
-		return { _bios_mem.get(), gba_address & 0x3fff, accessTimings[0]};
+	{
+		if (localAddr > 0x3fff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
+
+		return { _bios_mem.get(), localAddr, accessTimings[0] };
 		break;
+	}
 	case 1:	//invalid memory
 		return { nullptr, 0, nullptr};
 		break;
 
 	case 2:	//external wram
-		return { _e_wram.get(), gba_address & 0x3ffff, accessTimings[4] };
-		break;
+	{
+		if (localAddr > 0x3ffff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
+		return { _e_wram.get(), localAddr, accessTimings[4] };
+		break;
+	}		
 	case 3:		//internal wram
-		return { _i_wram.get(), gba_address & 0x7fff, accessTimings[1] };
-		break;
+	{
+		if (localAddr > 0x7fff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
+		return { _i_wram.get(), localAddr, accessTimings[1] };
+		break;
+	}
 	case 4:	//io registers
 	{
-		uint32_t localAddr = gba_address & 0xfff;
-
-		if (localAddr >= 0x804)
-			return { nullptr, 0, nullptr };	//avoid overflow in io registers
+		if (localAddr > 0x803)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
 		if (localAddr >= 0x90 && localAddr < 0xa0) {	//wave ram bank
 			uint8_t bankNr = (_ioReg.SOUND3CNT_L >> 6) & 1;
 			return { &wave_ram_banks[bankNr][0], localAddr - 0x90, accessTimings[2] };
 		}
-		return { (uint8_t*)&_ioReg, gba_address & 0xfff, accessTimings[2] };	//0x3fe??
+		return { (uint8_t*)&_ioReg, gba_address, accessTimings[2] };	//0x3fe??
 		break;
 	}
 	case 5:	//palette ram
-		return { _palette_ram.get(), gba_address & 0x3ff, accessTimings[5] };
-		break;
+	{
+		if (localAddr > 0x3ff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
+		return { _palette_ram.get(), localAddr, accessTimings[5] };
+		break;
+	}
 	case 6:	//vram
-		return { _vram.get(), gba_address & 0x17fff, accessTimings[6] };
-		break;
+	{
+		if (localAddr > 0x17fff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
+		return { _vram.get(), localAddr, accessTimings[6] };
+		break;
+	}
 	case 7:	//oam
-		return { _oam.get(), gba_address & 0x3ff, accessTimings[3] };
-		break;
+	{
+		if (localAddr > 0x3ff)
+			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
+		return { _oam.get(), localAddr, accessTimings[3] };
+		break;
+	}
 	default:	//invalid memory
 		return { nullptr, 0, nullptr };
 		break;
