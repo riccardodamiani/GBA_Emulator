@@ -159,11 +159,19 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 		break;
 
 	case 4:	//io registers
-		if ((gba_address & 0xfff) > 0x803) 
-			return { nullptr, 0, nullptr };	//avoid overflow in io registers
-		return { (uint8_t*) &_ioReg, gba_address & 0xfff, accessTimings[2] };	//0x3fe??
-		break;
+	{
+		uint32_t localAddr = gba_address & 0xfff;
 
+		if (localAddr >= 0x804)
+			return { nullptr, 0, nullptr };	//avoid overflow in io registers
+
+		if (localAddr >= 0x90 && localAddr < 0xa0) {	//wave ram bank
+			uint8_t bankNr = (_ioReg.SOUND3CNT_L >> 6) & 1;
+			return { &wave_ram_banks[bankNr][0], localAddr - 0x90, accessTimings[2] };
+		}
+		return { (uint8_t*)&_ioReg, gba_address & 0xfff, accessTimings[2] };	//0x3fe??
+		break;
+	}
 	case 5:	//palette ram
 		return { _palette_ram.get(), gba_address & 0x3ff, accessTimings[5] };
 		break;

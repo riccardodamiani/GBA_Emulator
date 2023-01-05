@@ -48,6 +48,7 @@ private:
 	std::unique_ptr <uint8_t[]> _oam;
 	Cartridge _cartridge;
 	Io_registers _ioReg;
+	uint8_t wave_ram_banks[2][0x10];
 
 	void loadBios();
 	realAddress find_memory_addr(uint32_t gba_address);
