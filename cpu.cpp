@@ -413,6 +413,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ADD_SP:
+		Thumb_ADD_SP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_PUSH:
 		Thumb_PUSH(opcode);
 		reg.R15 += 2;
@@ -807,9 +812,16 @@ inline void Cpu::Thumb_BL_2(uint16_t opcode) {
 
 //sub offset sp
 inline void Cpu::Thumb_SUB_SP(uint16_t opcode) {
-	uint8_t nn = opcode & 0x7f;
+	uint32_t nn = opcode & 0x7f;
 
-	reg.R13 -= (uint16_t)nn * 4;
+	reg.R13 -= nn * 4;
+}
+
+//ADD SP
+inline void Cpu::Thumb_ADD_SP(uint16_t opcode){
+	uint32_t nn = opcode & 0x7f;
+
+	reg.R13 += nn * 4;
 }
 
 //load sp-relative
