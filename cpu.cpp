@@ -573,7 +573,7 @@ inline void Cpu::Thumb_SUB_RI(uint16_t opcode) {
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(Rs < nn);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
-	reg.CPSR_f->V = (((~(Rs ^ nn)) & (Rs ^ result)) >> 31) & 1;
+	reg.CPSR_f->V = (((~(Rs ^ (uint32_t)(-(int32_t)nn))) & (Rs ^ result)) >> 31) & 1;
 
 	*Rd = result;
 }
@@ -646,7 +646,7 @@ inline void Cpu::Thumb_SUB_I(uint16_t opcode) {
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(*Rd < nn);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
-	reg.CPSR_f->V = (((~(*Rd ^ nn)) & (*Rd ^ result)) >> 31) & 1;
+	reg.CPSR_f->V = (((~(*Rd ^ (uint32_t)(-(int32_t)nn))) & (*Rd ^ result)) >> 31) & 1;
 
 	*Rd = result;
 }
@@ -681,7 +681,7 @@ inline void Cpu::Thumb_CMP_I(uint16_t opcode) {
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(Rd < nn);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
-	reg.CPSR_f->V = (((~(Rd ^ nn)) & (Rd ^ result)) >> 31) & 1;
+	reg.CPSR_f->V = (((~(Rd ^ (uint32_t)(-(int32_t)nn))) & (Rd ^ result)) >> 31) & 1;
 }
 
 //load pc-relative
@@ -797,7 +797,7 @@ inline void Cpu::Thumb_CMP_HRR(uint16_t opcode) {
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(Rd < Rs);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
-	reg.CPSR_f->V = (((~(Rd ^ Rs)) & (Rd ^ result)) >> 31) & 1;
+	reg.CPSR_f->V = (((~(Rd ^ (uint32_t)(-(int32_t)Rs))) & (Rd ^ result)) >> 31) & 1;
 }
 
 //branch exchange
@@ -1267,7 +1267,7 @@ inline void Cpu::Arm_CMP(uint32_t opcode) {
 	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
 	reg.CPSR_f->C = !(oper1 < oper2);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
-	reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
+	reg.CPSR_f->V = (((~(oper1 ^ (uint32_t)(-(int32_t)oper2))) & (oper1 ^ *dest_reg)) >> 31) & 1;
 
 }
 
