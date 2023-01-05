@@ -423,6 +423,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_POP:
+		Thumb_POP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_BL_F:
 		Thumb_BL_1(opcode);
 		reg.R15 += 2;
@@ -778,6 +783,24 @@ inline void Cpu::Thumb_PUSH(uint16_t opcode) {
 			uint32_t* r = &((uint32_t*)&reg)[i];
 			GBA::memory.write_32(reg.R13, *r);
 		}
+	}
+}
+
+//pop
+inline void Cpu::Thumb_POP(uint16_t opcode) {
+	uint8_t registers_to_pop = opcode & 0xff;
+
+	for (int i = 0; i < 8; i++) {
+		if ((registers_to_pop >> i) & 1) {
+			uint32_t* r = &((uint32_t*)&reg)[i];
+			*r = GBA::memory.read_32(reg.R13);
+			reg.R13 += 4;
+		}
+	}
+
+	if (opcode & 0x100) {
+		reg.R15 = GBA::memory.read_32(reg.R13) & 0xfffffffe;	//ignore least significant bit
+		reg.R13 += 4;
 	}
 }
 
