@@ -437,6 +437,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_LDMIA:	//multiple load
+		Thumb_LDMIA(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_BL_F:
 		Thumb_BL_1(opcode);
 		reg.R15 += 2;
@@ -848,6 +853,34 @@ inline void Cpu::Thumb_POP(uint16_t opcode) {
 	if (opcode & 0x100) {
 		reg.R15 = GBA::memory.read_32(reg.R13) & 0xfffffffe;	//ignore least significant bit
 		reg.R13 += 4;
+	}
+}
+
+//load multiple
+inline void Cpu::Thumb_LDMIA(uint16_t opcode) {
+	uint8_t rList = opcode & 0xff;
+
+	uint8_t Rb_reg_code = (opcode >> 8) & 0b111;
+	uint32_t *Rb = &((uint32_t*)&reg)[Rb_reg_code];	//base address register
+	uint32_t addr = *Rb;
+
+	if (rList == 0) {	//empty register list (weird behavior)
+		reg.R15 = GBA::memory.read_32(*Rb);
+		*Rb += 0x40;
+		return;
+	}
+
+	for (int i = 0; i < 8; i++) {	//load registers
+		if ((rList >> i) & 1) {
+			uint32_t* r = &((uint32_t*)&reg)[i];
+			*r = GBA::memory.read_32(addr);
+			addr += 4;
+		}
+	}
+
+	//weird behaviors
+	if (!((0x1 << Rb_reg_code) & rList)) {	//if base register not inside register list
+		*Rb = addr;	//writeback
 	}
 }
 
