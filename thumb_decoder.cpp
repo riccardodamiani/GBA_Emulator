@@ -354,6 +354,16 @@ THUMB_opcode ThumbDecoder::decode_6(uint16_t opcode) {
 		}
 	}
 
+	uint16_t mld_format =	0b1100'0000'0000'0000;
+	uint16_t mld_mask =		0b1111'0000'0000'0000;
+
+	if ((opcode & mld_mask) == mld_format) {	//multiple load/store
+		if (opcode & 0x800) {	//bit 11
+			return THUMB_OP_LDMIA;
+		}
+		return THUMB_OP_STMIA;
+	}
+
 	return THUMB_OP_INVALID;
 }
 

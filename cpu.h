@@ -90,6 +90,8 @@ enum THUMB_opcode {
 	THUMB_OP_BX,	//branch exchange
 	THUMB_OP_PUSH,	//push
 	THUMB_OP_POP,	//pop
+	THUMB_OP_LDMIA,	//load multiple 
+	THUMB_OP_STMIA,	//store multiple
 	THUMB_OP_ADD_SP,	//add offset to sp
 	THUMB_OP_SUB_SP,		//sub offset to sp
 	THUMB_OP_STR_SP,	//store sp-relative
