@@ -111,7 +111,7 @@ void Cartridge::findSram() {
 }
 
 uint8_t Cartridge::read_8(uint32_t address) {
-	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memoryAddr = address & 0x1fffff;
 	uint32_t memChunk = (address >> 24) & 0xff;
 
 	uint32_t memSize = 0;
@@ -134,7 +134,7 @@ uint8_t Cartridge::read_8(uint32_t address) {
 }
 
 uint16_t Cartridge::read_16(uint32_t address) {
-	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memoryAddr = address & 0x1fffff;
 	uint32_t memChunk = (address >> 24) & 0xff;
 
 	uint32_t memSize = 0;
@@ -157,7 +157,7 @@ uint16_t Cartridge::read_16(uint32_t address) {
 }
 
 uint32_t Cartridge::read_32(uint32_t address) {
-	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memoryAddr = address & 0x1fffff;
 	uint32_t memChunk = (address >> 24) & 0xff;
 
 	uint32_t memSize = 0;
