@@ -447,6 +447,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_STMIA:	//multiple store
+		Thumb_STMIA(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_BL_F:
 		Thumb_BL_1(opcode);
 		reg.R15 += 2;
@@ -885,6 +890,40 @@ inline void Cpu::Thumb_LDMIA(uint16_t opcode) {
 
 	//weird behaviors
 	if (!((0x1 << Rb_reg_code) & rList)) {	//if base register not inside register list
+		*Rb = addr;	//writeback
+	}
+}
+
+//store multiple
+inline void Cpu::Thumb_STMIA(uint16_t opcode) {
+	uint8_t rList = opcode & 0xff;
+
+	uint8_t Rb_reg_code = (opcode >> 8) & 0b111;
+	uint32_t* Rb = &((uint32_t*)&reg)[Rb_reg_code];	//base address register
+	uint32_t addr = *Rb;
+	
+	//weird behavior
+	if (rList == 0) {	//empty register list (weird behavior)
+		GBA::memory.write_32(*Rb, reg.R15);
+		*Rb += 0x40;
+		return;
+	}
+
+	for (int i = 0; i < 8; i++) {	//store registers
+		if ((rList >> i) & 1) {
+			uint32_t r = ((uint32_t*)&reg)[i];
+			GBA::memory.write_32(addr, r);
+			addr += 4;
+		}
+	}
+
+	//weird behavior
+	//writeback only if base register is not the first entry of the register list
+	uint8_t rb_bit = 1 << Rb_reg_code;
+	if (!(	//not
+		(rb_bit & rList) &&		//base register in list
+		!((rb_bit - 1) & rList)		//and first entry
+		)) {
 		*Rb = addr;	//writeback
 	}
 }

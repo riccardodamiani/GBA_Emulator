@@ -250,6 +250,7 @@ private:
 	
 	//THUMB.15
 	inline void Thumb_LDMIA(uint16_t opcode);
+	inline void Thumb_STMIA(uint16_t opcode);
 
 	//THUMB.18
 	inline void Thumb_B(uint16_t opcode);
