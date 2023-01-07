@@ -108,7 +108,7 @@ enum THUMB_opcode {
 	THUMB_OP_STRB_I,
 	THUMB_OP_LDRB_I,
 
-	//THUMB.9: load store sign-extended byte halfword
+	//THUMB.8: load store sign-extended byte halfword
 	THUMB_OP_STRH_R,	
 	THUMB_OP_LDSB_R,
 	THUMB_OP_LDRH_R,
@@ -231,6 +231,9 @@ private:
 
 	//THUMB.7
 	inline void Thumb_STR_O(uint16_t opcode);
+
+	//THUMB.8
+	inline void Thumb_LDRH_R(uint16_t opcode);
 
 	//THUMB.9
 	inline void Thumb_STR_I(uint16_t opcode);
