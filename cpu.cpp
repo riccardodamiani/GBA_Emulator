@@ -417,6 +417,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ADD_R_SP:
+		Thumb_ADD_R_SP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_SUB_SP:
 		Thumb_SUB_SP(opcode);
 		reg.R15 += 2;
@@ -916,6 +921,16 @@ inline void Cpu::Thumb_BL_2(uint16_t opcode) {
 	uint32_t tempR14 = reg.R15 + 2;
 	reg.R15 = reg.R14 + (lsb << 1);
 	reg.R14 = tempR14 | 0b1;
+}
+
+//get relative address from sp
+inline void Cpu::Thumb_ADD_R_SP(uint16_t opcode) {
+	uint32_t nn = (opcode & 0xff) * 4;
+
+	uint8_t Rd_code = (opcode >> 8) & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
+
+	*Rd = reg.R13 + nn;
 }
 
 //sub offset sp
