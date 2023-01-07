@@ -111,15 +111,72 @@ void Cartridge::findSram() {
 }
 
 uint8_t Cartridge::read_8(uint32_t address) {
-	return 0;
+	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memChunk = (address >> 24) & 0xff;
+
+	uint32_t memSize = 0;
+	uint8_t* mem = nullptr;
+
+	if (memChunk == 0xe) {	//sram
+		memSize = _sramSize;
+		mem = _sram.get();
+	}
+	else {	//rom
+		memSize = _romSize;
+		mem = _rom.get();
+	}
+
+	if (memoryAddr >= memSize) {
+		return 0;
+	}
+
+	return mem[memoryAddr];
 }
 
 uint16_t Cartridge::read_16(uint32_t address) {
-	return 0;
+	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memChunk = (address >> 24) & 0xff;
+
+	uint32_t memSize = 0;
+	uint8_t* mem = nullptr;
+
+	if (memChunk == 0xe) {	//sram
+		memSize = _sramSize;
+		mem = _sram.get();
+	}
+	else {	//rom
+		memSize = _romSize;
+		mem = _rom.get();
+	}
+
+	if (memoryAddr >= memSize) {
+		return 0;
+	}
+
+	return *(uint16_t *)(mem[memoryAddr]);
 }
 
 uint32_t Cartridge::read_32(uint32_t address) {
-	return 0;
+	uint32_t memoryAddr = address & 0xffffff;
+	uint32_t memChunk = (address >> 24) & 0xff;
+
+	uint32_t memSize = 0;
+	uint8_t* mem = nullptr;
+
+	if (memChunk == 0xe) {	//sram
+		memSize = _sramSize;
+		mem = _sram.get();
+	}
+	else {	//rom
+		memSize = _romSize;
+		mem = _rom.get();
+	}
+
+	if (memoryAddr >= memSize) {
+		return 0;
+	}
+
+	return *(uint32_t*)(mem[memoryAddr]);
 }
 
 void Cartridge::write_8(uint32_t addr, uint8_t data) {
