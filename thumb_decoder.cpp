@@ -179,7 +179,7 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 		return THUMB_OP_LDR_PC;
 	}
 
-	//load/store register ofsset
+	//load/store register offset
 	uint16_t ldr_str_format =	0b0101'0000'0000'0000;
 	uint16_t ldr_str_mask =		0b1111'0010'0000'0000;
 	
@@ -220,6 +220,27 @@ THUMB_opcode ThumbDecoder::decode_2(uint16_t opcode) {
 			break;
 		case 3:
 			return THUMB_OP_BX;
+			break;
+		}
+	}
+
+	//high register load/store
+	uint16_t hi_reg_ld_st_format =	0b0101'0010'0000'0000;
+	uint16_t hi_reg_ld_st_mask =	0b1111'0010'0000'0000;
+
+	if ((opcode & hi_reg_ld_st_mask) == hi_reg_ld_st_format) {
+		switch ((opcode >> 10) & 0b11) {
+		case 0:
+			return THUMB_OP_STRH_R;
+			break;
+		case 1:
+			return THUMB_OP_LDSB_R;
+			break;
+		case 2:
+			return THUMB_OP_LDRH_R;
+			break;
+		case 3:
+			return THUMB_OP_LDSH_R;
 			break;
 		}
 	}

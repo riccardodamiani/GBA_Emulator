@@ -106,7 +106,13 @@ enum THUMB_opcode {
 	THUMB_OP_STR_I,	//load/store immidiate offset
 	THUMB_OP_LDR_I,
 	THUMB_OP_STRB_I,
-	THUMB_OP_LDRB_I
+	THUMB_OP_LDRB_I,
+
+	//THUMB.9: load store sign-extended byte halfword
+	THUMB_OP_STRH_R,	
+	THUMB_OP_LDSB_R,
+	THUMB_OP_LDRH_R,
+	THUMB_OP_LDSH_R
 };
 
 struct CPSR_registers {
