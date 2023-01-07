@@ -29,6 +29,11 @@ struct realAddress {
 	const int* accessTimings;
 };
 
+struct gamePakAddr {
+	bool inGamePak;
+	int accessTiming;
+};
+
 const int accessTimings[][3] = {
 	{1, 1, 1},	//BIOS ROM
 	{1, 1, 1},	//INTERNAL WRAM
@@ -78,7 +83,7 @@ private:
 
 	void loadBios();
 	realAddress find_memory_addr(uint32_t gba_address);
-	bool inCartridge(uint32_t addr);
+	gamePakAddr inCartridge(uint32_t addr);
 };
 
 #endif

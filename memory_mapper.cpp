@@ -55,7 +55,10 @@ void MemoryMapper::loadBios() {
 }
 
 uint8_t MemoryMapper::read_8(uint32_t address) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming);
 		return _cartridge.read_8(address);
 	}
 	realAddress addr = find_memory_addr(address);
@@ -69,7 +72,10 @@ uint8_t MemoryMapper::read_8(uint32_t address) {
 }
 
 uint16_t MemoryMapper::read_16(uint32_t address) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming);
 		return _cartridge.read_16(address);
 	}
 	realAddress addr = find_memory_addr(address);
@@ -83,7 +89,10 @@ uint16_t MemoryMapper::read_16(uint32_t address) {
 }
 
 uint32_t MemoryMapper::read_32(uint32_t address) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming * 2);	//game pak bus is only 16 bit wide
 		return _cartridge.read_32(address);
 	}
 	realAddress addr = find_memory_addr(address);
@@ -97,7 +106,10 @@ uint32_t MemoryMapper::read_32(uint32_t address) {
 }
 
 void MemoryMapper::write_8(uint32_t address, uint8_t data) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming);
 		_cartridge.write_8(address, data);
 		return;
 	}
@@ -112,7 +124,10 @@ void MemoryMapper::write_8(uint32_t address, uint8_t data) {
 }
 
 void MemoryMapper::write_16(uint32_t address, uint16_t data) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming);
 		_cartridge.write_16(address, data);
 		return;
 	}
@@ -127,7 +142,10 @@ void MemoryMapper::write_16(uint32_t address, uint16_t data) {
 }
 
 void MemoryMapper::write_32(uint32_t address, uint32_t data) {
-	if (inCartridge(address)) {
+	gamePakAddr s;
+
+	if ((s = inCartridge(address)).inGamePak) {
+		GBA::clock.addTicks(1 + s.accessTiming * 2);	//game pak bus is only 16 bit wide
 		_cartridge.write_32(address, data);
 		return;
 	}
@@ -217,7 +235,7 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 }
 
 //return true and update the system clock on valid game pak memory
-bool MemoryMapper::inCartridge(uint32_t gba_address) {
+gamePakAddr MemoryMapper::inCartridge(uint32_t gba_address) {
 
 	uint8_t mem_chunk = (gba_address >> 24) & 0xff;	//8 msb
 	switch (mem_chunk) {
@@ -226,19 +244,17 @@ bool MemoryMapper::inCartridge(uint32_t gba_address) {
 	case 0xc:
 	{
 		int waitSate = (mem_chunk - 8) / 2;
-		GBA::clock.addTicks(1 + waitcntAccessTimings[waitSate * 2][WAITCNT->WS0_fa]);
-		return true;
+		return { true, waitcntAccessTimings[waitSate * 2][WAITCNT->WS0_fa] };
 		break;
 	}
 	case 0xe:	//game pak sram
-		GBA::clock.addTicks(1 + waitcntAccessTimings[6][WAITCNT->sram]);
-		return true;
+		return { true,  waitcntAccessTimings[6][WAITCNT->sram] };
 		break;
 
 	default:	//invalid memory
-		return false;
+		return { false, 0 };
 		break;
 	}
 
-	return false;
+	return { false, 0 };
 }
