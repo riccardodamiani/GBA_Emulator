@@ -240,8 +240,11 @@ gamePakAddr MemoryMapper::inCartridge(uint32_t gba_address) {
 	uint8_t mem_chunk = (gba_address >> 24) & 0xff;	//8 msb
 	switch (mem_chunk) {
 	case 0x8:	//game pak rom
+	case 0x9:
 	case 0xa:
+	case 0xb:
 	case 0xc:
+	case 0xd:
 	{
 		int waitSate = (mem_chunk - 8) / 2;
 		return { true, waitcntAccessTimings[waitSate * 2][WAITCNT->WS0_fa] };
