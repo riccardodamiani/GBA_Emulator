@@ -21,6 +21,8 @@ MemoryMapper::MemoryMapper() :
 	memset(_vram.get(), 0, 0x18000);
 	memset(_oam.get(), 0, 0x400);
 
+	WAITCNT = (WaitCnt*)_ioReg.WAITCNT;
+
 	loadBios();
 }
 
@@ -214,12 +216,29 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 }
 
+//return true and update the system clock on valid game pak memory
 bool MemoryMapper::inCartridge(uint32_t gba_address) {
 
-	uint8_t mem_chunk = (gba_address >> 24) & 0xff;
-
-	if (mem_chunk >= 0x8 && mem_chunk <= 0xe) {	//cartridge
+	uint8_t mem_chunk = (gba_address >> 24) & 0xff;	//8 msb
+	switch (mem_chunk) {
+	case 0x8:	//game pak rom
+	case 0xa:
+	case 0xc:
+	{
+		int waitSate = (mem_chunk - 8) / 2;
+		GBA::clock.addTicks(1 + waitcntAccessTimings[waitSate * 2][WAITCNT->WS0_fa]);
 		return true;
+		break;
 	}
+	case 0xe:	//game pak sram
+		GBA::clock.addTicks(1 + waitcntAccessTimings[6][WAITCNT->sram]);
+		return true;
+		break;
+
+	default:	//invalid memory
+		return false;
+		break;
+	}
+
 	return false;
 }
