@@ -336,6 +336,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_CMP:	//cmp
+		Thumb_CMP(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_CMP_I:	//compare immidiate
 		Thumb_CMP_I(opcode);
 		reg.R15 += 2;
@@ -419,6 +424,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_ADD_R_SP:
 		Thumb_ADD_R_SP(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_ADD_R_PC:
+		Thumb_ADD_R_PC(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -625,6 +635,22 @@ inline void  Cpu::Thumb_ORR(uint16_t opcode) {
 
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+}
+
+//CMP
+inline void Cpu::Thumb_CMP(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];
+
+	uint32_t result = Rd - Rs;
+	reg.CPSR_f->Z = result == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = !(Rd < Rs);	//carry = !borrow
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(Rd ^ (uint32_t)(-(int32_t)Rs))) & (Rd ^ result)) >> 31) & 1;
 }
 
 //TST
@@ -987,6 +1013,16 @@ inline void Cpu::Thumb_ADD_R_SP(uint16_t opcode) {
 	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
 
 	*Rd = reg.R13 + nn;
+}
+
+//get relative address from pc
+inline void Cpu::Thumb_ADD_R_PC(uint16_t opcode) {
+	uint32_t nn = (opcode & 0xff) * 4;
+
+	uint8_t Rd_code = (opcode >> 8) & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
+
+	*Rd = ((reg.R15 + 4) & ~2) + nn;
 }
 
 //sub offset sp

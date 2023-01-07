@@ -213,6 +213,7 @@ private:
 	inline void Thumb_TST(uint16_t opcode);
 	inline void Thumb_MVN(uint16_t opcode);
 	inline void Thumb_ORR(uint16_t opcode);
+	inline void Thumb_CMP(uint16_t opcode);
 
 	//THUMB.5
 	inline void Thumb_BX(uint16_t opcode);
@@ -240,6 +241,7 @@ private:
 
 	//THUMB.12
 	inline void Thumb_ADD_R_SP(uint16_t opcode);
+	inline void Thumb_ADD_R_PC(uint16_t opcode);
 
 	//THUMB.13
 	inline void Thumb_SUB_SP(uint16_t opcode);
