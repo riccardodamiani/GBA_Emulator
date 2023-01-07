@@ -94,6 +94,8 @@ enum THUMB_opcode {
 	THUMB_OP_STMIA,	//store multiple
 	THUMB_OP_ADD_SP,	//add offset to sp
 	THUMB_OP_SUB_SP,		//sub offset to sp
+	THUMB_OP_ADD_R_SP,	//get relative address from sp
+	THUMB_OP_ADD_R_PC,	//get relative address from pc
 	THUMB_OP_STR_SP,	//store sp-relative
 	THUMB_OP_LDR_SP,	//load sp-relative
 	THUMB_OP_LDRH,	//load halfword
@@ -234,6 +236,9 @@ private:
 	//THUMB.11
 	inline void Thumb_LDR_SP(uint16_t opcode);
 	inline void Thumb_STR_SP(uint16_t opcode);
+
+	//THUMB.12
+	inline void Thumb_ADD_R_SP(uint16_t opcode);
 
 	//THUMB.13
 	inline void Thumb_SUB_SP(uint16_t opcode);

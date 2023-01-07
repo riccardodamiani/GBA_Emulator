@@ -291,6 +291,17 @@ THUMB_opcode ThumbDecoder::decode_5(uint16_t opcode) {
 		return THUMB_OP_ADD_SP;
 	}
 
+	uint16_t get_rel_format =	0b1010'0000'0000'0000;
+	uint16_t get_rel_mask =		0b1111'0000'0000'0000;
+
+	if ((opcode & get_rel_mask) == get_rel_format) {	//get relative address
+		if (opcode & 0x800) {	//SP
+			return THUMB_OP_ADD_R_SP;
+		}
+		return THUMB_OP_ADD_R_PC;		//pc
+	}
+
+
 	return THUMB_OP_INVALID;
 }
 
