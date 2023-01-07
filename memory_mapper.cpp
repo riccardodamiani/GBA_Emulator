@@ -21,7 +21,7 @@ MemoryMapper::MemoryMapper() :
 	memset(_vram.get(), 0, 0x18000);
 	memset(_oam.get(), 0, 0x400);
 
-	WAITCNT = (WaitCnt*)_ioReg.WAITCNT;
+	WAITCNT = (WaitCnt*)&_ioReg.WAITCNT;
 
 	loadBios();
 }
