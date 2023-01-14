@@ -7,7 +7,6 @@ Done:
 * Game rom loading
 
 Not yet supported:  
-* GamePak 
 * Video
 * Audio 
 * Cpu interrupts
@@ -18,5 +17,6 @@ Not yet supported:
 * Timers
 
 In progress:
-* Arm/Thumb instruction sets (~50% done)
+* Arm/Thumb instruction sets (~60% done)
 * Gba memory mapping
+* GamePak 
