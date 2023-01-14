@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x6cc) {
+	if (reg.R15 == 0x872) {
 		reg.R15 = reg.R15;
 	}
 
@@ -1258,6 +1258,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_SUB:	//subtract
+		Arm_SUB(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_BIC:	//bic
 		Arm_BIC(opcode);
 		reg.R15 += 4;
@@ -1579,7 +1584,7 @@ inline void Cpu::Arm_TST(uint32_t opcode) {
 //arithmetic operation
 //operand1 + operand2
 inline void Cpu::Arm_ADD(uint32_t opcode) {
-	uint32_t oper1, oper2, * dest_reg;
+	uint32_t oper1, oper2, *dest_reg;
 	uint8_t s;
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
@@ -1600,6 +1605,32 @@ inline void Cpu::Arm_ADD(uint32_t opcode) {
 		}
 	}
 
+}
+
+//arithmetic operation
+//operand1 - operand2
+inline void Cpu::Arm_SUB(uint32_t opcode) {
+	uint32_t oper1, oper2, *dest_reg;
+	uint8_t s;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
+	uint32_t result = oper1 - oper2;
+	
+	if (s) {
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = result == 0;
+			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = !(oper1 < oper2);	//carry = !borrow
+			//if oper1 and oper2 have same sign but result have different sign: overflow
+			reg.CPSR_f->V = (((~(oper1 ^ (uint32_t)(-(int32_t)oper2))) & (oper1 ^ result)) >> 31) & 1;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
+
+	*dest_reg = result;
 }
 
 //bit clear. Logical operation

@@ -293,6 +293,7 @@ private:
 	inline void Arm_ADD(uint32_t opcode);
 	inline void Arm_BIC(uint32_t opcode);
 	inline void Arm_TST(uint32_t opcode);
+	inline void Arm_SUB(uint32_t opcode);
 
 	inline void Arm_MSR(uint32_t opcode);
 	inline void Arm_MRS(uint32_t opcode);
