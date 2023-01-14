@@ -173,11 +173,8 @@ private:
 
 	int32_t convert_24Bit_to_32Bit_signed(uint32_t val);
 
-	inline uint8_t leftRotate(uint8_t n, int bits);
-	inline uint16_t leftRotate(uint16_t n, int bits);
-	inline uint32_t leftRotate(uint32_t n, int bits);
-	inline uint8_t rightRotate(uint8_t n, int bits);
-	inline uint16_t rightRotate(uint16_t n, int bits);
+	//inline uint32_t shifterLeftRotate(uint32_t n, int bits);
+	inline uint32_t shifterRightRotate(uint32_t n, int bits);
 	inline uint32_t rightRotate(uint32_t n, int bits);
 	inline uint32_t arithmRight(uint32_t n, int bits);
 
@@ -221,6 +218,7 @@ private:
 	inline void Thumb_MVN(uint16_t opcode);
 	inline void Thumb_ORR(uint16_t opcode);
 	inline void Thumb_CMP(uint16_t opcode);
+	inline void Thumb_ROR(uint16_t opcode);
 
 	//THUMB.5
 	inline void Thumb_BX(uint16_t opcode);

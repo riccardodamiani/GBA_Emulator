@@ -345,6 +345,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ROR:
+		Thumb_ROR(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_CMP_I:	//compare immidiate
 		Thumb_CMP_I(opcode);
 		reg.R15 += 2;
@@ -665,6 +670,21 @@ inline void Cpu::Thumb_CMP(uint16_t opcode) {
 	reg.CPSR_f->C = !(Rd < Rs);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
 	reg.CPSR_f->V = (((~(Rd ^ (uint32_t)(-(int32_t)Rs))) & (Rd ^ result)) >> 31) & 1;
+}
+
+//ROR
+inline void Cpu::Thumb_ROR(uint16_t opcode){
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd = shifterRightRotate(*Rd, Rs & 0xff);
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+	reg.CPSR_f->C = shifter_carry_out;
 }
 
 //TST
@@ -1256,28 +1276,26 @@ int32_t Cpu::convert_24Bit_to_32Bit_signed(uint32_t val) {
 	return static_cast<int32_t>(val & 0xffffff);
 }
 
-
-
-inline uint8_t Cpu::leftRotate(uint8_t n, int bits) {
-	return (n << bits) | (n >> (8 - bits));
-}
-
-inline uint16_t Cpu::leftRotate(uint16_t n, int bits) {
-	return (n << bits) | (n >> (16 - bits));
-}
-
-inline uint32_t Cpu::leftRotate(uint32_t n, int bits) {
+/*
+inline uint32_t Cpu::shifterLeftRotate(uint32_t n, int bits) {
+	if (bits == 0) {
+		shifter_carry_out = reg.CPSR_f->C;
+		return;
+	}
 	return (n << bits) | (n >> (32 - bits));
+}*/
+
+//rotate right with the cpu shifter updating also the shifter carry out
+inline uint32_t Cpu::shifterRightRotate(uint32_t n, int bits) {
+	if (bits == 0) {
+		shifter_carry_out = reg.CPSR_f->C;
+		return n;
+	}
+	shifter_carry_out = (n >> (bits - 1)) & 1;	//carry = last rotated bit
+	return (n >> bits) | (n << (32 - bits));
 }
 
-inline uint8_t Cpu::rightRotate(uint8_t n, int bits) {
-	return (n >> bits) | (n << (8 - bits));
-}
-
-inline uint16_t Cpu::rightRotate(uint16_t n, int bits) {
-	return (n >> bits) | (n << (16 - bits));
-}
-
+//fast rotate right
 inline uint32_t Cpu::rightRotate(uint32_t n, int bits) {
 	return (n >> bits) | (n << (32 - bits));
 }
@@ -1341,8 +1359,8 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 		uint8_t Is = (opcode >> 8) & 0x0f;
 		uint32_t nn = opcode & 0xff;
 		if (Is != 0) {
-			oper2 = rightRotate(nn, Is * 2);
-			shifter_carry_out = (oper2 >> 31) & 1;
+			oper2 = shifterRightRotate(nn, Is * 2);
+			//shifter_carry_out = (oper2 >> 31) & 1;
 		}
 		else {
 			shifter_carry_out = reg.CPSR_f->C;
@@ -1379,8 +1397,8 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 			break;
 
 		case 3:		//rotate right
-			shifter_carry_out = (val >> (shift_amount - 1)) & 1;	//carry = last rotated bit
-			result = rightRotate(val, shift_amount);
+			//shifter_carry_out = (val >> (shift_amount - 1)) & 1;	//carry = last rotated bit
+			result = shifterRightRotate(val, shift_amount);
 			break;
 		}
 	}
