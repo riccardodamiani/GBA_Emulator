@@ -166,6 +166,7 @@ class Cpu {
 public:
 	Cpu();
 	void runFor(uint32_t ticks);
+	uint32_t getPC();
 private:
 	Registers reg;
 	uint8_t shifter_carry_out;

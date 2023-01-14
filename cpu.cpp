@@ -24,6 +24,10 @@ void Cpu::runFor(uint32_t ticks) {
 	}
 }
 
+uint32_t Cpu::getPC() {
+	return reg.R15;
+}
+
 void Cpu::saveBankReg(PrivilegeMode currentMode) {
 
 	switch (currentMode) {
