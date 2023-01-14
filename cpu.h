@@ -220,6 +220,7 @@ private:
 	inline void Thumb_CMP(uint16_t opcode);
 	inline void Thumb_ROR(uint16_t opcode);
 	inline void Thumb_EOR(uint16_t opcode);
+	inline void Thumb_MUL(uint16_t opcode);
 
 	//THUMB.5
 	inline void Thumb_BX(uint16_t opcode);
