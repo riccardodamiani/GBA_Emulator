@@ -986,6 +986,7 @@ inline void Cpu::Thumb_POP(uint16_t opcode) {
 
 	if (opcode & 0x100) {
 		reg.R15 = GBA::memory.read_32(reg.R13) & 0xfffffffe;	//ignore least significant bit
+		reg.R15 -= 2;	//to compensate for the R15 increase after the execution
 		reg.R13 += 4;
 	}
 }
