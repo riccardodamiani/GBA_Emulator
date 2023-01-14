@@ -153,7 +153,7 @@ uint16_t Cartridge::read_16(uint32_t address) {
 		return (address / 2) & 0xffff;
 	}
 
-	return *(uint16_t *)(mem[memoryAddr]);
+	return *(uint16_t *)(&mem[memoryAddr]);
 }
 
 uint32_t Cartridge::read_32(uint32_t address) {
@@ -176,7 +176,7 @@ uint32_t Cartridge::read_32(uint32_t address) {
 		return (address / 2) & 0xffff | ((((address + 4) / 2) & 0xffff) << 16);
 	}
 
-	return *(uint32_t*)(mem[memoryAddr]);
+	return *(uint32_t*)(&mem[memoryAddr]);
 }
 
 void Cartridge::write_8(uint32_t addr, uint8_t data) {
