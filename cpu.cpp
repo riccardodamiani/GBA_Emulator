@@ -505,6 +505,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_STRH_R:	//store halfword register offset
+		Thumb_STRH_R(opcode);
+		reg.R15 += 2;
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -804,6 +809,20 @@ inline void Cpu::Thumb_LDRH_R(uint16_t opcode) {
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
 
 	*Rd = GBA::memory.read_16(Rb + Ro);
+}
+
+//store halfword
+inline void Cpu::Thumb_STRH_R(uint16_t opcode) {
+	uint8_t Ro_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_code];	//offset register
+
+	uint8_t Rb_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_code];	//base address register
+
+	uint8_t Rd_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_code];	//destination register
+
+	GBA::memory.write_16(Rb + Ro, Rd & 0xff);
 }
 
 //store immidate offset
