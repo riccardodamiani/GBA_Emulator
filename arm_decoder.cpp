@@ -145,7 +145,7 @@ ARM_opcode ArmDecoder::ARM_IsMSR_MRS(uint32_t opcode) {
 
 //halfword data transfer
 ARM_opcode ArmDecoder::ARM_IsSDTHInst(uint32_t opcode) {
-	uint32_t mask =		0b0000'1110'0010'0000'0000'0000'1001'0000;
+	uint32_t mask =		0b0000'1110'0000'0000'0000'0000'1001'0000;
 	uint32_t format =	0b0000'0000'0000'0000'0000'0000'1001'0000;
 
 	if ((opcode & mask) != format) {
