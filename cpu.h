@@ -5,10 +5,10 @@
 
 enum ARM_opcode {
 	ARM_OP_INVALID,
-	ARM_OP_B,
+	ARM_OP_B,	//branches
 	ARM_OP_BL,
 	ARM_OP_BX,
-	ARM_OP_AND,
+	ARM_OP_AND,	//alu operations
 	ARM_OP_EOR,
 	ARM_OP_SUB,
 	ARM_OP_RSB,
@@ -24,9 +24,13 @@ enum ARM_opcode {
 	ARM_OP_MOV,
 	ARM_OP_BIC,
 	ARM_OP_MVN,
-	ARM_OP_STM,
+	ARM_OP_LDRH,	//load/store halfword
+	ARM_OP_LDRSB,
+	ARM_OP_LDRSH,
+	ARM_OP_STRH,
+	ARM_OP_STM,		//load/store multiple
 	ARM_OP_LDM,
-	ARM_OP_LDR,
+	ARM_OP_LDR,		//load/store
 	ARM_OP_STR,
 	ARM_OP_MSR,
 	ARM_OP_MRS

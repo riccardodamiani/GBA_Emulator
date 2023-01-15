@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x1064) {
+	if (reg.R15 == 0x118c) {
 		reg.R15 = reg.R15;
 	}
 
