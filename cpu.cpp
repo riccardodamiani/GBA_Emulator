@@ -1243,6 +1243,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		Arm_BX(opcode);
 		break;
 
+	case ARM_OP_AND:	//and
+		Arm_AND(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_CMP:		//cmp
 		Arm_CMP(opcode);
 		reg.R15 += 4;
@@ -1260,6 +1265,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_SUB:	//subtract
 		Arm_SUB(opcode);
+		reg.R15 += 4;
+		break;
+
+	case ARM_OP_RSB:	//reversed subtract
+		Arm_RSB(opcode);
 		reg.R15 += 4;
 		break;
 
@@ -1560,6 +1570,30 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 	}
 }
 
+//operand1 AND operand2
+//logical operation
+inline void Cpu::Arm_AND(uint32_t opcode) {
+	uint32_t oper1, oper2, *dest_reg;
+	uint8_t s;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
+
+	*dest_reg = oper1 & oper2;
+
+	if (s) {	//flags
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = *dest_reg == 0;
+			reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = shifter_carry_out;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
+
+}
+
 //test. Logical operation
 inline void Cpu::Arm_TST(uint32_t opcode) {
 	uint32_t oper1, oper2, * dest_reg;
@@ -1615,7 +1649,8 @@ inline void Cpu::Arm_SUB(uint32_t opcode) {
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint32_t result = oper1 - oper2;
-	
+	*dest_reg = result;
+
 	if (s) {
 		if (dest_reg != &reg.R15) {
 			reg.CPSR_f->Z = result == 0;
@@ -1628,9 +1663,32 @@ inline void Cpu::Arm_SUB(uint32_t opcode) {
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
 			reg.CPSR = reg.SPSR;
 		}
-	}
+	}	
+}
 
+//arithmetic operation
+//reversed sub: operand2 - operand1
+inline void Cpu::Arm_RSB(uint32_t opcode) {
+	uint32_t oper1, oper2, *dest_reg;
+	uint8_t s;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
+	uint32_t result = oper2 - oper1;
 	*dest_reg = result;
+
+	if (s) {
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = result == 0;
+			reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = !(oper1 < oper2);	//carry = !borrow
+			//if oper1 and oper2 have same sign but result have different sign: overflow
+			reg.CPSR_f->V = (((~(oper2 ^ (uint32_t)(-(int32_t)oper1))) & (oper2 ^ result)) >> 31) & 1;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
 }
 
 //bit clear. Logical operation
