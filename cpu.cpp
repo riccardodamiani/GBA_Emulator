@@ -1361,7 +1361,7 @@ inline uint32_t Cpu::rightRotate(uint32_t n, int bits) {
 }
 
 inline uint32_t Cpu::arithmRight(uint32_t n, int bits) {
-	if (n & 0x80000000) {
+	if (!(n & 0x80000000)) {
 		return n >> bits;
 	}
 
