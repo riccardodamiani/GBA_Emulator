@@ -1812,6 +1812,7 @@ inline void Cpu::ARM_SDTH_unpacker(uint32_t opcode, uint32_t& address, uint32_t*
 	}param = {};
 
 	*((uint8_t*)&param) = (opcode >> 20) & 0x1f;
+	R15_as_src_correction = 0;
 
 	//get the base address register
 	uint8_t base_reg_code = (opcode >> 16) & 0x0f;
@@ -1870,7 +1871,8 @@ inline void Cpu::Arm_LDRH(uint32_t opcode) {
 	*dest_reg = val;
 }
 
-inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
+inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b,
+	uint32_t &R15_as_src_correction) {
 	struct param {
 		uint8_t L : 1,
 			W : 1,	//write back address
@@ -1883,6 +1885,7 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 
 	*((uint8_t*)&param) = (opcode >> 20) & 0x3f;
 	b = param.B;
+	R15_as_src_correction = 0;
 
 	//get the base address register
 	uint8_t base_reg_code = (opcode >> 16) & 0x0f;
@@ -1894,6 +1897,8 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 	uint8_t src_dst_reg_code = (opcode >> 12) & 0x0f;
 	uint32_t* Rd = &((uint32_t*)&reg)[src_dst_reg_code];
 	*src_dest_reg = Rd;
+	if (src_dst_reg_code == 0xf)
+		R15_as_src_correction = 12;
 
 	uint32_t offset = 0;
 
@@ -1938,8 +1943,9 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 inline void Cpu::Arm_LDR(uint32_t opcode) {
 	uint32_t address, *dest_reg;
 	uint8_t b;	//load byte
+	uint32_t notUsed;
 
-	ARM_SDT_unpacker(opcode, address, &dest_reg, b);
+	ARM_SDT_unpacker(opcode, address, &dest_reg, b, notUsed);
 
 	if (b) {	//load byte
 		*dest_reg = GBA::memory.read_8(address);
@@ -1956,17 +1962,18 @@ inline void Cpu::Arm_LDR(uint32_t opcode) {
 inline void Cpu::Arm_STR(uint32_t opcode) {
 	uint32_t address, *src_reg;
 	uint8_t b;	//store byte
+	uint32_t R15_corr;
 
-	ARM_SDT_unpacker(opcode, address, &src_reg, b);
+	ARM_SDT_unpacker(opcode, address, &src_reg, b, R15_corr);
 
 	if (b) {	//store byte
-		GBA::memory.write_8(address, *src_reg & 0xff);
+		GBA::memory.write_8(address, (R15_corr + *src_reg) & 0xff);
 	}
 	else {	//store 32bit word
 		/*uint8_t disalignment = address % 4;
 		uint32_t val = rightRotate(GBA::memory.read_32(address - disalignment), disalignment * 8);
 		*dest_reg = val;*/
-		GBA::memory.write_32(address, *src_reg);
+		GBA::memory.write_32(address, R15_corr + *src_reg);
 	}
 }
 
