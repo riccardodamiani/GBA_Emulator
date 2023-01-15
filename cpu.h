@@ -294,6 +294,7 @@ private:
 	inline void Arm_TST(uint32_t opcode);
 	inline void Arm_TEQ(uint32_t opcode);
 	inline void Arm_CMP(uint32_t opcode);
+	inline void Arm_ORR(uint32_t opcode);
 	inline void Arm_MOV(uint32_t opcode);
 	inline void Arm_BIC(uint32_t opcode);
 	
