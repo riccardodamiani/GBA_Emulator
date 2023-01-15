@@ -281,7 +281,7 @@ private:
 	void execute_arm(ARM_opcode instruction, uint32_t opcode);
 	bool arm_checkInstructionCondition(uint32_t opcode);
 
-	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result);
+	inline void ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, bool enableSpecialShift);
 
 	//branches implementation
 	inline void Arm_B(uint32_t opcode);

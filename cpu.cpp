@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x118c) {
+	if (reg.R15 == 0x1004) {
 		reg.R15 = reg.R15;
 	}
 
@@ -1293,6 +1293,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_LDRH:	//load halfword
+		Arm_LDRH(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_LDM:		//load data block (pop)
 		Arm_LDM(opcode);
 		reg.R15 += 4;
@@ -1435,7 +1440,7 @@ inline void Cpu::ARM_ALU_unpacker(uint32_t opcode, uint32_t** destReg, uint32_t&
 
 }
 
-inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result) {
+inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t val, uint32_t& result, bool enableSpecialShift) {
 
 	shifter_carry_out = reg.CPSR_f->C;
 	if (shift_amount) {	//there is a shift
@@ -1461,32 +1466,38 @@ inline void Cpu::ARM_Shifter(uint8_t shiftType, uint8_t shift_amount, uint32_t v
 			result = shifterRightRotate(val, shift_amount);
 			break;
 		}
+		return;
 	}
-	else {	//special shifts
-		switch (shiftType) {
-		case 0:		//logical left
-			shifter_carry_out = reg.CPSR_f->C;
-			result = val;
-			break;
 
-		case 1:		//logical right
-			shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
-			result = 0;
-			break;
+	//special shifts only for immidiate shift amount
+	if (!enableSpecialShift) {
+		result = val;
+		return;
+	}
 
-		case 2:		//arithmetic right
-			shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
-			result = (shifter_carry_out == 0 ? 0 : 0xffffffff);
-			break;
+	switch (shiftType) {
+	case 0:		//logical left
+		shifter_carry_out = reg.CPSR_f->C;
+		result = val;
+		break;
 
-		case 3:		//rotate right extended
-			GBA::clock.addTicks(1);
-			uint8_t prev_carry = (val >> 31) & 1;
-			shifter_carry_out = val & 1;
-			result = val >> 1;
-			result |= (prev_carry << 31);
-			break;
-		}
+	case 1:		//logical right
+		shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
+		result = 0;
+		break;
+
+	case 2:		//arithmetic right
+		shifter_carry_out = (val >> 31) & 1;	//carry: 31th bit
+		result = (shifter_carry_out == 0 ? 0 : 0xffffffff);
+		break;
+
+	case 3:		//rotate right extended
+		GBA::clock.addTicks(1);
+		uint8_t prev_carry = (val >> 31) & 1;
+		shifter_carry_out = val & 1;
+		result = val >> 1;
+		result |= (prev_carry << 31);
+		break;
 	}
 }
 
@@ -1503,16 +1514,21 @@ inline void Cpu::ARM_ALU_oper2_getter(uint32_t opcode, uint32_t& oper2) {
 		uint32_t Rs = ((uint32_t*)&reg)[shift_reg_code];
 		Is = Rs & 0xff;
 		if (operand_reg_code == 0xf) real_Rm = 12;
+
+		real_Rm += Rm;
+
+		uint8_t ST = (opcode >> 5) & 0x3;	//shift type
+		ARM_Shifter(ST, Is, real_Rm, oper2, false);
 	}
 	else { //bit 4 clear: immidiate shift amount 
 		Is = (opcode >> 7) & 0x1f;
 		if (operand_reg_code == 0xf) real_Rm = 8;
-	}
 
-	real_Rm += Rm;
-	
-	uint8_t ST = (opcode >> 5) & 0x3;	//shift type
-	ARM_Shifter(ST, Is, real_Rm, oper2);
+		real_Rm += Rm;
+
+		uint8_t ST = (opcode >> 5) & 0x3;	//shift type
+		ARM_Shifter(ST, Is, real_Rm, oper2, true);
+	}
 }
 
 //arithmetic operation
@@ -1909,7 +1925,7 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 		uint8_t Is = (opcode >> 7) & 0x1f;
 		uint8_t ST = (opcode >> 5) & 0x3;
 
-		ARM_Shifter(ST, Is, Rm, offset);
+		ARM_Shifter(ST, Is, Rm, offset, true);
 	}
 	else {	//offset in immidiate 12 bits
 		offset = opcode & 0xfff;
