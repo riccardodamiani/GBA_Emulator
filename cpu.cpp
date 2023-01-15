@@ -1800,6 +1800,76 @@ inline void Cpu::Arm_MRS(uint32_t opcode) {
 	}
 }
 
+inline void Cpu::ARM_SDTH_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, 
+	uint32_t & R15_as_src_correction) {
+	struct param {
+		uint8_t L : 1,
+			W : 1,	//write back address
+			I : 1,	//immidiate
+			U : 1,	//add/subtract offset
+			P : 1,	//offset before/after transfer
+			_ : 3;
+	}param = {};
+
+	*((uint8_t*)&param) = (opcode >> 20) & 0x1f;
+
+	//get the base address register
+	uint8_t base_reg_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rn = &((uint32_t*)&reg)[base_reg_code];
+	uint32_t Rn_value = *Rn;
+	if (base_reg_code == 0x0f) Rn_value += 8;	//R15 + 8
+
+	//get src/dst register
+	uint8_t src_dst_reg_code = (opcode >> 12) & 0x0f;
+	uint32_t* Rd = &((uint32_t*)&reg)[src_dst_reg_code];
+	*src_dest_reg = Rd;
+	if (base_reg_code == 0xf) R15_as_src_correction = 12;
+
+	uint32_t offset = 0;
+
+	if (param.I) {	//immidiate offset
+		offset = ((opcode >> 8) & 0b1111) << 4;
+		offset |= opcode & 0b1111;
+	}
+	else {	//offset in register
+		uint8_t offset_reg_code = opcode & 0x0f;
+		offset = ((uint32_t*)&reg)[offset_reg_code];
+	}
+
+	if (param.P) {	//add offset before transfer
+		if (param.U) {
+			Rn_value += offset;
+		}
+		else {
+			Rn_value -= offset;
+		}
+		address = Rn_value;
+		if (param.W)	//write back
+			*Rn = address;
+	}
+	else {
+		address = Rn_value;
+		if (param.U) {
+			Rn_value += offset;
+		}
+		else {
+			Rn_value -= offset;
+		}
+		//write back (with post-indexing, write-back is always enabled)
+		*Rn = Rn_value;
+	}
+}
+
+inline void Cpu::Arm_LDRH(uint32_t opcode) {
+	uint32_t address, *dest_reg;
+	uint32_t notUsed;
+
+	ARM_SDTH_unpacker(opcode, address, &dest_reg, notUsed);
+
+	uint16_t val = GBA::memory.read_16(address);
+	*dest_reg = val;
+}
+
 inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b) {
 	struct param {
 		uint8_t L : 1,

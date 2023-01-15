@@ -307,6 +307,10 @@ private:
 	inline void Arm_MSR(uint32_t opcode);
 	inline void Arm_MRS(uint32_t opcode);
 
+	//halfword transfer
+	inline void ARM_SDTH_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint32_t &R15_as_src_correction);
+	inline void Arm_LDRH(uint32_t opcode);
+
 	//single transfer implementations
 	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b);
 	inline void Arm_LDR(uint32_t opcode);
