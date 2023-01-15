@@ -1859,8 +1859,8 @@ inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t**
 		else {
 			Rn_value -= offset;
 		}
-		if (param.W)	//write back
-			*Rn = Rn_value;
+		//write back (with post-indexing, write-back is always enabled)
+		*Rn = Rn_value;
 	}
 }
 
