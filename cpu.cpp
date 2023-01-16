@@ -881,7 +881,7 @@ inline void Cpu::Thumb_STRH_R(uint16_t opcode) {
 	uint8_t Rd_code = opcode & 0b111;
 	uint32_t Rd = ((uint32_t*)&reg)[Rd_code];	//destination register
 
-	GBA::memory.write_16(Rb + Ro, Rd & 0xff);
+	GBA::memory.write_16(Rb + Ro, Rd);
 }
 
 //store immidate offset
