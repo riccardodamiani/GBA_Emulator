@@ -178,18 +178,12 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 
 	case 2:	//external wram
 	{
-		if (localAddr > 0x3ffff)
-			return { nullptr, 0, nullptr };	//avoid out of bound memory access
-
-		return { _e_wram.get(), localAddr, accessTimings[4] };
+		return { _e_wram.get(), localAddr & 0x3ffff, accessTimings[4] };
 		break;
 	}		
 	case 3:		//internal wram
 	{
-		if (localAddr > 0x7fff)
-			return { nullptr, 0, nullptr };	//avoid out of bound memory access
-
-		return { _i_wram.get(), localAddr, accessTimings[1] };
+		return { _i_wram.get(), localAddr & 0x7fff, accessTimings[1] };
 		break;
 	}
 	case 4:	//io registers
@@ -206,10 +200,7 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 	case 5:	//palette ram
 	{
-		if (localAddr > 0x3ff)
-			return { nullptr, 0, nullptr };	//avoid out of bound memory access
-
-		return { _palette_ram.get(), localAddr, accessTimings[5] };
+		return { _palette_ram.get(), localAddr & 0x3ff, accessTimings[5] };
 		break;
 	}
 	case 6:	//vram
@@ -222,10 +213,7 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 	case 7:	//oam
 	{
-		if (localAddr > 0x3ff)
-			return { nullptr, 0, nullptr };	//avoid out of bound memory access
-
-		return { _oam.get(), localAddr, accessTimings[3] };
+		return { _oam.get(), localAddr & 0x3ff, accessTimings[3] };
 		break;
 	}
 	default:	//invalid memory
