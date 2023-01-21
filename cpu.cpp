@@ -505,6 +505,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_LDR_I:	//load immidiate offset
+		Thumb_LDR_I(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_STRB_I:	//store byte immidate offset
 		Thumb_STRB_I(opcode);
 		reg.R15 += 2;
@@ -938,6 +943,19 @@ inline void Cpu::Thumb_STR_I(uint16_t opcode) {
 	uint8_t offset = ((opcode >> 6) & 0b11111) * 4;
 
 	GBA::memory.write_32(Rb + offset, Rd);
+}
+
+//load immidate offset
+inline void Cpu::Thumb_LDR_I(uint16_t opcode) {
+	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_reg_code];	//base address register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint8_t offset = ((opcode >> 6) & 0b11111) * 4;
+
+	*Rd = GBA::memory.read_32(Rb + offset);
 }
 
 //store byte immidate offset
