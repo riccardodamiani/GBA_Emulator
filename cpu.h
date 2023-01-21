@@ -218,6 +218,7 @@ private:
 	inline void Thumb_CMP_I(uint16_t opcode);
 
 	//THUMB.4
+	inline void Thumb_AND(uint16_t opcode);
 	inline void Thumb_TST(uint16_t opcode);
 	inline void Thumb_NEG(uint16_t opcode);
 	inline void Thumb_MVN(uint16_t opcode);
