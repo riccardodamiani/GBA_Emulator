@@ -1309,6 +1309,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_EOR:	//xor
+		Arm_EOR(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_CMP:		//cmp
 		Arm_CMP(opcode);
 		reg.R15 += 4;
@@ -1698,6 +1703,28 @@ inline void Cpu::Arm_AND(uint32_t opcode) {
 		}
 	}
 
+}
+
+//operand1 xor operand2
+inline void Cpu::Arm_EOR(uint32_t opcode) {
+	uint32_t oper1, oper2, *dest_reg;
+	uint8_t s;
+
+	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
+
+	*dest_reg = oper1 ^ oper2;
+
+	if (s) {	//flags
+		if (dest_reg != &reg.R15) {
+			reg.CPSR_f->Z = *dest_reg == 0;
+			reg.CPSR_f->N = (*dest_reg & 0x80000000) != 0;	//negative
+			reg.CPSR_f->C = shifter_carry_out;
+		}
+		else {
+			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
+			reg.CPSR = reg.SPSR;
+		}
+	}
 }
 
 //test. Logical operation
