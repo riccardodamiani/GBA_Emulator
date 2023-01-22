@@ -210,6 +210,7 @@ private:
 
 	//THUMB.2
 	inline void Thumb_ADD_RR(uint16_t opcode);
+	inline void Thumb_SUB_RR(uint16_t opcode);
 	inline void Thumb_ADD_RI(uint16_t opcode);
 	inline void Thumb_SUB_RI(uint16_t opcode);
 
