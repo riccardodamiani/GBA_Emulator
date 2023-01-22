@@ -161,7 +161,7 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 
 //return a pointer to a io register
 uint16_t* MemoryMapper::get_io_reg(uint32_t offset) {
-	return &((uint16_t*)&_ioReg)[offset];
+	return (uint16_t *) ( & ((uint8_t*)&_ioReg)[offset]);
 }
 
 realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
