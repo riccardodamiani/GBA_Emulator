@@ -18,6 +18,8 @@
 !arm_decoder.cpp
 !lcd_controller.h
 !lcd_controller.cpp
+!graphics.h
+!graphics.cpp
 
 !.gitignore
 !README.md
