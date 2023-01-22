@@ -23,7 +23,7 @@ void GBA::Run() {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         GBA::graphics.drawFrame();
-        GBA::cpu.runFor(16780);
+        GBA::cpu.runFor(16'777'918 / 60);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = endTime - startTime;
