@@ -9,8 +9,6 @@ Graphics::Graphics(int width, int height) {
 	_windowHeight = height;
 	_renderScaleX = (float)width / 240.0;
 	_renderScaleY = (float)height / 160.0;
-	_windowPosX = 200;
-	_windowPosY = 200;
 
 	SDL_Init(SDL_INIT_VIDEO);
 
