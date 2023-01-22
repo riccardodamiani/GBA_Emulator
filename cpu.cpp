@@ -309,6 +309,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ASR_IMM:	//arithmetic shift right
+		Thumb_ASR_IMM(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_ADD_RR:	//add register + register
 		Thumb_ADD_RR(opcode);
 		reg.R15 += 2;
@@ -584,6 +589,33 @@ inline void Cpu::Thumb_LSR_IMM(uint16_t opcode) {
 	}
 
 	*Rd = Rs >> offset;
+	reg.CPSR_f->C = (Rs >> (offset - 1)) & 1;
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = *Rd & 0x80000000;
+}
+
+//arithmetic shift right
+inline void Cpu::Thumb_ASR_IMM(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint8_t offset = (opcode >> 6) & 0b11111;
+	if (offset == 0) {
+		offset = 32;
+	}
+
+	if (!(Rs & 0x80000000)) {	//is positive
+		*Rd = Rs >> offset;	//just a normal right shift
+	}
+	else {	//is negative
+		uint64_t ones = ((uint64_t)1 << offset) - 1;
+		ones <<= (32 - offset);
+		*Rd = (Rs >> offset) | (uint32_t)ones;
+	}
+
 	reg.CPSR_f->C = (Rs >> (offset - 1)) & 1;
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = *Rd & 0x80000000;
