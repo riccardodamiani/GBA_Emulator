@@ -4,9 +4,12 @@
 #include "clock.h"
 
 #include <string>
+#include <chrono>
+#include <thread>
 
 MemoryMapper GBA::memory;
 Cpu GBA::cpu;
+Graphics GBA::graphics;
 
 void GBA::Load(std::string rom_filename) {
 	memory.loadRom(rom_filename);
@@ -14,7 +17,30 @@ void GBA::Load(std::string rom_filename) {
 
 void GBA::Run() {
 
-	while (1) {
-		GBA::cpu.runFor(16780);
-	}
+    double totTime = 0;
+    double elapsedTime = 0;
+    while (1) {
+        auto startTime = std::chrono::high_resolution_clock::now();
+
+        GBA::graphics.drawFrame();
+        GBA::cpu.runFor(16780);
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = endTime - startTime;
+        elapsedTime = elapsed.count();	//elapsed time in seconds
+
+        elapsedTime += limit_fps(elapsedTime, 60);
+        totTime += elapsedTime;
+    }
+}
+
+//sleeps for the time needed to have a FPS. Returns the time it have slept
+double GBA::limit_fps(double elapsedTime, double maxFPS) {
+    if (elapsedTime >= (1.0 / maxFPS)) {
+        return 0;
+    }
+    else {
+        std::this_thread::sleep_for(std::chrono::microseconds((long long)(((1.0 / maxFPS) - elapsedTime) * 1000000.0)));
+        return ((1.0 / maxFPS) - elapsedTime);
+    }
 }

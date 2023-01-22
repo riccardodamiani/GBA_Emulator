@@ -25,7 +25,7 @@ LcdController::LcdController() {
 	//init frame buffers
 	memset(frameBuffers[0], 0, 240 * 160 * 4);
 	memset(frameBuffers[1], 0, 240 * 160 * 4);
-	memset(whiteFrameBuffer, 0, 240 * 160 * 4);
+	memset(whiteFrameBuffer, 255, 240 * 160 * 4);
 }
 
 
@@ -36,12 +36,12 @@ LcdController::~LcdController() {
 }
 
 
-const uint8_t const* LcdController::getReadyFrameBuffer() {
+const uint32_t const* LcdController::getBufferToRender() {
 	if (DISPCNT->forced_blank) {
-		return whiteFrameBuffer;
+		return (uint32_t *)whiteFrameBuffer;
 	}
 
-	return frameBuffers[1 - activeFrameBuffer];	//return the finished buffer
+	return (uint32_t*)frameBuffers[1 - activeFrameBuffer];	//return the finished buffer
 }
 
 void LcdController::update_V_count(uint32_t cycles) {

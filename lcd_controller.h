@@ -37,7 +37,7 @@ public:
 	~LcdController();
 	void update_V_count(uint32_t cycles);
 	void update();
-	const uint8_t const* getReadyFrameBuffer();
+	const uint32_t const* getBufferToRender();
 private:
 	uint32_t video_cnt;
 	uint32_t h_cnt;

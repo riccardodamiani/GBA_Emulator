@@ -5,6 +5,7 @@
 #include "clock.h"
 #include "lcd_controller.h"
 #include "cpu.h"
+#include "graphics.h"
 
 #include <string>
 
@@ -17,6 +18,8 @@ public:
 	static Cpu cpu;
 	static LcdController lcd_ctl;
 private:
+	static double limit_fps(double elapsedTime, double maxFPS);
+	static Graphics graphics;
 };
 
 #endif
