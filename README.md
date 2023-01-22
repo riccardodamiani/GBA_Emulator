@@ -3,7 +3,7 @@ Open source gba emulator in C++.
 
 ## Progress  
 The emulator is not able to execute the game yet and will probably freeze somewhere in the bios because of some instructions not yet implemented.  
-The execution of the bios is tested until the video syncing loop at address 0x1774.  
+The execution of the bios is tested until address 0x19a4.  
 
 Done:
 * Bios loading
