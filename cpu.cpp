@@ -456,6 +456,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 			int8_t offset_8 = (int8_t)(opcode & 0xff);
 			int16_t offset = ((int16_t)offset_8 * 2) + 4;
 			reg.R15 += offset;
+			GBA::clock.addTicks(2);
 			break;
 		}
 		reg.R15 += 2;
@@ -767,6 +768,8 @@ inline void Cpu::Thumb_ROR(uint16_t opcode){
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
 	reg.CPSR_f->C = shifter_carry_out;
+
+	GBA::clock.addTicks(1);
 }
 
 //EOR
@@ -796,6 +799,8 @@ inline void Cpu::Thumb_MUL(uint16_t opcode) {
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
 	reg.CPSR_f->C = 0;
+
+	GBA::clock.addTicks(4);	//not accurate but is fine for most cases
 }
 
 //and
@@ -918,6 +923,7 @@ inline void Cpu::Thumb_LDR_PC(uint16_t opcode) {
 
 	*Rd = GBA::memory.read_32(address);
 
+	GBA::clock.addTicks(1);
 }
 
 //store halfword
@@ -944,6 +950,8 @@ inline void Cpu::Thumb_LDRH_I(uint16_t opcode) {
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
 	*Rd = GBA::memory.read_16(Rb + nn);
+
+	GBA::clock.addTicks(1);
 }
 
 //store register offset 
@@ -973,6 +981,8 @@ inline void Cpu::Thumb_LDRH_R(uint16_t opcode) {
 	uint32_t *Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
 
 	*Rd = GBA::memory.read_16(Rb + Ro);
+
+	GBA::clock.addTicks(1);
 }
 
 //store halfword
@@ -1013,6 +1023,8 @@ inline void Cpu::Thumb_LDR_I(uint16_t opcode) {
 	uint8_t offset = ((opcode >> 6) & 0b11111) * 4;
 
 	*Rd = GBA::memory.read_32(Rb + offset);
+
+	GBA::clock.addTicks(1);
 }
 
 //store byte immidate offset
@@ -1038,6 +1050,8 @@ inline void Cpu::Thumb_LDRB_I(uint16_t opcode) {
 	uint8_t offset = ((opcode >> 6) & 0b11111);
 
 	*Rd = GBA::memory.read_8(Rb + offset);
+
+	GBA::clock.addTicks(1);
 }
 
 //move hi register
@@ -1089,6 +1103,8 @@ inline void Cpu::Thumb_BX(uint16_t opcode) {
 
 	reg.R15 = Rs - thumb;
 	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
+
+	GBA::clock.addTicks(2);
 }
 
 //push
@@ -1202,6 +1218,8 @@ inline void Cpu::Thumb_B(uint16_t opcode) {
 	offset += 4;
 
 	reg.R15 += offset;
+
+	GBA::clock.addTicks(2);
 }
 
 //first instruction of long branch with link: LR = PC + 4 + Imm
@@ -1223,6 +1241,8 @@ inline void Cpu::Thumb_BL_2(uint16_t opcode) {
 	uint32_t tempR14 = reg.R15 + 2;
 	reg.R15 = reg.R14 + (lsb << 1);
 	reg.R14 = tempR14 | 0b1;
+
+	GBA::clock.addTicks(2);
 }
 
 //get relative address from sp
@@ -1268,6 +1288,8 @@ inline void Cpu::Thumb_LDR_SP(uint16_t opcode) {
 	uint32_t address = reg.R13 + offset * 4;
 
 	*dst_reg = GBA::memory.read_32(address);
+
+	GBA::clock.addTicks(1);
 }
 
 //store sp-relative
@@ -1509,6 +1531,8 @@ inline void Cpu::Arm_B(uint32_t opcode) {
 	uint32_t offset_24Bit = opcode & 0xffffff;
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R15 += 8 + offset * 4;
+
+	GBA::clock.addTicks(2);
 }
 
 //branch with link
@@ -1517,6 +1541,8 @@ inline void Cpu::Arm_BL(uint32_t opcode) {
 	int32_t offset = convert_24Bit_to_32Bit_signed(offset_24Bit);
 	reg.R14 = reg.R15 + 4;
 	reg.R15 += 8 + offset * 4;
+
+	GBA::clock.addTicks(2);
 }
 
 //branch and exchange
@@ -1531,6 +1557,8 @@ inline void Cpu::Arm_BX(uint32_t opcode) {
 	//note: only bx instruction is defined in ARMv4t
 	reg.R15 = Rn - thumb;
 	reg.CPSR = (reg.CPSR & ~(1 << 5)) | (thumb << 5);
+
+	GBA::clock.addTicks(2);
 }
 
 
@@ -2165,6 +2193,8 @@ inline void Cpu::Arm_STR(uint32_t opcode) {
 		*dest_reg = val;*/
 		GBA::memory.write_32(address, R15_corr + *src_reg);
 	}
+
+	GBA::clock.addTicks(1);
 }
 
 uint32_t countSetBits(uint32_t word) {
