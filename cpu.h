@@ -299,6 +299,7 @@ private:
 	inline void Arm_SUB(uint32_t opcode);
 	inline void Arm_RSB(uint32_t opcode);
 	inline void Arm_ADD(uint32_t opcode);
+	inline void Arm_ADC(uint32_t opcode);
 	inline void Arm_TST(uint32_t opcode);
 	inline void Arm_TEQ(uint32_t opcode);
 	inline void Arm_CMP(uint32_t opcode);
