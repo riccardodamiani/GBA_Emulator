@@ -14,13 +14,35 @@ LcdController::LcdController() {
 
 	DISPSTAT->hblank_flag = 0;
 	DISPSTAT->vblank_flag = 0;
+
+	activeFrameBuffer = 0;
+
+	//allocate frame buffers
+	frameBuffers[0] = new uint8_t[240 * 160 * 4];
+	frameBuffers[1] = new uint8_t[240 * 160 * 4];
+	whiteFrameBuffer = new uint8_t[240 * 160 * 4];
+
+	//init frame buffers
+	memset(frameBuffers[0], 0, 240 * 160 * 4);
+	memset(frameBuffers[1], 0, 240 * 160 * 4);
+	memset(whiteFrameBuffer, 0, 240 * 160 * 4);
 }
 
 
 LcdController::~LcdController() {
-
+	delete frameBuffers[0];
+	delete frameBuffers[1];
+	delete whiteFrameBuffer;
 }
 
+
+const uint8_t const* LcdController::getReadyFrameBuffer() {
+	if (DISPCNT->forced_blank) {
+		return whiteFrameBuffer;
+	}
+
+	return frameBuffers[1 - activeFrameBuffer];	//return the finished buffer
+}
 
 void LcdController::update_V_count(uint32_t cycles) {
 	video_cnt += cycles;
