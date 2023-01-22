@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x177a) {
+	if (reg.R15 == 0x188a) {	//0x177a
 		reg.R15 = reg.R15;
 	}
 
@@ -273,8 +273,8 @@ bool Cpu::thumbCheckCondition(uint16_t opcode) {
 	case 7:		//VC (V = 0) no overflow
 		condition_met = reg.CPSR_f->V == 0;
 		break;
-	case 8:		//HI (C = 1 or Z = 0)	unsigned higher
-		condition_met = (reg.CPSR_f->C == 1) || (reg.CPSR_f->Z == 0);
+	case 8:		//HI (C = 1 and Z = 0)	unsigned higher
+		condition_met = (reg.CPSR_f->C == 1) && (reg.CPSR_f->Z == 0);
 		break;
 	case 9:		//LS (C = 0 or Z=1)	unsigned lower or same
 		condition_met = (reg.CPSR_f->C == 0) || (reg.CPSR_f->Z == 1);
@@ -1333,8 +1333,8 @@ bool Cpu::arm_checkInstructionCondition(uint32_t opcode) {
 	case 7:		//VC (V = 0) no overflow
 		condition_met = reg.CPSR_f->V == 0;
 		break;
-	case 8:		//HI (C = 1 or Z = 0)	unsigned higher
-		condition_met = (reg.CPSR_f->C == 1) || (reg.CPSR_f->Z == 0);
+	case 8:		//HI (C = 1 and Z = 0)	unsigned higher
+		condition_met = (reg.CPSR_f->C == 1) && (reg.CPSR_f->Z == 0);
 		break;
 	case 9:		//LS (C = 0 or Z=1)	unsigned lower or same
 		condition_met = (reg.CPSR_f->C == 0) || (reg.CPSR_f->Z == 1);
