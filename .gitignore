@@ -16,6 +16,8 @@
 !thumb_decoder.cpp
 !arm_decoder.h
 !arm_decoder.cpp
+!lcd_controller.h
+!lcd_controller.cpp
 
 !.gitignore
 !README.md

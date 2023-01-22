@@ -159,6 +159,11 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 	*(uint32_t*)&addr.memory[addr.addr] = data;
 }
 
+//return a pointer to a io register
+uint16_t* MemoryMapper::get_io_reg(uint32_t offset) {
+	return &((uint16_t*)&_ioReg)[offset];
+}
+
 realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	uint8_t mem_chunk = (gba_address >> 24) & 0xff;	//8 msb
 	uint32_t localAddr = gba_address & 0xffffff;	//24 lsb

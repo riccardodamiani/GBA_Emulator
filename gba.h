@@ -3,6 +3,7 @@
 
 #include "memory_mapper.h"
 #include "clock.h"
+#include "lcd_controller.h"
 #include "cpu.h"
 
 #include <string>
@@ -14,6 +15,7 @@ public:
 	static MemoryMapper memory;
 	static Clock clock;
 	static Cpu cpu;
+	static LcdController lcd_ctl;
 private:
 };
 
