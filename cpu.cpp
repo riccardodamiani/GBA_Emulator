@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x188a) {	//0x177a
+	if (reg.R15 == 0x19a4) {	//0x177a
 		reg.R15 = reg.R15;
 	}
 
@@ -407,6 +407,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_STR_O:	//store register offset
 		Thumb_STR_O(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_LDR_O:	//load register offset
+		Thumb_LDR_O(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -967,6 +972,22 @@ inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 
 	GBA::memory.write_32(Rb + Ro, Rd);
 
+}
+
+//read register offset
+inline void Cpu::Thumb_LDR_O(uint16_t opcode) {
+	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
+
+	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_reg_code];	//base address register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t *Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd = GBA::memory.read_32(Rb + Ro);
+
+	GBA::clock.addTicks(1);
 }
 
 //load halfword

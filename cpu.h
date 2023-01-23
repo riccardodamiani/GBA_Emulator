@@ -241,6 +241,7 @@ private:
 
 	//THUMB.7
 	inline void Thumb_STR_O(uint16_t opcode);
+	inline void Thumb_LDR_O(uint16_t opcode);
 
 	//THUMB.8
 	inline void Thumb_LDRH_R(uint16_t opcode);
