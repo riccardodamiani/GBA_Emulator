@@ -5,6 +5,7 @@ ARM_opcode ArmDecoder::decode(uint32_t opcode) {
 
 	if (instr = ARM_IsBranch(opcode)) return instr;		//branches
 	if (instr = ARM_IsSDTHInst(opcode)) return instr;	//load/store halfword
+	if (instr = ARM_IsMultiplication(opcode)) return instr;
 	if (instr = ARM_IsAluInst(opcode)) return instr;	//data processing
 	if (instr = ARM_IsSDTInst(opcode)) return instr;	//single store/load
 	if (instr = ARM_IsBlockDataTransfer(opcode)) return instr;	//block data transfer (push/pop)
@@ -205,4 +206,25 @@ ARM_opcode ArmDecoder::ARM_IsBlockDataTransfer(uint32_t opcode) {
 		return ARM_OP_LDM;
 	}
 	return ARM_OP_STM;
+}
+
+ARM_opcode ArmDecoder::ARM_IsMultiplication(uint32_t opcode) {
+	uint32_t mask = 0b0000'1110'0000'0000'0000'0000'1111'0000;
+	uint32_t format = 0b0000'0000'0000'0000'0000'0000'1001'0000;
+
+	uint32_t opcode_format = opcode & mask;
+
+	if (format != opcode_format)
+		return ARM_OP_INVALID;
+
+	switch ((opcode >> 21) & 0b1111) {
+	case 0:
+		return ARM_OP_MUL;
+		break;
+	case 1:
+		return ARM_OP_MLA;
+		break;
+	}
+
+	return ARM_OP_INVALID;
 }

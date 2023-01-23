@@ -13,6 +13,7 @@ private:
 	static ARM_opcode ARM_IsSDTInst(uint32_t opcode);	//single data transfer
 	static ARM_opcode ARM_IsMSR_MRS(uint32_t opcode);	//MSR/MRS
 	static ARM_opcode ARM_IsBlockDataTransfer(uint32_t opcode);
+	static ARM_opcode ARM_IsMultiplication(uint32_t opcode);
 private:
 };
 

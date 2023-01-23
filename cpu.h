@@ -33,7 +33,9 @@ enum ARM_opcode {
 	ARM_OP_LDR,		//load/store
 	ARM_OP_STR,
 	ARM_OP_MSR,
-	ARM_OP_MRS
+	ARM_OP_MRS,
+	ARM_OP_MUL,
+	ARM_OP_MLA
 };
 
 enum THUMB_opcode {
