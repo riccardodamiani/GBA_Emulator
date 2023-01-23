@@ -246,6 +246,7 @@ private:
 	//THUMB.8
 	inline void Thumb_LDRH_R(uint16_t opcode);
 	inline void Thumb_STRH_R(uint16_t opcode);
+	inline void Thumb_LDRSH(uint16_t opcode);
 
 	//THUMB.9
 	inline void Thumb_STR_I(uint16_t opcode);
@@ -317,6 +318,7 @@ private:
 	//halfword transfer
 	inline void ARM_SDTH_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint32_t &R15_as_src_correction);
 	inline void Arm_LDRH(uint32_t opcode);
+	inline void Arm_LDRSH(uint32_t opcode);
 
 	//single transfer implementations
 	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b,

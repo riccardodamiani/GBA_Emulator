@@ -556,6 +556,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_LDSH_R:	//load sign-extended halfword
+		Thumb_LDRSH(opcode);
+		reg.R15 += 2;
+		break;
+
 	default:
 		std::cout << "!! Thumb instruction not implemented: " << std::hex
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -1020,6 +1025,26 @@ inline void Cpu::Thumb_STRH_R(uint16_t opcode) {
 	GBA::memory.write_16(Rb + Ro, Rd);
 }
 
+//load sign-extended halfword
+inline void Cpu::Thumb_LDRSH(uint16_t opcode) {
+	uint8_t Ro_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_code];	//offset register
+
+	uint8_t Rb_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_code];	//base address register
+
+	uint8_t Rd_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
+
+	*Rd = GBA::memory.read_16(Rb + Ro);
+
+	if (*Rd & 0x8000) {
+		*Rd |= 0xffff0000;
+	}
+	
+	GBA::clock.addTicks(1);
+}
+
 //store immidate offset
 inline void Cpu::Thumb_STR_I(uint16_t opcode) {
 	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
@@ -1466,6 +1491,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_LDRH:	//load halfword
 		Arm_LDRH(opcode);
+		reg.R15 += 4;
+		break;
+
+	case ARM_OP_LDRSH:	//load sign-extended halfword
+		Arm_LDRSH(opcode);
 		reg.R15 += 4;
 		break;
 
@@ -2108,6 +2138,20 @@ inline void Cpu::Arm_LDRH(uint32_t opcode) {
 
 	uint16_t val = GBA::memory.read_16(address);
 	*dest_reg = val;
+}
+
+inline void Cpu::Arm_LDRSH(uint32_t opcode) {
+	uint32_t address, * dest_reg;
+	uint32_t notUsed;
+
+	ARM_SDTH_unpacker(opcode, address, &dest_reg, notUsed);
+
+	uint16_t val = GBA::memory.read_16(address);
+	*dest_reg = val;
+
+	if (val & 0x8000) {
+		*dest_reg |= 0xffff;
+	}
 }
 
 inline void Cpu::ARM_SDT_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint8_t& b,
