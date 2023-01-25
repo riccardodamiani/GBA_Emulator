@@ -1524,6 +1524,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_MUL:	//multiplication
+		Arm_MUL(opcode);
+		reg.R15 += 4;
+		break;
+
 	default:
 		std::cout << "!! Arm instruction not implemented: " << std::hex 
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -2260,6 +2265,31 @@ inline void Cpu::Arm_STR(uint32_t opcode) {
 	}
 
 	GBA::clock.addTicks(1);
+}
+
+//multiplications
+inline void Cpu::Arm_MUL(uint32_t opcode) {
+	
+	//destination register
+	uint8_t Rd_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];
+
+	//get the base address register
+	uint8_t Rs_code = (opcode >> 8) & 0x0f;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_code];
+
+	//operand register
+	uint8_t Rm_code = opcode & 0x0f;
+	uint32_t Rm = ((uint32_t*)&reg)[Rm_code];
+
+	*Rd = Rm * Rs;
+
+	if (opcode & 0x100000) {	//s flag
+		reg.CPSR_f->Z = *Rd == 0;
+		reg.CPSR_f->N = (*Rd & 0x80000000) != 0;	//negative
+		reg.CPSR_f->C = 0;	//carry destroyed on ARMv4
+	}
+
 }
 
 uint32_t countSetBits(uint32_t word) {
