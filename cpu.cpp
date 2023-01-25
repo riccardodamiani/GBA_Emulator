@@ -1494,6 +1494,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_STRH:	//store halfword
+		Arm_STRH(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_LDRSH:	//load sign-extended halfword
 		Arm_LDRSH(opcode);
 		reg.R15 += 4;
@@ -2143,6 +2148,15 @@ inline void Cpu::Arm_LDRH(uint32_t opcode) {
 
 	uint16_t val = GBA::memory.read_16(address);
 	*dest_reg = val;
+}
+
+inline void Cpu::Arm_STRH(uint32_t opcode) {
+	uint32_t address, * dest_reg;
+	uint32_t notUsed;
+
+	ARM_SDTH_unpacker(opcode, address, &dest_reg, notUsed);
+
+	GBA::memory.write_16(address, (uint16_t)*dest_reg);
 }
 
 inline void Cpu::Arm_LDRSH(uint32_t opcode) {

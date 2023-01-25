@@ -320,6 +320,7 @@ private:
 	//halfword transfer
 	inline void ARM_SDTH_unpacker(uint32_t opcode, uint32_t& address, uint32_t** src_dest_reg, uint32_t &R15_as_src_correction);
 	inline void Arm_LDRH(uint32_t opcode);
+	inline void Arm_STRH(uint32_t opcode);
 	inline void Arm_LDRSH(uint32_t opcode);
 
 	//single transfer implementations
