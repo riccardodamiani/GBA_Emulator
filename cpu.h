@@ -229,6 +229,7 @@ private:
 	inline void Thumb_MVN(uint16_t opcode);
 	inline void Thumb_ORR(uint16_t opcode);
 	inline void Thumb_CMP(uint16_t opcode);
+	inline void Thumb_CMN(uint16_t opcode);
 	inline void Thumb_ROR(uint16_t opcode);
 	inline void Thumb_EOR(uint16_t opcode);
 	inline void Thumb_MUL(uint16_t opcode);

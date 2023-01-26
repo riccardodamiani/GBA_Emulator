@@ -365,6 +365,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_CMN:	//cmn
+		Thumb_CMN(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_MUL:
 		Thumb_MUL(opcode);
 		reg.R15 += 2;
@@ -763,6 +768,23 @@ inline void Cpu::Thumb_CMP(uint16_t opcode) {
 	reg.CPSR_f->C = !(Rd < Rs);	//carry = !borrow
 	//if oper1 and oper2 have same sign but result have different sign: overflow
 	reg.CPSR_f->V = (((~(Rd ^ (uint32_t)(-(int32_t)Rs))) & (Rd ^ result)) >> 31) & 1;
+}
+
+//cmn
+inline void Cpu::Thumb_CMN(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];
+
+	uint64_t result = (uint64_t)Rd + (uint64_t)Rs;
+
+	reg.CPSR_f->Z = (result & 0xffffffff) == 0;
+	reg.CPSR_f->N = (result & 0x80000000) != 0;	//negative
+	reg.CPSR_f->C = (result >> 32) & 1;	//carry
+	//if oper1 and oper2 have same sign but result have different sign: overflow
+	reg.CPSR_f->V = (((~(Rd ^ Rs)) & (Rd ^ result)) >> 31) & 1;
 }
 
 //ROR
