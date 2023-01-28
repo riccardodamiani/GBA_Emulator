@@ -3,11 +3,13 @@
 #include "clock.h"
 #include "thumb_decoder.h"
 #include "arm_decoder.h"
+#include "interrupt.h"
 
 #include <cstdint>
 #include <iostream>
 
 Clock GBA::clock;
+Interrupt GBA::irq;
 
 Cpu::Cpu()
 {
@@ -234,6 +236,8 @@ void Cpu::next_instruction() {
 	if (reg.R15 == 0x2d60) {
 		reg.R15 = reg.R15;
 	}
+
+	GBA::irq.checkInterrupts();
 
 	if (reg.CPSR_f->T) {	//thumb
 		next_instruction_thumb();
