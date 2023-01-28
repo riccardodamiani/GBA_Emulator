@@ -192,7 +192,7 @@ void Cpu::Reset() {
 	
 }
 
-void Cpu::RaiseIRQ() {
+void Cpu::RaiseIRQ(Interrupt_Type type) {
 
 }
 

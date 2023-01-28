@@ -1,6 +1,8 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include "interrupt.h"
+
 #include <cstdint>
 
 enum ARM_opcode {
@@ -174,6 +176,8 @@ public:
 	Cpu();
 	void runFor(uint32_t ticks);
 	uint32_t getPC();
+
+	void RaiseIRQ(Interrupt_Type type);
 private:
 	Registers reg;
 	uint8_t shifter_carry_out;
@@ -191,7 +195,7 @@ private:
 	void next_instruction_arm();
 
 	void Reset();
-	void RaiseIRQ();
+	
 	void RaiseFIQ();
 	void RaiseUndefined();
 	void RaiseSWI();
