@@ -21,7 +21,7 @@
 !graphics.h
 !graphics.cpp
 !interrupt.h
-!interrput.cpp
+!interrupt.cpp
 
 !.gitignore
 !README.md
