@@ -11,17 +11,20 @@ Interrupt::Interrupt() {
 
 //set bit 0 of interrupt flag register
 void Interrupt::setVBlankFlag() {
-	*IF |= 1;	
+	if(*IE & 0b1)
+		*IF |= 1;	
 }
 
 //set bit 1 of interrupt flag register
 void Interrupt::setHBlankFlag() {
-	*IF |= 0b10;
+	if (*IE & 0b10)
+		*IF |= 0b10;
 }
 
 //set bit 2 of interrupt flag register
 void Interrupt::setVCounterFlag() {
-	*IF |= 0b100;
+	if (*IE & 0b100)
+		*IF |= 0b100;
 }
 
 void Interrupt::checkInterrupts() {

@@ -27,8 +27,6 @@ public:
 	void setHBlankFlag();
 	void setVCounterFlag();
 	void checkInterrupts();
-	void disableIrq();
-	void enableIrq();
 private:
 	uint16_t *IE, *IF, *IME;
 	uint8_t irq_cnt;
