@@ -209,7 +209,7 @@ void Cpu::RaiseIRQ(Interrupt_Type type) {
 	uint32_t prev_cpsr = reg.CPSR;	//save cpsr
 	setPrivilegeMode(PrivilegeMode::IRQ);	//change cpu mode
 	reg.SPSR = prev_cpsr;	//set irq spsr to previous cpsr
-	reg.R14 = reg.R15;	//save R15
+	reg.R14 = reg.R15 + 4;	//save R15 (+4 for prefetching)
 	reg.CPSR_f->I = 1;	//disable interrupts
 
 	switch (type) {
@@ -1871,6 +1871,7 @@ inline void Cpu::Arm_ORR(uint32_t opcode) {
 
 	uint32_t result = oper1 | oper2;
 	*dest_reg = result;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
@@ -1893,6 +1894,7 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	*dest_reg = oper2;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 	
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
@@ -1941,6 +1943,7 @@ inline void Cpu::Arm_AND(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 
 	*dest_reg = oper1 & oper2;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
@@ -1965,6 +1968,7 @@ inline void Cpu::Arm_EOR(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 
 	*dest_reg = oper1 ^ oper2;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {	//flags
 		if (dest_reg != &reg.R15) {
@@ -2011,6 +2015,7 @@ inline void Cpu::Arm_ADD(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint64_t result = (uint64_t)oper1 + (uint64_t)oper2;
 	*dest_reg = oper1 + oper2;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
@@ -2037,6 +2042,7 @@ inline void Cpu::Arm_ADC(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint64_t result = (uint64_t)oper1 + (uint64_t)oper2 + reg.CPSR_f->C;
 	*dest_reg = result;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
@@ -2063,6 +2069,7 @@ inline void Cpu::Arm_SUB(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint32_t result = oper1 - oper2;
 	*dest_reg = result;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
@@ -2089,6 +2096,7 @@ inline void Cpu::Arm_RSB(uint32_t opcode) {
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	uint32_t result = oper2 - oper1;
 	*dest_reg = result;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
@@ -2113,6 +2121,7 @@ inline void Cpu::Arm_BIC(uint32_t opcode) {
 
 	ARM_ALU_unpacker(opcode, &dest_reg, oper1, oper2, s);
 	*dest_reg = oper1 & ~oper2;
+	if (dest_reg == &reg.R15) *dest_reg -= 4;	//R15 will be increased after the instruction
 
 	if (s) {
 		if (dest_reg != &reg.R15) {
