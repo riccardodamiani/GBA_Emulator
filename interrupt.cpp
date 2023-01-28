@@ -8,15 +8,17 @@ Interrupt::Interrupt() {
 	IME = GBA::memory.get_io_reg(0x208);
 }
 
-//set bit 0 og interrupt flag register
+//set bit 0 of interrupt flag register
 void Interrupt::setVBlankFlag() {
 	*IF |= 1;	
 }
 
+//set bit 1 of interrupt flag register
 void Interrupt::setHBlankFlag() {
 	*IF |= 0b10;
 }
 
+//set bit 2 of interrupt flag register
 void Interrupt::setVCounterFlag() {
 	*IF |= 0b100;
 }
@@ -28,7 +30,7 @@ void Interrupt::checkInterrupts() {
 
 		for (int i = 0; i < 14; i++) {	//find the irq
 			if ((irqs >> i) & 1) {
-				GBA::cpu.RaiseIRQ(IRQ_BIT_TYPE[i]);	//raise the corrisponding irq
+				GBA::cpu.RaiseIRQ((Interrupt_Type)i);	//raise the corrisponding irq
 				return;
 			}
 		}
