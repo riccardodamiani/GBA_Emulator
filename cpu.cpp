@@ -209,7 +209,7 @@ void Cpu::RaiseIRQ(Interrupt_Type type) {
 	uint32_t prev_cpsr = reg.CPSR;	//save cpsr
 	setPrivilegeMode(PrivilegeMode::IRQ);	//change cpu mode
 	reg.SPSR = prev_cpsr;	//set irq spsr to previous cpsr
-	reg.R14 = reg.R15 + 4;	//save R15 (+4 because of prefetch)
+	reg.R14 = reg.R15;	//save R15
 	reg.CPSR_f->I = 1;	//disable interrupts
 
 	switch (type) {
@@ -259,7 +259,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x2d60) {
+	if (reg.R15 == 0x15ba) {	//0x2d60
 		reg.R15 = reg.R15;
 	}
 
@@ -598,6 +598,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_LDSH_R:	//load sign-extended halfword
 		Thumb_LDRSH(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_LDSB_R:	//load sign-extended byte
+		Thumb_LDRSB(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -1114,6 +1119,26 @@ inline void Cpu::Thumb_LDRSH(uint16_t opcode) {
 		*Rd |= 0xffff0000;
 	}
 	
+	GBA::clock.addTicks(1);
+}
+
+//load sign-extende byte
+inline void Cpu::Thumb_LDRSB(uint16_t opcode) {
+	uint8_t Ro_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_code];	//offset register
+
+	uint8_t Rb_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_code];	//base address register
+
+	uint8_t Rd_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_code];	//destination register
+
+	*Rd = GBA::memory.read_8(Rb + Ro);
+
+	if (*Rd & 0x80) {
+		*Rd |= 0xffffff00;
+	}
+
 	GBA::clock.addTicks(1);
 }
 
