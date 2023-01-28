@@ -29,6 +29,7 @@ public:
 	void checkInterrupts();
 private:
 	uint16_t *IE, *IF, *IME;
+	uint8_t irq_cnt;
 
 };
 

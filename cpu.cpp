@@ -206,12 +206,15 @@ void Cpu::Reset() {
 
 void Cpu::RaiseIRQ(Interrupt_Type type) {
 
-	reg.SPSR_irq = reg.CPSR;
-	setPrivilegeMode(PrivilegeMode::IRQ);
+	uint32_t prev_cpsr = reg.CPSR;	//save cpsr
+	setPrivilegeMode(PrivilegeMode::IRQ);	//change cpu mode
+	reg.SPSR = prev_cpsr;	//set irq spsr to previous cpsr
+	reg.R14 = reg.R15 + 4;	//save R15 (+4 because of prefetch)
+
 	switch (type) {
 	case 0:	//v-blank
 		reg.CPSR_f->T = 0;	//set arm mode
-		reg.R15 = 0x18;
+		reg.R15 = 0x18;	//irq vector
 		break;
 	default:
 		break;

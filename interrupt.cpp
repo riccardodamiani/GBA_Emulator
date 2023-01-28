@@ -6,6 +6,7 @@ Interrupt::Interrupt() {
 	IE = GBA::memory.get_io_reg(0x200);
 	IF = GBA::memory.get_io_reg(0x202);
 	IME = GBA::memory.get_io_reg(0x208);
+	irq_cnt = 3;
 }
 
 //set bit 0 of interrupt flag register
@@ -28,7 +29,14 @@ void Interrupt::checkInterrupts() {
 		uint16_t irqs = *IE & *IF;
 		if (!irqs) return;	//no irq 
 
-		for (int i = 0; i < 14; i++) {	//find the irq
+		//need a bit of time before the interrupt happens
+		irq_cnt--;
+		if (irq_cnt > 0)	
+			return;
+		irq_cnt = 3;
+
+		//find the irq
+		for (int i = 0; i < 14; i++) {
 			if ((irqs >> i) & 1) {
 				GBA::cpu.RaiseIRQ((Interrupt_Type)i);	//raise the corrisponding irq
 				return;
