@@ -210,6 +210,7 @@ void Cpu::RaiseIRQ(Interrupt_Type type) {
 	setPrivilegeMode(PrivilegeMode::IRQ);	//change cpu mode
 	reg.SPSR = prev_cpsr;	//set irq spsr to previous cpsr
 	reg.R14 = reg.R15 + 4;	//save R15 (+4 because of prefetch)
+	reg.CPSR_f->I = 1;	//disable interrupts
 
 	switch (type) {
 	case 0:	//v-blank
@@ -262,7 +263,7 @@ void Cpu::next_instruction() {
 		reg.R15 = reg.R15;
 	}
 
-	GBA::irq.checkInterrupts();
+	if(!reg.CPSR_f->I) GBA::irq.checkInterrupts();
 
 	if (reg.CPSR_f->T) {	//thumb
 		next_instruction_thumb();
