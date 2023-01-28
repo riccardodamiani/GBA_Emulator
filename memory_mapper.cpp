@@ -120,6 +120,11 @@ void MemoryMapper::write_8(uint32_t address, uint8_t data) {
 
 	GBA::clock.addTicks(addr.accessTimings[0]);
 
+	if (addr.memory == (uint8_t*)&_ioReg && (addr.addr == 0x202 || addr.addr == 0x203)) {	//clearing interrupt flag
+		addr.memory[addr.addr] &= ~data;
+		return;
+	}
+
 	addr.memory[addr.addr] = data;
 }
 
@@ -135,13 +140,13 @@ void MemoryMapper::write_16(uint32_t address, uint16_t data) {
 
 	if (addr.memory == nullptr)
 		return;
-	
+
+	GBA::clock.addTicks(addr.accessTimings[1]);
+
 	if (addr.memory == (uint8_t *)&_ioReg && addr.addr == 0x202) {	//clearing interrupt flag
 		_ioReg.IF &= ~data;
 		return;
 	}
-
-	GBA::clock.addTicks(addr.accessTimings[1]);
 
 	*(uint16_t*)&addr.memory[addr.addr] = data;
 }
