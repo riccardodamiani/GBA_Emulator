@@ -2339,6 +2339,7 @@ inline void Cpu::Arm_LDR(uint32_t opcode) {
 		uint8_t disalignment = address % 4;
 		uint32_t val = rightRotate(GBA::memory.read_32(address - disalignment), disalignment * 8);
 		*dest_reg = val;
+		if (dest_reg == &reg.R15) *dest_reg -= 4;
 	}
 
 }
