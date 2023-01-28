@@ -18,10 +18,10 @@ public:
 	static Clock clock;
 	static Cpu cpu;
 	static LcdController lcd_ctl;
+	static Interrupt irq;
 private:
 	static double limit_fps(double elapsedTime, double maxFPS);
 	static Graphics graphics;
-	static Interrupt irq;
 };
 
 #endif

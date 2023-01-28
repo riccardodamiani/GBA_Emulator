@@ -1,6 +1,7 @@
 #include "lcd_controller.h"
 #include "gba.h"
 #include "memory_mapper.h"
+#include "interrupt.h"
 
 #include <cstdint>
 
@@ -54,8 +55,18 @@ void LcdController::update_V_count(uint32_t cycles) {
 		if (video_cnt > 1232) {
 			DISPSTAT->hblank_flag = 0;	//h-draw
 			video_cnt %= 1232;
+			GBA::irq.setHBlankFlag();	//h-blank irq
 			*VCOUNT += 1;
+
+			//v-counter irq
+			if (DISPSTAT->vcounter_irq_enable && DISPSTAT->LYC == *VCOUNT) {
+				GBA::irq.setVCounterFlag();
+			}
+
 			if (*VCOUNT >= 160) {	//v-blank
+				if (!DISPSTAT->vblank_flag && DISPSTAT->vblank_irq_enable) {	//v-blank irq
+					GBA::irq.setVBlankFlag();
+				}
 				DISPSTAT->vblank_flag = 1;
 				if (*VCOUNT >= 228) {
 					*VCOUNT %= 228;
@@ -64,8 +75,6 @@ void LcdController::update_V_count(uint32_t cycles) {
 			}
 		}
 	}
-
-
 }
 
 

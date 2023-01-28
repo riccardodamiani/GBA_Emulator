@@ -13,6 +13,14 @@ void Interrupt::setVBlankFlag() {
 	*IF |= 1;	
 }
 
+void Interrupt::setHBlankFlag() {
+	*IF |= 0b10;
+}
+
+void Interrupt::setVCounterFlag() {
+	*IF |= 0b100;
+}
+
 void Interrupt::checkInterrupts() {
 	if ((*IME & 1) && (*IE & *IF)) {	//there is a irq request
 
