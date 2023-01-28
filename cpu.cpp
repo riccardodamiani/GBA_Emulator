@@ -231,7 +231,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x19a4) {	//0x177a
+	if (reg.R15 == 0x2d60) {
 		reg.R15 = reg.R15;
 	}
 
@@ -382,6 +382,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 
 	case THUMB_OP_EOR:
 		Thumb_EOR(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_BIC:
+		Thumb_BIC(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -833,6 +838,21 @@ inline void Cpu::Thumb_MUL(uint16_t opcode) {
 	reg.CPSR_f->C = 0;
 
 	GBA::clock.addTicks(4);	//not accurate but is fine for most cases
+}
+
+//bit clear
+inline void Cpu::Thumb_BIC(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd &= ~Rs;
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+
 }
 
 //and
