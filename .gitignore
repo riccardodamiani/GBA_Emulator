@@ -20,6 +20,8 @@
 !lcd_controller.cpp
 !graphics.h
 !graphics.cpp
+!interrupt.h
+!interrput.cpp
 
 !.gitignore
 !README.md
