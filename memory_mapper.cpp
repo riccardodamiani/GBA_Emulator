@@ -135,6 +135,11 @@ void MemoryMapper::write_16(uint32_t address, uint16_t data) {
 
 	if (addr.memory == nullptr)
 		return;
+	
+	if (addr.memory == (uint8_t *)&_ioReg && addr.addr == 0x202) {	//clearing interrupt flag
+		_ioReg.IF &= ~data;
+		return;
+	}
 
 	GBA::clock.addTicks(addr.accessTimings[1]);
 
