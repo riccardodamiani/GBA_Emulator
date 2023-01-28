@@ -41,6 +41,7 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 		reg.R12_std = reg.R12;
 		reg.R13_svc = reg.R13;
 		reg.R14_svc = reg.R14;
+		reg.SPSR_svc = reg.SPSR;
 		break;
 
 	case IRQ:
@@ -51,6 +52,7 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 		reg.R12_std = reg.R12;
 		reg.R13_irq = reg.R13;
 		reg.R14_irq = reg.R14;
+		reg.SPSR_irq = reg.SPSR;
 		break;
 
 	case FIQ:
@@ -61,6 +63,7 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 		reg.R12_fiq = reg.R12;
 		reg.R13_fiq = reg.R13;
 		reg.R14_fiq = reg.R14;
+		reg.SPSR_fiq = reg.SPSR;
 		break;
 
 	case UNDEFINED:
@@ -71,6 +74,7 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 		reg.R12_std = reg.R12;
 		reg.R13_und = reg.R13;
 		reg.R14_und = reg.R14;
+		reg.SPSR_und = reg.SPSR;
 		break;
 
 	case ABORT:
@@ -81,6 +85,7 @@ void Cpu::saveBankReg(PrivilegeMode currentMode) {
 		reg.R12_std = reg.R12;
 		reg.R13_abt = reg.R13;
 		reg.R14_abt = reg.R14;
+		reg.SPSR_abt = reg.SPSR;
 		break;
 
 	case USER: case SYSTEM:
@@ -107,6 +112,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R13 = reg.R13_svc;
 		reg.R14 = reg.R14_svc;
 		reg.CPSR_f->mode = newMode;
+		reg.SPSR = reg.SPSR_svc;
 		break;
 
 	case IRQ:
@@ -118,6 +124,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R13 = reg.R13_irq;
 		reg.R14 = reg.R14_irq;
 		reg.CPSR_f->mode = newMode;
+		reg.SPSR = reg.SPSR_irq;
 		break;
 
 	case FIQ:
@@ -129,6 +136,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R13 = reg.R13_fiq;
 		reg.R14 = reg.R14_fiq;
 		reg.CPSR_f->mode = newMode;
+		reg.SPSR = reg.SPSR_fiq;
 		break;
 
 	case UNDEFINED:
@@ -140,6 +148,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R13 = reg.R13_und;
 		reg.R14 = reg.R14_und;
 		reg.CPSR_f->mode = newMode;
+		reg.SPSR = reg.SPSR_und;
 		break;
 
 	case ABORT:
@@ -151,6 +160,7 @@ void Cpu::getBankReg(PrivilegeMode newMode) {
 		reg.R13 = reg.R13_abt;
 		reg.R14 = reg.R14_abt;
 		reg.CPSR_f->mode = newMode;
+		reg.SPSR = reg.SPSR_abt;
 		break;
 
 	case USER: case SYSTEM:
@@ -196,6 +206,18 @@ void Cpu::Reset() {
 
 void Cpu::RaiseIRQ(Interrupt_Type type) {
 
+	reg.SPSR_irq = reg.CPSR;
+	setPrivilegeMode(PrivilegeMode::IRQ);
+	switch (type) {
+	case 0:	//v-blank
+		reg.CPSR_f->T = 0;	//set arm mode
+		reg.R15 = 0x18;
+		break;
+	default:
+		break;
+	}
+
+	return;
 }
 
 void Cpu::RaiseFIQ() {
@@ -1828,8 +1850,9 @@ inline void Cpu::Arm_ORR(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -1849,8 +1872,9 @@ inline void Cpu::Arm_MOV(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -1872,8 +1896,9 @@ inline void Cpu::Arm_TEQ(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -1895,8 +1920,9 @@ inline void Cpu::Arm_AND(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 
@@ -1918,8 +1944,9 @@ inline void Cpu::Arm_EOR(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -1939,8 +1966,9 @@ inline void Cpu::Arm_TST(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -1964,8 +1992,9 @@ inline void Cpu::Arm_ADD(uint32_t opcode) {
 			reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 
@@ -1989,8 +2018,9 @@ inline void Cpu::Arm_ADC(uint32_t opcode) {
 			reg.CPSR_f->V = (((~(oper1 ^ oper2)) & (oper1 ^ *dest_reg)) >> 31) & 1;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -2014,8 +2044,9 @@ inline void Cpu::Arm_SUB(uint32_t opcode) {
 			reg.CPSR_f->V = (((~(oper1 ^ (uint32_t)(-(int32_t)oper2))) & (oper1 ^ result)) >> 31) & 1;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}	
 }
@@ -2039,8 +2070,9 @@ inline void Cpu::Arm_RSB(uint32_t opcode) {
 			reg.CPSR_f->V = (((~(oper2 ^ (uint32_t)(-(int32_t)oper1))) & (oper2 ^ result)) >> 31) & 1;
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
@@ -2060,8 +2092,9 @@ inline void Cpu::Arm_BIC(uint32_t opcode) {
 			reg.CPSR_f->C = shifter_carry_out;	//carry
 		}
 		else {
+			uint32_t prev_cpsr = reg.SPSR;
 			setPrivilegeMode((PrivilegeMode)((CPSR_registers*)&reg.SPSR)->mode);
-			reg.CPSR = reg.SPSR;
+			reg.CPSR = prev_cpsr;
 		}
 	}
 }
