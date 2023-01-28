@@ -64,6 +64,8 @@ void LcdController::update_V_count(uint32_t cycles) {
 			}
 		}
 	}
+
+
 }
 
 

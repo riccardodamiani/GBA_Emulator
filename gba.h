@@ -6,6 +6,7 @@
 #include "lcd_controller.h"
 #include "cpu.h"
 #include "graphics.h"
+#include "interrupt.h"
 
 #include <string>
 
@@ -20,6 +21,7 @@ public:
 private:
 	static double limit_fps(double elapsedTime, double maxFPS);
 	static Graphics graphics;
+	static Interrupt irq;
 };
 
 #endif
