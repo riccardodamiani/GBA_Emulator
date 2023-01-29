@@ -33,6 +33,35 @@ struct dispStat_struct {
 		LYC : 8;	//(0..227)                            (R / W)
 };
 
+struct obj_attribute {
+	uint16_t y_coord : 8,	//y coord on screen
+		rot_scale_flag : 1,	//1 = enable
+		// when rot_scale_flag == 1, 1 = double size
+		//else 1 = don't display sprite
+		double_or_obj_disable : 1,
+		obj_mode : 2,	//(0=Normal, 1=Semi-Transparent, 2=OBJ Window, 3=Prohibited)
+		obj_mosaic : 1,	//1 = active
+		palette : 1,		//(0=16/16, 1=256/1)
+		obj_shape : 2;	//(0=Square,1=Horizontal,2=Vertical,3=Prohibited)
+	uint16_t x_coord : 8,	//x coord on screen
+		//when rot_scale_flag == 1
+			//9-13: rotation scale parameter selection
+		//else the following:
+	rot_scale_par_sel: 3,	//first 3 bit of rotation scale parameter selection
+		h_flip : 1,	//horizontal flip
+		v_flip : 1,	//vertical flip
+		obj_size : 2;	//(0..3, depends on OBJ Shape, see Attr 0)
+	/*Size  Square   Horizontal  Vertical
+		0     8x8      16x8        8x16
+		1     16x16    32x8        8x32
+		2     32x32    32x16       16x32
+		3     64x64    64x32       32x64*/
+	uint16_t tile_number : 10,	//tile number
+		priority : 2,	//priority relative to background (0-3; 0=Highest)
+		palette_num : 4;	//(0-15) (Not used in 256 color/1 palette mode)
+	uint16_t just_to_fill_some_space_because_of_the_stupid_way_object_attribute_memory_was_organized;
+};
+
 struct helperParams {
 	dispCnt_struct DISPCNT;
 	dispStat_struct DISPSTAT;
