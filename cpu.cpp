@@ -370,6 +370,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_LSR:	//lsr
+		Thumb_LSR(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_TST:
 		Thumb_TST(opcode);
 		reg.R15 += 2;
@@ -907,6 +912,26 @@ inline void Cpu::Thumb_AND(uint16_t opcode) {
 
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+}
+
+inline void Cpu::Thumb_LSR(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	uint32_t result = *Rd >> (Rs & 0xff);
+
+	if (Rs > 0) {
+		uint32_t pre_result = *Rd >> ((Rs & 0xff) - 1);
+		reg.CPSR_f->C = pre_result & 1;
+		*Rd = pre_result >> 1;
+	}
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
+
 }
 
 //TST
