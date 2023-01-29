@@ -331,6 +331,7 @@ private:
 	inline void Arm_LDRH(uint32_t opcode);
 	inline void Arm_STRH(uint32_t opcode);
 	inline void Arm_LDRSH(uint32_t opcode);
+	inline void Arm_LDRSB(uint32_t opcode);
 
 	//single transfer implementations
 	inline void ARM_SDT_unpacker(uint32_t opcode, uint32_t &address, uint32_t** src_dest_reg, uint8_t& b,

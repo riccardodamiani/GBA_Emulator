@@ -1648,6 +1648,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_LDRSB:	//load sign-extended byte
+		Arm_LDRSB(opcode);
+		reg.R15 += 4;
+		break;
+
 	case ARM_OP_LDM:		//load data block (pop)
 		Arm_LDM(opcode);
 		reg.R15 += 4;
@@ -2334,6 +2339,21 @@ inline void Cpu::Arm_LDRSH(uint32_t opcode) {
 
 	if (val & 0x8000) {
 		*dest_reg |= 0xffff;
+	}
+}
+
+//load sign-extended byte
+inline void Cpu::Arm_LDRSB(uint32_t opcode) {
+	uint32_t address, * dest_reg;
+	uint32_t notUsed;
+
+	ARM_SDTH_unpacker(opcode, address, &dest_reg, notUsed);
+
+	uint16_t val = GBA::memory.read_8(address);
+	*dest_reg = val;
+
+	if (val & 0x80) {
+		*dest_reg |= 0xffffff00;
 	}
 }
 
