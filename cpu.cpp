@@ -445,13 +445,18 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_STR_O:	//store register offset
+	case THUMB_OP_STR_O:	//store word with register offset
 		Thumb_STR_O(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_LDR_O:	//load register offset
+	case THUMB_OP_LDR_O:	//load word with register offset
 		Thumb_LDR_O(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_LDRB_O:	//load byte with register offset
+		Thumb_LDRB_O(opcode);
 		reg.R15 += 2;
 		break;
 
@@ -1041,7 +1046,7 @@ inline void Cpu::Thumb_LDRH_I(uint16_t opcode) {
 	GBA::clock.addTicks(1);
 }
 
-//store register offset 
+//store word with register offset 
 inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
@@ -1056,7 +1061,7 @@ inline void Cpu::Thumb_STR_O(uint16_t opcode) {
 
 }
 
-//read register offset
+//load word with register offset
 inline void Cpu::Thumb_LDR_O(uint16_t opcode) {
 	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
 	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
@@ -1071,6 +1076,23 @@ inline void Cpu::Thumb_LDR_O(uint16_t opcode) {
 
 	GBA::clock.addTicks(1);
 }
+
+//load byte with register offset
+inline void  Cpu::Thumb_LDRB_O(uint16_t opcode) {
+	uint8_t Ro_reg_code = (opcode >> 6) & 0b111;
+	uint32_t Ro = ((uint32_t*)&reg)[Ro_reg_code];	//offset register
+
+	uint8_t Rb_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rb = ((uint32_t*)&reg)[Rb_reg_code];	//base address register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	*Rd = GBA::memory.read_8(Rb + Ro);
+
+	GBA::clock.addTicks(1);
+}
+
 
 //load halfword
 inline void Cpu::Thumb_LDRH_R(uint16_t opcode) {
