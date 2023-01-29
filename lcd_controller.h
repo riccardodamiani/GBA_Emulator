@@ -40,6 +40,7 @@ struct helperParams {
 	uint8_t *palette_copy;
 	uint8_t *oam_copy;
 	uint8_t *vram_copy;
+	uint8_t *screenBUffer;
 };
 
 class LcdController {

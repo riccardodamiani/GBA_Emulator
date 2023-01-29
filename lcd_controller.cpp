@@ -91,12 +91,13 @@ void LcdController::update_V_count(uint32_t cycles) {
 	h_cnt = video_cnt / 4;
 
 	if (video_cnt > 960) {	//h-blank
-		if (!DISPSTAT->hblank_flag) {	//first time in h-blank: draw the current scanline
+		if (!DISPSTAT->hblank_flag && *VCOUNT < 160) {	//first time in h-blank: draw the current scanline
 
 			drawer->Wait();	//wait for the helper to finish the previous job
 			drawerParams.DISPCNT = *DISPCNT;
 			drawerParams.DISPSTAT = *DISPSTAT;
 			drawerParams.vCount = *VCOUNT;
+			drawerParams.screenBUffer = frameBuffers[activeFrameBuffer];
 			drawer->startWork(1, helperRoutine, &drawerParams);	//start the new job
 		}
 		DISPSTAT->hblank_flag = 1;
@@ -120,6 +121,7 @@ void LcdController::update_V_count(uint32_t cycles) {
 				if (*VCOUNT >= 228) {
 					*VCOUNT %= 228;
 					DISPSTAT->vblank_flag = 0;	//v-draw
+					activeFrameBuffer = 1 - activeFrameBuffer;	//change frame buffer
 				}
 			}
 		}
