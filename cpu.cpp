@@ -2338,7 +2338,7 @@ inline void Cpu::Arm_LDRSH(uint32_t opcode) {
 	*dest_reg = val;
 
 	if (val & 0x8000) {
-		*dest_reg |= 0xffff;
+		*dest_reg |= 0xffff0000;
 	}
 }
 
