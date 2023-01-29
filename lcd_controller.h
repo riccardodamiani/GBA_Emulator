@@ -5,6 +5,16 @@
 
 #include "multithreadManager.h" 
 
+struct V2Int {
+	uint32_t x, y;
+};
+
+V2Int const sprites_tiles_table[3][4] = {
+	{{8, 8}, {16, 16}, {32, 32}, {64, 64}},
+	{{16, 8}, {32, 8}, {32, 16}, {64, 32}},
+	{{8, 16}, {8, 32}, {16, 32}, {32, 64}}
+};
+
 struct dispCnt_struct {
 	uint16_t bg_mode : 3,	//(0-5=Video Mode 0-5, 6-7=Prohibited)
 		cgb_mode : 1,	//(0=GBA, 1=CGB; can be set only by BIOS opcodes)
@@ -43,7 +53,7 @@ struct obj_attribute {
 		obj_mosaic : 1,	//1 = active
 		palette : 1,		//(0=16/16, 1=256/1)
 		obj_shape : 2;	//(0=Square,1=Horizontal,2=Vertical,3=Prohibited)
-	uint16_t x_coord : 8,	//x coord on screen
+	uint16_t x_coord : 9,	//x coord on screen
 		//when rot_scale_flag == 1
 			//9-13: rotation scale parameter selection
 		//else the following:
