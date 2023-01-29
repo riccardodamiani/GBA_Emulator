@@ -167,11 +167,44 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 	GBA::clock.addTicks(addr.accessTimings[2]);
 
 	*(uint32_t*)&addr.memory[addr.addr] = data;
+
+	if (addr.addr == 0x3e90 && data == 0xfefefefe) {
+		address = address;
+	}
 }
 
 //return a pointer to a io register
 uint16_t* MemoryMapper::get_io_reg(uint32_t offset) {
 	return (uint16_t *) ( & ((uint8_t*)&_ioReg)[offset]);
+}
+
+uint8_t* MemoryMapper::getMemoryAddr(int chunk) {
+
+	switch (chunk) {
+	case 0:
+		return _bios_mem.get();
+		break;
+	case 2:
+		return _e_wram.get();
+		break; 
+	case 3:
+		return _i_wram.get();
+		break;
+	case 4:
+		return (uint8_t *)&_ioReg;
+		break;
+	case 5:
+		return _palette_ram.get();
+		break;
+	case 6:
+		return _vram.get();
+		break;
+	case 7:
+		return _oam.get();
+		break;
+	default:
+		return nullptr;
+	}
 }
 
 realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {

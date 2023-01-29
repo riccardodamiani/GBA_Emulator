@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "multithreadManager.h" 
+
 struct dispCnt_struct {
 	uint16_t bg_mode : 3,	//(0-5=Video Mode 0-5, 6-7=Prohibited)
 		cgb_mode : 1,	//(0=GBA, 1=CGB; can be set only by BIOS opcodes)
@@ -31,6 +33,15 @@ struct dispStat_struct {
 		LYC : 8;	//(0..227)                            (R / W)
 };
 
+struct helperParams {
+	dispCnt_struct DISPCNT;
+	dispStat_struct DISPSTAT;
+	uint16_t vCount;
+	uint8_t *palette_copy;
+	uint8_t *oam_copy;
+	uint8_t *vram_copy;
+};
+
 class LcdController {
 public:
 	LcdController();
@@ -38,6 +49,8 @@ public:
 	void update_V_count(uint32_t cycles);
 	void update();
 	const uint32_t const* getBufferToRender();
+	static void helperRoutine(int start_index, int end_index, void *args);
+	static void printSprites(helperParams& params);
 private:
 	uint32_t video_cnt;
 	uint32_t h_cnt;
@@ -47,6 +60,14 @@ private:
 	uint8_t* frameBuffers[2];
 	uint8_t* whiteFrameBuffer;
 	uint8_t activeFrameBuffer;
+	uint8_t print_new_scanline;
+
+	//helper stuff
+	MultithreadManager *drawer;
+	helperParams drawerParams;
+	uint8_t* oam_copy;
+	uint8_t* palette_copy;
+	uint8_t* vram_copy;
 };
 
 #endif

@@ -69,6 +69,7 @@ public:
 	void write_16(uint32_t address, uint16_t data);
 	void write_32(uint32_t address, uint32_t data);
 	uint16_t* get_io_reg(uint32_t offset);
+	uint8_t* getMemoryAddr(int chunk);
 private:
 	//memory
 	std::unique_ptr <uint8_t[]> _bios_mem;

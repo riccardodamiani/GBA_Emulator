@@ -22,6 +22,10 @@
 !graphics.cpp
 !interrupt.h
 !interrupt.cpp
+!multithreadManager.h
+!multithreadManager.cpp
+!threadHelper.h
+!threadHelper.cpp
 
 !.gitignore
 !README.md
