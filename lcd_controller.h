@@ -43,6 +43,20 @@ struct dispStat_struct {
 		LYC : 8;	//(0..227)                            (R / W)
 };
 
+struct gba_palette_color {
+	uint16_t r : 5,
+		g : 5,
+		b : 5,
+		not_used : 1;
+};
+
+struct rgba_color {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+};
+
 struct obj_attribute {
 	uint16_t y_coord : 8,	//y coord on screen
 		rot_scale_flag : 1,	//1 = enable
@@ -79,7 +93,7 @@ struct helperParams {
 	uint8_t *palette_copy;
 	uint8_t *oam_copy;
 	uint8_t *vram_copy;
-	uint8_t *screenBUffer;
+	uint8_t * screenBuffer;
 };
 
 class LcdController {
@@ -91,6 +105,7 @@ public:
 	const uint32_t const* getBufferToRender();
 	static void helperRoutine(int start_index, int end_index, void *args);
 	static void printSprites(helperParams& params);
+	static void getSpriteRowMem(obj_attribute& attr, V2Int& spriteSize, int line, rgba_color* objRowBuffer, int& pixel_count, helperParams& params);
 private:
 	uint32_t video_cnt;
 	uint32_t h_cnt;

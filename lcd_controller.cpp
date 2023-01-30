@@ -83,7 +83,92 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 }
 
 void LcdController::printSprites(helperParams& params) {
+	
+	obj_attribute* spriteAttributes = (obj_attribute*)params.oam_copy;
+	rgba_color objRowBuffer[128];	//allocate 128 pixels
+	int bufferLen;
+	rgba_color* rgba_frameBuffer = (rgba_color*)params.screenBuffer;
 
+	if (params.vCount >= 160)
+		return;
+
+	for (int i = 127; i >= 0; i--) {
+		obj_attribute& currentObjAttr = spriteAttributes[i];
+		if (currentObjAttr.x_coord == 0 && currentObjAttr.y_coord == 0)
+			continue;
+
+		if (!currentObjAttr.rot_scale_flag && currentObjAttr.double_or_obj_disable)	//object disabled
+			continue;
+
+		V2Int spriteSize = sprites_tiles_table[currentObjAttr.obj_shape][currentObjAttr.obj_size];
+		int rowToDraw = params.vCount - currentObjAttr.y_coord;
+
+		if (rowToDraw < 0 || rowToDraw >= spriteSize.y)
+			continue;
+
+		int pixel_count = 0;
+		getSpriteRowMem(currentObjAttr, spriteSize, rowToDraw, objRowBuffer, pixel_count, params);
+
+		//copy the sprite row on the frame buffer
+		for (int i = 0; i < pixel_count; i++) {
+			int pixel_x = currentObjAttr.x_coord + i;
+			if (pixel_x < 0 || pixel_x >= 240) continue;
+
+			rgba_frameBuffer[params.vCount * 240 + pixel_x] = objRowBuffer[i];
+		}
+	}
+
+}
+
+void LcdController::getSpriteRowMem(obj_attribute& attr, V2Int &spriteSize, int rowToDraw, rgba_color *objRowBuffer, int &pixel_count, helperParams& params) {
+	
+	uint8_t* spritesMem = (params.DISPCNT.bg_mode < 3) ? params.vram_copy + 0x10000 : params.vram_copy + 0x14000;
+	
+
+	if (!params.DISPCNT.obj_vram_map) {
+		uint8_t obj_mem_tile_size;
+		obj_mem_tile_size = 32 - attr.palette * 16;	//256 pixels for 16 color mode, 128 pixels for 256 color mode
+
+		uint32_t rowTile = (attr.tile_number / (1 + attr.palette)) + obj_mem_tile_size * (rowToDraw / 8);
+		uint32_t lineInTileToDraw = rowToDraw % 8;
+		int double_pixel = (attr.double_or_obj_disable & attr.rot_scale_flag) + 1;
+		pixel_count = spriteSize.x * double_pixel;
+		for (int i = 0; i < spriteSize.x / 8; i++) {
+			uint8_t* tileMem = spritesMem + (rowTile + i) * (0x20 + attr.palette * 0x20);
+			uint8_t* tileRowMem = tileMem + lineInTileToDraw * 8 / (2 - attr.palette);
+
+			if (attr.palette) {	//256 color palette
+				gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200);
+
+				for (int pixel = 0; pixel < 8; pixel++) {
+					gba_palette_color gba_color = palette[tileRowMem[pixel]];
+					for (int d = 0; d < double_pixel; d++) {
+						rgba_color& rgba_pixel_color = objRowBuffer[double_pixel * (i * 8 + pixel) + d];
+						rgba_pixel_color.r = gba_color.r * 8;
+						rgba_pixel_color.g = gba_color.g * 8;
+						rgba_pixel_color.b = gba_color.b * 8;
+						rgba_pixel_color.a = 255;
+					}
+				}
+			}
+			else {	//16 color palette
+				gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200 + attr.palette_num * 32);
+
+				for (int pixel = 0; pixel < 8; pixel++) {
+					int palette_entry = (tileRowMem[pixel / 2] >> (4 - 4 * (pixel % 2))) & 0b1111;
+					gba_palette_color gba_color = palette[palette_entry];
+					for (int d = 0; d < double_pixel; d++) {
+						rgba_color& rgba_pixel_color = objRowBuffer[double_pixel * (i * 8 + pixel) + d];
+						rgba_pixel_color.r = gba_color.r * 8;
+						rgba_pixel_color.g = gba_color.g * 8;
+						rgba_pixel_color.b = gba_color.b * 8;
+						rgba_pixel_color.a = 255;
+					}
+				}
+			}
+			
+		}
+	}
 }
 
 void LcdController::update_V_count(uint32_t cycles) {
@@ -97,7 +182,7 @@ void LcdController::update_V_count(uint32_t cycles) {
 			drawerParams.DISPCNT = *DISPCNT;
 			drawerParams.DISPSTAT = *DISPSTAT;
 			drawerParams.vCount = *VCOUNT;
-			drawerParams.screenBUffer = frameBuffers[activeFrameBuffer];
+			drawerParams.screenBuffer = frameBuffers[activeFrameBuffer];
 			drawer->startWork(1, helperRoutine, &drawerParams);	//start the new job
 		}
 		DISPSTAT->hblank_flag = 1;
@@ -122,6 +207,7 @@ void LcdController::update_V_count(uint32_t cycles) {
 					*VCOUNT %= 228;
 					DISPSTAT->vblank_flag = 0;	//v-draw
 					activeFrameBuffer = 1 - activeFrameBuffer;	//change frame buffer
+					memset(frameBuffers[activeFrameBuffer], 0, 240 * 160 * 4);	//clean the buffer
 				}
 			}
 		}
