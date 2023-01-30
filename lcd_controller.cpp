@@ -111,11 +111,11 @@ void LcdController::printSprites(helperParams& params) {
 		getSpriteRowMem(currentObjAttr, spriteSize, rowToDraw, objRowBuffer, pixel_count, params);
 
 		//copy the sprite row on the frame buffer
-		for (int i = 0; i < pixel_count; i++) {
-			int pixel_x = currentObjAttr.x_coord + i;
+		for (int pixel = 0; pixel < pixel_count; pixel++) {
+			int pixel_x = (currentObjAttr.x_coord + pixel) % 512;
 			if (pixel_x < 0 || pixel_x >= 240) continue;
 
-			rgba_frameBuffer[params.vCount * 240 + pixel_x] = objRowBuffer[i];
+			rgba_frameBuffer[params.vCount * 240 + pixel_x] = objRowBuffer[pixel];
 		}
 	}
 
