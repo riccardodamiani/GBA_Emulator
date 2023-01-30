@@ -101,7 +101,8 @@ void LcdController::printSprites(helperParams& params) {
 			continue;
 
 		V2Int spriteSize = sprites_tiles_table[currentObjAttr.obj_shape][currentObjAttr.obj_size];
-		int rowToDraw = params.vCount - currentObjAttr.y_coord;
+		int double_size = (currentObjAttr.double_or_obj_disable & currentObjAttr.rot_scale_flag) + 1;
+		int rowToDraw = (params.vCount - currentObjAttr.y_coord) / double_size;
 
 		if (rowToDraw < 0 || rowToDraw >= spriteSize.y)
 			continue;
