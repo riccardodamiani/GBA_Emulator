@@ -102,7 +102,11 @@ void LcdController::printSprites(helperParams& params) {
 
 		V2Int spriteSize = sprites_tiles_table[currentObjAttr.obj_shape][currentObjAttr.obj_size];
 		int double_size = (currentObjAttr.double_or_obj_disable & currentObjAttr.rot_scale_flag) + 1;
-		int rowToDraw = (params.vCount - currentObjAttr.y_coord) / double_size;
+
+		int rowToDraw;
+		if(currentObjAttr.y_coord + spriteSize.y * double_size >= 256)
+			rowToDraw = (params.vCount - (currentObjAttr.y_coord - 256)) / double_size;
+		else rowToDraw = (params.vCount - currentObjAttr.y_coord) / double_size;
 
 		if (rowToDraw < 0 || rowToDraw >= spriteSize.y)
 			continue;
@@ -114,6 +118,9 @@ void LcdController::printSprites(helperParams& params) {
 		for (int pixel = 0; pixel < pixel_count; pixel++) {
 			int pixel_x = (currentObjAttr.x_coord + pixel) % 512;
 			if (pixel_x < 0 || pixel_x >= 240) continue;
+
+			if (objRowBuffer[pixel].a == 0)	//ignore transparent pixels
+				continue;
 
 			rgba_frameBuffer[params.vCount * 240 + pixel_x] = objRowBuffer[pixel];
 		}
@@ -142,13 +149,16 @@ void LcdController::getSpriteRowMem(obj_attribute& attr, V2Int &spriteSize, int 
 				gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200);
 
 				for (int pixel = 0; pixel < 8; pixel++) {
+					uint8_t alpha = 255;
+					if (tileRowMem[pixel] == 0) alpha = 0;
+
 					gba_palette_color gba_color = palette[tileRowMem[pixel]];
 					for (int d = 0; d < double_pixel; d++) {
 						rgba_color& rgba_pixel_color = objRowBuffer[double_pixel * (i * 8 + pixel) + d];
 						rgba_pixel_color.r = gba_color.r * 8;
 						rgba_pixel_color.g = gba_color.g * 8;
 						rgba_pixel_color.b = gba_color.b * 8;
-						rgba_pixel_color.a = 255;
+						rgba_pixel_color.a = alpha;
 					}
 				}
 			}
@@ -156,6 +166,9 @@ void LcdController::getSpriteRowMem(obj_attribute& attr, V2Int &spriteSize, int 
 				gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200 + attr.palette_num * 32);
 
 				for (int pixel = 0; pixel < 8; pixel++) {
+					uint8_t alpha = 255;
+					if (tileRowMem[pixel] == 0) alpha = 0;
+
 					int palette_entry = (tileRowMem[pixel / 2] >> (4 - 4 * (pixel % 2))) & 0b1111;
 					gba_palette_color gba_color = palette[palette_entry];
 					for (int d = 0; d < double_pixel; d++) {
@@ -163,7 +176,7 @@ void LcdController::getSpriteRowMem(obj_attribute& attr, V2Int &spriteSize, int 
 						rgba_pixel_color.r = gba_color.r * 8;
 						rgba_pixel_color.g = gba_color.g * 8;
 						rgba_pixel_color.b = gba_color.b * 8;
-						rgba_pixel_color.a = 255;
+						rgba_pixel_color.a = alpha;
 					}
 				}
 			}
