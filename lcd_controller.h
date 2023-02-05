@@ -6,13 +6,17 @@
 #include "multithreadManager.h" 
 
 struct V2Int {
-	uint32_t x, y;
+	int32_t x, y;
 };
 
 V2Int const sprites_tiles_table[3][4] = {
 	{{8, 8}, {16, 16}, {32, 32}, {64, 64}},
 	{{16, 8}, {32, 8}, {32, 16}, {64, 32}},
 	{{8, 16}, {8, 32}, {16, 32}, {32, 64}}
+};
+
+struct vector2 {
+	float x, y;
 };
 
 struct dispCnt_struct {
@@ -41,6 +45,20 @@ struct dispStat_struct {
 		vcounter_irq_enable : 1,	//(1=Enable)                          (R/W)
 		not_used : 2,
 		LYC : 8;	//(0..227)                            (R / W)
+};
+
+struct gba_rot_scale_parameter {
+	uint16_t fract : 8,
+		integer : 7,
+		sign : 1;
+};
+
+struct Transf_Gba_Matrix {
+	gba_rot_scale_parameter PA, PB, PC, PD;
+};
+
+struct Matrix2x2 {
+	float PA, PB, PC, PD;
 };
 
 struct gba_palette_color {
@@ -83,7 +101,7 @@ struct obj_attribute {
 	uint16_t tile_number : 10,	//tile number
 		priority : 2,	//priority relative to background (0-3; 0=Highest)
 		palette_num : 4;	//(0-15) (Not used in 256 color/1 palette mode)
-	uint16_t just_to_fill_some_space_because_of_the_stupid_way_object_attribute_memory_was_organized;
+	gba_rot_scale_parameter rot_scale_param;
 };
 
 struct helperParams {
@@ -105,7 +123,9 @@ public:
 	const uint32_t const* getBufferToRender();
 	static void helperRoutine(int start_index, int end_index, void *args);
 	static void printSprites(helperParams& params);
-	static void getSpriteRowMem(obj_attribute& attr, V2Int& spriteSize, int line, rgba_color* objRowBuffer, int& pixel_count, helperParams& params);
+	static void getSpriteScanline(obj_attribute& attr, V2Int& spriteSize, int line, rgba_color* objRowBuffer, helperParams& params);
+	static void transformPixelCoords(V2Int src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& spriteSize, int doubleSize);
+	static void getSpritePixel(obj_attribute& attr, helperParams& params, V2Int coords, rgba_color& color);
 private:
 	uint32_t video_cnt;
 	uint32_t h_cnt;

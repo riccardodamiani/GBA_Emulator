@@ -259,7 +259,7 @@ void Cpu::next_instruction_thumb() {
 //execute the next instruction
 void Cpu::next_instruction() {
 
-	if (reg.R15 == 0x6e8) {	//0x2d60
+	if (reg.R15 == 0x2d60) {	//0x6e8
 		reg.R15 = reg.R15;
 	}
 
