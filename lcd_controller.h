@@ -36,6 +36,57 @@ struct dispCnt_struct {
 		obj_wnd_enable : 1;
 };
 
+struct bg_offset_struct {
+	uint16_t offset : 9,	// (0-511)
+		not_used : 7;
+};
+
+struct obj_window_size {
+	uint16_t c2 : 8,
+		c1 : 8;
+};
+
+struct window_control {
+	uint16_t w0_layer_enable : 5,
+		w0_spec_eff : 1,
+		not_used : 2,
+		w1_layer_enable : 5,
+		w1_spec_eff : 1,
+		not_used_2 : 2;
+};
+
+struct obj_window_control {
+	uint16_t out_layer_enable : 5,
+		out_spec_eff : 1,
+		not_used : 2,
+		obj_win_layer_enable : 5,
+		obj_win_spec_eff : 1,
+		not_used_2 : 2;
+};
+
+struct bg_scrolling_struct {
+	bg_offset_struct HOFS, VOFS;
+};
+
+struct BGCNT_struct {
+	uint16_t bg_priority : 2,	// (0-3, 0=Highest)
+		ch_base_block : 2,	//(0-3, in units of 16 KBytes) (=BG Tile Data)
+		not_used : 2,	//used only in NDS
+		mosaic : 1,
+		palette : 1,	// (0=16/16, 1=256/1)
+		screen_base_block : 5,	//(0-31, in units of 2 KBytes) (=BG Map Data)
+		display_overflow : 1,	// Display Area Overflow (0=Transparent, 1=Wraparound)
+		screen_size : 2;	// 0-3
+/*
+Internal Screen Size (dots) and size of BG Map (bytes):
+  Value  Text Mode      Rotation/Scaling Mode
+  0      256x256 (2K)   128x128   (256 bytes)
+  1      512x256 (4K)   256x256   (1K)
+  2      256x512 (4K)   512x512   (4K)
+  3      512x512 (8K)   1024x1024 (16K)
+*/
+};
+
 struct dispStat_struct {
 	uint16_t vblank_flag : 1,	//(Read only) (1=VBlank) (set in line 160..226; not 227)
 		hblank_flag : 1,		//(Read only) (1=HBlank) (toggled in all lines, 0..227)
@@ -47,18 +98,25 @@ struct dispStat_struct {
 		LYC : 8;	//(0..227)                            (R / W)
 };
 
-struct gba_rot_scale_parameter {
+struct gba_16_fpd {	//16 bit fixed point decimal
 	uint16_t fract : 8,
 		integer : 7,
 		sign : 1;
 };
 
+struct gba_32_fpd {	//32 bit fixed point decimal
+	uint32_t fract : 8,
+		integer : 19,
+		sign : 1,
+		unused : 4;
+};
+
 struct Transf_Gba_Matrix {
-	gba_rot_scale_parameter PA, PB, PC, PD;
+	gba_16_fpd A, B, C, D;
 };
 
 struct Matrix2x2 {
-	float PA, PB, PC, PD;
+	float A, B, C, D;
 };
 
 struct gba_palette_color {
@@ -101,17 +159,85 @@ struct obj_attribute {
 	uint16_t tile_number : 10,	//tile number
 		priority : 2,	//priority relative to background (0-3; 0=Highest)
 		palette_num : 4;	//(0-15) (Not used in 256 color/1 palette mode)
-	gba_rot_scale_parameter rot_scale_param;
+	gba_16_fpd rot_scale_param;
+};
+
+enum LayerType {
+	NO_TYPE = 0,
+	BG0 = 1,
+	BG1 = 2,
+	BG2 = 4,
+	BG3 = 8,
+	OBJ = 16,
+	BD = 32
+};
+
+struct pixelOptionsStruct {
+	uint8_t priority : 7,
+		alphaBlending : 1;
+};
+
+struct SpecialEffectPixel {
+	rgba_color color;
+	pixelOptionsStruct option;
+	LayerType type;
+};
+
+
+struct ScanlinePixel {
+	rgba_color color;
+	pixelOptionsStruct option;
+};
+
+struct graphicsScanline {
+	ScanlinePixel scanline[240];
+	LayerType type;
+};
+
+struct graphicsPixel {
+	ScanlinePixel pixel;
+	LayerType type;
+	pixelOptionsStruct option;
+};
+
+
+//alpha blending parameters
+struct BLDALPHA_struct {
+	uint32_t eva_coeff : 5,	//ev coefficient for target a
+		unused1 : 3,
+		evb_coeff : 5,	//ev coefficient for target b
+		unused2 : 3;
+};// formula: I = MIN ( 31, I1st*EVA + I2nd*EVB )
+
+//brightness coefficient
+struct BLDY_struct {
+	uint32_t evy_coeff : 5,
+		unused : 27;
+};
+
+struct BG_reference_point_struct {
+	gba_32_fpd x, y;
 };
 
 struct helperParams {
 	dispCnt_struct DISPCNT;
 	dispStat_struct DISPSTAT;
 	uint16_t vCount;
+	uint16_t BLDCNT;
+	obj_window_size WIN0H, WIN1H, WIN0V, WIN1V;
+	window_control WININ;
+	obj_window_control WINOUT;
+	BLDALPHA_struct BLDALPHA;
+	BLDY_struct BLDY;
+	bg_scrolling_struct BG_OFFSETS[4];
+	BGCNT_struct BGCNT[4];
+	BG_reference_point_struct GB2_REF_POINT, GB3_REF_POINT;
+	Transf_Gba_Matrix BG2_TRANSF_MATRIX, BG3_TRANSF_MATRIX;
+
 	uint8_t *palette_copy;
 	uint8_t *oam_copy;
 	uint8_t *vram_copy;
-	uint8_t * screenBuffer;
+	uint8_t *screenBuffer;
 };
 
 class LcdController {
@@ -121,17 +247,39 @@ public:
 	void update_V_count(uint32_t cycles);
 	void update();
 	const uint32_t const* getBufferToRender();
+	static bool activeBg(helperParams& params, int bg_nr);
 	static void helperRoutine(int start_index, int end_index, void *args);
-	static void printSprites(helperParams& params);
-	static void getSpriteScanline(obj_attribute& attr, V2Int& spriteSize, int line, rgba_color* objRowBuffer, helperParams& params);
+	static void getObjLayerScanline(helperParams& params, graphicsScanline** layers, int& activeLayers, uint8_t* windowObjMask);
+	static void getSpriteScanline(obj_attribute& attr, V2Int& spriteSize, int line, graphicsScanline* objRowBuffer, helperParams& params);
 	static void transformPixelCoords(V2Int src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& spriteSize, int doubleSize);
 	static void getSpritePixel(obj_attribute& attr, helperParams& params, V2Int coords, rgba_color& color);
+
+	static void get_bg_layer_scanline(helperParams& params, graphicsScanline** layers, int& activeLayers);
+	static void background_mode2(helperParams& params, graphicsScanline** layers, int& asctiveLayers);
+	static void bg_transform_pixel_coords(vector2 src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& bgSize);
+	static void get_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
+
+	static void order_bg_scanlines(graphicsScanline** layers, int activeLayers);
+	static void order_layer_pixels(graphicsPixel** layer_pixels, int activeLayers);
+	inline static uint8_t get_bg_window_mask(helperParams& params, LayerType type, uint8_t objWindowMask, uint16_t x_coord, uint16_t y_coord);
+
 private:
 	uint32_t video_cnt;
 	uint32_t h_cnt;
 	dispCnt_struct* DISPCNT;
 	dispStat_struct* DISPSTAT;
 	uint16_t* VCOUNT;
+	uint16_t* BLDCNT;
+	obj_window_size *WIN0H, *WIN1H, *WIN0V, *WIN1V;
+	window_control *WININ;
+	obj_window_control *WINOUT;
+	BLDALPHA_struct *BLDALPHA;
+	BLDY_struct *BLDY;
+	BGCNT_struct* BG0CNT;
+	bg_scrolling_struct* BG_OFFSETS;
+	BG_reference_point_struct *GB2_REF_POINT, *GB3_REF_POINT;
+	Transf_Gba_Matrix *BG2_TRANSF_MATRIX, *BG3_TRANSF_MATRIX;
+
 	uint8_t* frameBuffers[2];
 	uint8_t* whiteFrameBuffer;
 	uint8_t activeFrameBuffer;
