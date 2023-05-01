@@ -91,6 +91,44 @@ bool LcdController::activeBg(helperParams& params, int bg_nr) {
 	return (dispcnt >> (8 + bg_nr)) & 1;
 }
 
+void LcdController::apply_special_effects(helperParams& params, SpecialEffectPixel& lowerPixel,
+	graphicsPixel& upperPixel,
+	SpecialEffectPixel& finalPixel) {
+
+	uint8_t specialEffect = (params.BLDCNT >> 6) & 0b11;
+
+	//check for alpha blending
+	if (((upperPixel.type & LayerType::OBJ) && upperPixel.option.alphaBlending) ||	//is a semi-transparent object pixel
+		(specialEffect == 1 &&	//alpha blending enabled
+			((params.BLDCNT & (uint16_t)upperPixel.type) != 0))) {	//the layer is a first target layer for alpha blending 
+		uint32_t eva = params.BLDALPHA.eva_coeff <= 16 ? params.BLDALPHA.eva_coeff : 16;
+		uint32_t evb = params.BLDALPHA.evb_coeff <= 16 ? params.BLDALPHA.evb_coeff : 16;
+		if (((lowerPixel.type << 8) & 0xff00 & params.BLDCNT) != 0 &&	//the below pixel is a second target for alpha blending
+			lowerPixel.option.priority > upperPixel.option.priority) {	//the second target pixel has lower priority than the first target
+			finalPixel.color.r = std::min<int>(255, upperPixel.pixel.color.r * eva / 16 +
+				finalPixel.color.r * evb / 16);
+			finalPixel.color.g = std::min<int>(255, upperPixel.pixel.color.g * eva / 16 +
+				finalPixel.color.g * evb / 16);
+			finalPixel.color.b = std::min<int>(255, upperPixel.pixel.color.b * eva / 16 +
+				finalPixel.color.b * evb / 16);
+			finalPixel.color.a = 255;
+
+			return;
+		}
+	}
+	//check for brigthness increase
+	if (specialEffect == 2) {
+
+	}
+	//check for brigthness decrease
+	if (specialEffect == 3) {
+
+	}
+	finalPixel.color = upperPixel.pixel.color;
+	finalPixel.option = upperPixel.pixel.option;
+	finalPixel.type = upperPixel.type;
+}
+
 void LcdController::order_bg_scanlines(graphicsScanline** layers, int activeLayers) {
 	bool sorted = true;
 
@@ -132,10 +170,7 @@ void LcdController::order_layer_pixels(graphicsPixel** layerPixels, int activeLa
 inline uint8_t LcdController::get_bg_window_mask(helperParams& params, LayerType type, uint8_t objWindowMask, uint16_t x_coord, uint16_t y_coord) {
 	uint8_t visible = 1;
 
-	if (!params.DISPCNT.obj_wnd_enable)
-		return 1;
-
-	uint8_t objwin = (params.WINOUT.obj_win_layer_enable & type);
+	uint8_t objwin = params.DISPCNT.obj_wnd_enable * (params.WINOUT.obj_win_layer_enable & type);
 	if (objwin) {
 		visible = objWindowMask;
 	}
@@ -206,29 +241,7 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 				continue;
 
 			//check for alpha blending
-			if (((currentPixel.type & LayerType::OBJ) && currentPixel.option.alphaBlending) ||	//is a semi-transparent object pixel
-				(params.BLDCNT & (uint16_t)currentPixel.type) != 0) {	//the layer is a first target layer for alpha blending 
-				uint32_t eva = params.BLDALPHA.eva_coeff <= 16 ? params.BLDALPHA.eva_coeff : 16;
-				uint32_t evb = params.BLDALPHA.evb_coeff <= 16 ? params.BLDALPHA.evb_coeff : 16;
-				if (((finalPixel.type << 8) & 0xff00 & params.BLDCNT) != 0 &&	//the below pixel is a second target for alpha blending
-					finalPixel.option.priority > currentPixel.option.priority) {	//the second target pixel has lower priority than the first target
-					finalPixel.color.r = std::min<int>(255, currentPixel.pixel.color.r * eva / 16 +
-						finalPixel.color.r * evb / 16);
-					finalPixel.color.g = std::min<int>(255, currentPixel.pixel.color.g * eva / 16 +
-						finalPixel.color.g * evb / 16);
-					finalPixel.color.b = std::min<int>(255, currentPixel.pixel.color.b * eva / 16 +
-						finalPixel.color.b * evb / 16);
-					finalPixel.color.a = 255;
-
-					//print final color in the frame buffer
-					rgba_frameBuffer[params.vCount * 240 + pixel] = finalPixel.color;
-
-					continue;
-				}
-			}
-			finalPixel.color = currentPixel.pixel.color;
-			finalPixel.option = currentPixel.pixel.option;
-			finalPixel.type = currentPixel.type;
+			apply_special_effects(params, finalPixel, currentPixel, finalPixel);
 		}
 
 		//print final color in the frame buffer

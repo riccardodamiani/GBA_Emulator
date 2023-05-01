@@ -259,6 +259,7 @@ public:
 	static void bg_transform_pixel_coords(vector2 src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& bgSize);
 	static void get_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
 
+	static void apply_special_effects(helperParams& params, SpecialEffectPixel& lowerPixel, graphicsPixel& upperPixel, SpecialEffectPixel& finalPixel);
 	static void order_bg_scanlines(graphicsScanline** layers, int activeLayers);
 	static void order_layer_pixels(graphicsPixel** layer_pixels, int activeLayers);
 	inline static uint8_t get_bg_window_mask(helperParams& params, LayerType type, uint8_t objWindowMask, uint16_t x_coord, uint16_t y_coord);
