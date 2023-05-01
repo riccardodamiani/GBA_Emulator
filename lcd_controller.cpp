@@ -116,17 +116,30 @@ void LcdController::apply_special_effects(helperParams& params, SpecialEffectPix
 			return;
 		}
 	}
-	//check for brigthness increase
-	if (specialEffect == 2) {
 
-	}
-	//check for brigthness decrease
-	if (specialEffect == 3) {
-
-	}
 	finalPixel.color = upperPixel.pixel.color;
 	finalPixel.option = upperPixel.pixel.option;
 	finalPixel.type = upperPixel.type;
+
+	//check for brigthness increase
+	if (specialEffect == 2) {
+		uint32_t evy = params.BLDY.evy_coeff <= 16 ? params.BLDY.evy_coeff : 16;
+		
+		finalPixel.color.r = std::min<int>(255, finalPixel.color.r + (255 - finalPixel.color.r) * evy / 16);
+		finalPixel.color.g = std::min<int>(255, finalPixel.color.g + (255 - finalPixel.color.g) * evy / 16);
+		finalPixel.color.b = std::min<int>(255, finalPixel.color.b + (255 - finalPixel.color.b) * evy / 16);
+		return;
+	}
+	//check for brigthness decrease
+	if (specialEffect == 3) {
+		uint32_t evy = params.BLDY.evy_coeff <= 16 ? params.BLDY.evy_coeff : 16;
+
+		finalPixel.color.r = std::min<int>(255, finalPixel.color.r - (255 - finalPixel.color.r) * evy / 16);
+		finalPixel.color.g = std::min<int>(255, finalPixel.color.g - (255 - finalPixel.color.g) * evy / 16);
+		finalPixel.color.b = std::min<int>(255, finalPixel.color.b - (255 - finalPixel.color.b) * evy / 16);
+		return;
+	}
+	
 }
 
 void LcdController::order_bg_scanlines(graphicsScanline** layers, int activeLayers) {
@@ -204,6 +217,11 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 
 	if (!activeLayers) {
 		memset(rgba_frameBuffer, 0xff, 240 * 4);
+		//delete stuff
+		for (int i = 0; i < activeLayers; i++) {
+			delete layers[i];
+		}
+		delete[] layers;
 		return;
 	}
 	
