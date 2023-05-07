@@ -9,23 +9,28 @@ Done:
 * Bios loading
 * Game rom loading
 * Gba memory mapping
-
+* GamePak:
+	* read data from GamePak
+* Video:
+	* object affine transformation
+	* Objects priority
+	* rendering of background 3 in mode 2
+	* special effect: alpha blending
+	* special effect: brightness adjust
+	* graphic layers priority
+  
 Not even started:  
 * Audio 
 * Dma
 * Keypad inputs
 * Serial communication
 * Timers
-
+  
 In progress:
 * Arm/Thumb instruction sets (~80% done)
-* GamePak:
-	* read from GamePak
 * Video:
 	* Object 2-dimentional tile mapping
 	* Object 256 color palette
-	* object affine transformation
-	* Objects priority
 * Cpu interrupts:
 	* V-blank
 * Cpu timings
