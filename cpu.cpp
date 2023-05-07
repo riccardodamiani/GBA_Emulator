@@ -262,7 +262,7 @@ void Cpu::next_instruction() {
 	if (reg.R15 == 0x8000326) {	//0x800032a 0x20d0 0x1e30 0x2d60 0x6e8
 		reg.R15 = reg.R15;
 	}
-	if (reg.R15 == 0x80CFA56) {	//byte 0x3ed0 (fe), 
+	if (reg.R15 == 0x80Ce9fa) {	//byte 0x3ed0 (fe), 
 		reg.R15 = reg.R15;
 	}
 
@@ -1456,14 +1456,11 @@ inline void Cpu::Thumb_B(uint16_t opcode) {
 inline void Cpu::Thumb_BL_1(uint16_t opcode) {
 
 	uint32_t msb = (opcode & 0x7ff) << 12;
+	if (msb & 0x400000) {	//msb is a 23 bit signed number
+		msb |= 0xff800000;	//convert it into 32 bit negative
+	}
 
 	reg.R14 = (reg.R15 + 4 + msb); //& 0x7fffff;
-	if (reg.R14 & 0x800000 && (msb & 0x400000)) {
-		reg.R14 &= 0x7fffff;
-	}
-	if (reg.R14 & 0x400000) {	//is negative (consider R14 as a 23 bit signed integer)
-		reg.R14 |= 0xff800000;
-	}
 }
 
 //second instruction of long branch with link: PC = LR + Imm
