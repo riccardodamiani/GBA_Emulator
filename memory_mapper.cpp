@@ -1,9 +1,12 @@
 #include "memory_mapper.h"
 #include "gba.h"
+#include "error.h"
 
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
+
 
 MemoryMapper::MemoryMapper() :
 	_bios_mem(new uint8_t[0x4000]),
@@ -124,7 +127,6 @@ void MemoryMapper::write_8(uint32_t address, uint8_t data) {
 		addr.memory[addr.addr] &= ~data;
 		return;
 	}
-
 	addr.memory[addr.addr] = data;
 }
 
@@ -167,10 +169,6 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 	GBA::clock.addTicks(addr.accessTimings[2]);
 
 	*(uint32_t*)&addr.memory[addr.addr] = data;
-
-	if (addr.addr == 0x3e90 && data == 0xfefefefe) {
-		address = address;
-	}
 }
 
 //return a pointer to a io register
@@ -214,6 +212,10 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	switch (mem_chunk) {
 	case 0:		//bios
 	{
+#ifdef _DEBUG
+		if (localAddr > 0x3fff)
+			printError(CRITICAL_ERROR, "trying to access out of bound memory");
+#endif
 		if (localAddr > 0x3fff)
 			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
@@ -226,6 +228,10 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 
 	case 2:	//external wram
 	{
+#ifdef _DEBUG
+		if (localAddr > 0x3ffff)
+			printError(CRITICAL_ERROR, "trying to access out of bound memory");
+#endif
 		return { _e_wram.get(), localAddr & 0x3ffff, accessTimings[4] };
 		break;
 	}		
@@ -236,6 +242,10 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 	case 4:	//io registers
 	{
+#ifdef _DEBUG
+		if (localAddr > 0x803)
+			printError(CRITICAL_ERROR, "trying to access out of bound memory");
+#endif
 		if (localAddr > 0x803)
 			return { nullptr, 0, nullptr };	//avoid out of bound memory access
 
@@ -248,6 +258,10 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 	case 5:	//palette ram
 	{
+#ifdef _DEBUG
+		if (localAddr > 0x3ff)
+			printError(CRITICAL_ERROR, "trying to access out of bound memory");
+#endif
 		return { _palette_ram.get(), localAddr & 0x3ff, accessTimings[5] };
 		break;
 	}
@@ -262,6 +276,10 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	}
 	case 7:	//oam
 	{
+#ifdef _DEBUG
+		if (localAddr > 0x3ff)
+			printError(CRITICAL_ERROR, "trying to access out of bound memory");
+#endif
 		return { _oam.get(), localAddr & 0x3ff, accessTimings[3] };
 		break;
 	}

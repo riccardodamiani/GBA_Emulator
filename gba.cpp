@@ -19,7 +19,7 @@ void GBA::Run() {
 
     double totTime = 0;
     double elapsedTime = 0;
-    float clock_speed = 0.1;
+    float clock_speed = 1;
     while (1) {
         auto startTime = std::chrono::high_resolution_clock::now();
 

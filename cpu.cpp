@@ -258,8 +258,11 @@ void Cpu::next_instruction_thumb() {
 
 //execute the next instruction
 void Cpu::next_instruction() {
-
-	if (reg.R15 == 0x2d60) {	//0x6e8
+	//TODO FIX BUG IN 0x8000326 bl
+	if (reg.R15 == 0x8000326) {	//0x800032a 0x20d0 0x1e30 0x2d60 0x6e8
+		reg.R15 = reg.R15;
+	}
+	if (reg.R15 == 0x80CFA56) {	//byte 0x3ed0 (fe), 
 		reg.R15 = reg.R15;
 	}
 
@@ -485,11 +488,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_B:
+	case THUMB_OP_B:	//branch
 		Thumb_B(opcode);
 		break;
 
-	case THUMB_OP_BX:
+	case THUMB_OP_BX:	//branch exchange
 		Thumb_BX(opcode);
 		break;
 
@@ -517,6 +520,10 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_SWI:
+		Thumb_SWI(opcode);
+		break;
+
 	case THUMB_OP_ADD_R_SP:
 		Thumb_ADD_R_SP(opcode);
 		reg.R15 += 2;
@@ -537,12 +544,12 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_PUSH:
+	case THUMB_OP_PUSH:		//push
 		Thumb_PUSH(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_POP:
+	case THUMB_OP_POP:	//pop
 		Thumb_POP(opcode);
 		reg.R15 += 2;
 		break;
@@ -557,12 +564,12 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_BL_F:
+	case THUMB_OP_BL_F:	//branch with link 1
 		Thumb_BL_1(opcode);
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_BL_LR_IMM:
+	case THUMB_OP_BL_LR_IMM:	//branch with link 2
 		Thumb_BL_2(opcode);
 		break;
 
@@ -1397,6 +1404,17 @@ inline void Cpu::Thumb_STMIA(uint16_t opcode) {
 	}
 }
 
+inline void Cpu::Thumb_SWI(uint16_t opcode) {
+	uint32_t prev_cpsr = reg.CPSR;	//save cpsr
+	setPrivilegeMode(PrivilegeMode::SUPERVISOR);	//change cpu mode
+	reg.SPSR = prev_cpsr;	//set irq spsr to previous cpsr
+	reg.R14 = reg.R15 + 2;	//save R15
+	reg.CPSR_f->I = 1;	//disable interrupts
+
+	reg.CPSR_f->T = 0;	//set arm mode
+	reg.R15 = 0x8;	//swi vector
+}
+
 //unconditional branch
 inline void Cpu::Thumb_B(uint16_t opcode) {
 	uint32_t uoffset = (opcode & 0x7ff) * 2;
@@ -1416,9 +1434,11 @@ inline void Cpu::Thumb_B(uint16_t opcode) {
 inline void Cpu::Thumb_BL_1(uint16_t opcode) {
 
 	uint32_t msb = (opcode & 0x7ff) << 12;
-	
-	reg.R14 = (reg.R15 + 4 + msb) & 0x7fffff;
 
+	reg.R14 = (reg.R15 + 4 + msb); //& 0x7fffff;
+	if (reg.R14 & 0x800000 && (msb & 0x400000)) {
+		reg.R14 &= 0x7fffff;
+	}
 	if (reg.R14 & 0x400000) {	//is negative (consider R14 as a 23 bit signed integer)
 		reg.R14 |= 0xff800000;
 	}
@@ -1675,6 +1695,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 
 	case ARM_OP_MSR:
 		Arm_MSR(opcode);
+		reg.R15 += 4;
+		break;
+
+	case ARM_OP_MRS:
+		Arm_MRS(opcode);
 		reg.R15 += 4;
 		break;
 
@@ -2189,6 +2214,18 @@ inline void Cpu::Arm_BIC(uint32_t opcode) {
 	}
 }
 
+inline void Cpu::Arm_MRS(uint32_t opcode) {
+
+	uint8_t dest_reg_code = (opcode >> 12) & 0x0f;
+	uint32_t& Rd = ((uint32_t*)&reg)[dest_reg_code];
+	uint8_t src_reg_code = 16;	//cpsr reg
+	uint8_t Ps = (opcode >> 22) & 1;
+
+	src_reg_code += Ps;
+	uint32_t& Sr = ((uint32_t*)&reg)[src_reg_code];
+
+	Rd = Sr;
+}
 
 //
 inline void Cpu::Arm_MSR(uint32_t opcode) {
@@ -2230,21 +2267,6 @@ inline void Cpu::Arm_MSR(uint32_t opcode) {
 		reg.CPSR = (reg.CPSR & (~out_mask));
 		reg.CPSR |= Rm & out_mask;
 		setPrivilegeMode(prevMode, (PrivilegeMode)((CPSR_registers*)&reg.CPSR)->mode);
-	}
-}
-
-inline void Cpu::Arm_MRS(uint32_t opcode) {
-
-	uint8_t reg_code = (opcode >> 12) & 0x0f;
-	uint32_t &Rd = ((uint32_t*)&reg)[reg_code];
-	uint8_t Pd = (opcode >> 22) & 1;
-
-	if (Pd) {	//dest = SPSR
-		Rd = reg.SPSR;
-	}
-	else {
-		//dest = CPSR
-		Rd = reg.CPSR;
 	}
 }
 
