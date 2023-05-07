@@ -243,6 +243,7 @@ private:
 	//THUMB.5
 	inline void Thumb_BX(uint16_t opcode);
 	inline void Thumb_MOV_HRR(uint16_t opcode);
+	inline void Thumb_ADD_HRR(uint16_t opcode);
 	inline void Thumb_CMP_HRR(uint16_t opcode);
 
 	//THUMB.6

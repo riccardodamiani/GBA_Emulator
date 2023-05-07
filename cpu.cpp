@@ -483,6 +483,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
+	case THUMB_OP_ADD_HRR:	//compare high registers
+		Thumb_ADD_HRR(opcode);
+		reg.R15 += 2;
+		break;
+
 	case THUMB_OP_CMP_HRR:	//compare high registers
 		Thumb_CMP_HRR(opcode);
 		reg.R15 += 2;
@@ -1264,6 +1269,23 @@ inline void Cpu::Thumb_MOV_HRR(uint16_t opcode) {
 	if (Rs_reg_code == 0xf) Rs += 4;
 
 	*Rd = Rs;
+}
+
+//add hi registers
+inline void Cpu::Thumb_ADD_HRR(uint16_t opcode) {
+	//get operand register
+	uint8_t Rd_reg_code = opcode & 0b111;
+	Rd_reg_code |= (opcode & 0b10000000) >> 4;
+	uint32_t& Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
+	if (Rd_reg_code == 0xf) Rd += 4;
+
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	Rs_reg_code |= (opcode & 0b1000000) >> 3;
+	uint32_t& Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+	if (Rs_reg_code == 0xf) Rs += 4;
+
+	Rd += Rs;
+	//no condition flag are set
 }
 
 //compare hi registers
