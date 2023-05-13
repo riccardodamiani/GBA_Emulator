@@ -262,6 +262,9 @@ void Cpu::next_instruction() {
 	if (reg.R15 == 0x8000326) {	//0x800032a 0x20d0 0x1e30 0x2d60 0x6e8
 		reg.R15 = reg.R15;
 	}
+	if (reg.R15 == 0x3007e04) {	//byte 0x3ed0 (fe), 
+		reg.R15 = reg.R15;
+	}
 	if (reg.R15 == 0x80b7966) {	//byte 0x3ed0 (fe), 
 		reg.R15 = reg.R15;
 	}
@@ -370,6 +373,11 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		//alu operations
 	case THUMB_OP_AND:	//and
 		Thumb_AND(opcode);
+		reg.R15 += 2;
+		break;
+
+	case THUMB_OP_LSL:
+		Thumb_LSL(opcode);	//lsl
 		reg.R15 += 2;
 		break;
 
@@ -933,8 +941,6 @@ inline void Cpu::Thumb_LSR(uint16_t opcode) {
 	uint8_t Rd_reg_code = opcode & 0b111;
 	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
 
-	uint32_t result = *Rd >> (Rs & 0xff);
-
 	if (Rs > 0) {
 		uint32_t pre_result = *Rd >> ((Rs & 0xff) - 1);
 		reg.CPSR_f->C = pre_result & 1;
@@ -944,6 +950,23 @@ inline void Cpu::Thumb_LSR(uint16_t opcode) {
 	reg.CPSR_f->Z = *Rd == 0;
 	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
 
+}
+
+inline void Cpu::Thumb_LSL(uint16_t opcode) {
+	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
+
+	uint8_t Rd_reg_code = opcode & 0b111;
+	uint32_t* Rd = &((uint32_t*)&reg)[Rd_reg_code];	//destination register
+
+	if (Rs > 0) {
+		uint32_t pre_result = *Rd << ((Rs & 0xff) - 1);
+		reg.CPSR_f->C = (pre_result >> 31) & 1;
+		*Rd = pre_result << 1;
+	}
+
+	reg.CPSR_f->Z = *Rd == 0;
+	reg.CPSR_f->N = (*Rd & 0x80000000) != 0;
 }
 
 //TST
