@@ -26,6 +26,7 @@ public:
 	void setVBlankFlag();
 	void setHBlankFlag();
 	void setVCounterFlag();
+	void setDMAFlag(uint8_t dmaNr);
 	void checkInterrupts();
 private:
 	uint16_t *IE, *IF, *IME;

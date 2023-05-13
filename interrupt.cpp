@@ -27,6 +27,12 @@ void Interrupt::setVCounterFlag() {
 		*IF |= 0b100;
 }
 
+//set bit 8-11 of interrupt flag depending on the DMA that triggered the interrupt
+void Interrupt::setDMAFlag(uint8_t dmaNr) {
+	if (*IE & (0b1 << (8 + dmaNr)))
+		*IF |= (0b1 << (8 + dmaNr));
+}
+
 void Interrupt::checkInterrupts() {
 	if (*IME & 1) {	//there is a irq request
 		uint16_t irqs = *IE & *IF;

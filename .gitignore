@@ -26,6 +26,8 @@
 !multithreadManager.cpp
 !threadHelper.h
 !threadHelper.cpp
+!dma.cpp
+!dma.h
 
 !.gitignore
 !README.md

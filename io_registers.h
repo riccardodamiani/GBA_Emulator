@@ -165,6 +165,5 @@ struct Io_registers {
 
 	uint8_t NOT_USED_19[0xfe];	//0x4000302 - 0x40003ff
 	uint8_t NOT_USED_20[0x404];	//0x4000400 - 0x4000803
-};	
-
+};
 #endif

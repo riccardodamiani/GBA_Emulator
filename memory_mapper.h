@@ -3,6 +3,7 @@
 
 #include "cartridge.h"
 #include "io_registers.h"
+class Dma;
 
 #include <string>
 #include <cstdint>
@@ -61,6 +62,7 @@ const int waitcntAccessTimings[][4] = {
 class MemoryMapper {
 public:
 	MemoryMapper();
+	~MemoryMapper();
 	void loadRom(std::string rom_filename);
 	uint8_t read_8(uint32_t address);
 	uint16_t read_16(uint32_t address);
@@ -70,6 +72,9 @@ public:
 	void write_32(uint32_t address, uint32_t data);
 	uint16_t* get_io_reg(uint32_t offset);
 	uint8_t* getMemoryAddr(int chunk);
+	void write_register(uint32_t gba_addr, uint8_t& real_addr, uint8_t data);
+	void write_register(uint32_t gba_addr, uint16_t& real_addr, uint16_t data);
+	void write_register(uint32_t gba_addr, uint32_t& real_addr, uint32_t data);
 private:
 	//memory
 	std::unique_ptr <uint8_t[]> _bios_mem;
@@ -82,6 +87,7 @@ private:
 	Io_registers _ioReg;
 	uint8_t wave_ram_banks[2][0x10];
 	WaitCnt *WAITCNT;
+	std::unique_ptr<Dma> _dma[4];
 
 	void loadBios();
 	realAddress find_memory_addr(uint32_t gba_address);

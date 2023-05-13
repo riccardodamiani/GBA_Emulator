@@ -262,7 +262,7 @@ void Cpu::next_instruction() {
 	if (reg.R15 == 0x8000326) {	//0x800032a 0x20d0 0x1e30 0x2d60 0x6e8
 		reg.R15 = reg.R15;
 	}
-	if (reg.R15 == 0x80Ce9fa) {	//byte 0x3ed0 (fe), 
+	if (reg.R15 == 0x80b7966) {	//byte 0x3ed0 (fe), 
 		reg.R15 = reg.R15;
 	}
 
@@ -483,7 +483,7 @@ void Cpu::execute_thumb(THUMB_opcode instruction, uint16_t opcode) {
 		reg.R15 += 2;
 		break;
 
-	case THUMB_OP_ADD_HRR:	//compare high registers
+	case THUMB_OP_ADD_HRR:	//add high registers
 		Thumb_ADD_HRR(opcode);
 		reg.R15 += 2;
 		break;

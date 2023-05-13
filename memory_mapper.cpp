@@ -1,6 +1,7 @@
 #include "memory_mapper.h"
 #include "gba.h"
 #include "error.h"
+#include "dma.h"
 
 #include <string>
 #include <fstream>
@@ -26,7 +27,16 @@ MemoryMapper::MemoryMapper() :
 
 	WAITCNT = (WaitCnt*)&_ioReg.WAITCNT;
 
+	//create DMAs objects
+	for (int i = 0; i < 4; i++) {
+		_dma[i].reset(new Dma(i));
+	}
+
 	loadBios();
+}
+
+MemoryMapper::~MemoryMapper() {
+
 }
 
 void MemoryMapper::loadRom(std::string rom_filename) {
@@ -123,10 +133,11 @@ void MemoryMapper::write_8(uint32_t address, uint8_t data) {
 
 	GBA::clock.addTicks(addr.accessTimings[0]);
 
-	if (addr.memory == (uint8_t*)&_ioReg && (addr.addr == 0x202 || addr.addr == 0x203)) {	//clearing interrupt flag
-		addr.memory[addr.addr] &= ~data;
+	if (addr.memory == (uint8_t*)&_ioReg) {	//register
+		write_register(addr.addr, addr.memory[addr.addr], data);
 		return;
 	}
+
 	addr.memory[addr.addr] = data;
 }
 
@@ -145,8 +156,8 @@ void MemoryMapper::write_16(uint32_t address, uint16_t data) {
 
 	GBA::clock.addTicks(addr.accessTimings[1]);
 
-	if (addr.memory == (uint8_t *)&_ioReg && addr.addr == 0x202) {	//clearing interrupt flag
-		_ioReg.IF &= ~data;
+	if (addr.memory == (uint8_t*)&_ioReg) {	//register
+		write_register(addr.addr, *(uint16_t*)(&addr.memory[addr.addr]), data);
 		return;
 	}
 
@@ -167,6 +178,11 @@ void MemoryMapper::write_32(uint32_t address, uint32_t data) {
 		return;
 
 	GBA::clock.addTicks(addr.accessTimings[2]);
+
+	if (addr.memory == (uint8_t*)&_ioReg) {	//register
+		write_register(addr.addr, *(uint32_t*)(&addr.memory[addr.addr]), data);
+		return;
+	}
 
 	*(uint32_t*)&addr.memory[addr.addr] = data;
 }
@@ -315,4 +331,75 @@ gamePakAddr MemoryMapper::inCartridge(uint32_t gba_address) {
 	}
 
 	return { false, 0 };
+}
+
+void MemoryMapper::write_register(uint32_t gba_addr,
+	uint8_t& real_mem, uint8_t data) {
+	if (gba_addr > 0x3fe)
+		return;
+
+	switch (gba_addr) {
+	case 0x202:	//clear interrupt flag
+	case 0x203:
+		real_mem &= ~data;
+		break;
+	default:
+		real_mem = data;
+		break;
+	}
+}
+
+void MemoryMapper::write_register(uint32_t gba_addr, 
+	uint16_t &real_mem, uint16_t data) {
+	if (gba_addr > 0x3fe)
+		return;
+
+	switch (gba_addr) {
+	case 0xba:	//DMA0 control
+		real_mem = data;
+		if (data & 0x8000) {	//DMA enable
+			_dma[0]->enable_dma();
+			_dma[0]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xc6:	//DMA1 control
+		real_mem = data;
+		if (data & 0x8000) {	//DMA enable
+			_dma[1]->enable_dma();
+			_dma[1]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xd2:	//DMA2 control
+		real_mem = data;
+		if (data & 0x8000) {	//DMA enable
+			_dma[2]->enable_dma();
+			_dma[2]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xd6:	//DMA3 control
+		real_mem = data;
+		if (data & 0x8000) {	//DMA enable
+			_dma[3]->enable_dma();
+			_dma[3]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0x202:	//clearing interrupt flag
+		_ioReg.IF &= ~data;
+		break;
+	default:
+		real_mem = data;
+		break;
+	}
+}
+
+void MemoryMapper::write_register(uint32_t gba_addr, 
+	uint32_t& real_mem, uint32_t data) {
+	if (gba_addr > 0x3fe)
+		return;
+
+	switch (gba_addr) {
+	default:
+		real_mem = data;
+		break;
+	}
 }
