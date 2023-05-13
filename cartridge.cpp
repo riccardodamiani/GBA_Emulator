@@ -105,6 +105,7 @@ void Cartridge::findSram() {
 		if (memcmp(&_rom[i], str, 6) == 0) {
 			_sramSize = 0x8000;
 			_sram.reset(new uint8_t[0x8000]);
+			memset(_sram.get(), 0, 0x8000);
 			return;
 		}
 	}
@@ -180,13 +181,24 @@ uint32_t Cartridge::read_32(uint32_t address) {
 }
 
 void Cartridge::write_8(uint32_t addr, uint8_t data) {
+	uint32_t memoryAddr = addr & 0x1ffffff;
+	uint32_t memChunk = (addr >> 24) & 0xff;
 
+	if (memChunk != 0xe)	//not sram
+		return;
+	if (_sramSize == 0)
+		return;
+
+	memoryAddr %= 0x8000;
+	_rom.get()[memoryAddr] = data;
 }
 
 void Cartridge::write_16(uint32_t addr, uint16_t data) {
 
+
 }
 
 void Cartridge::write_32(uint32_t addr, uint32_t data) {
+
 
 }
