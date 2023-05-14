@@ -262,7 +262,7 @@ void Cpu::next_instruction() {
 	if (reg.R15 == 0x8000326) {	//0x800032a 0x20d0 0x1e30 0x2d60 0x6e8
 		reg.R15 = reg.R15;
 	}
-	if (reg.R15 == 0x3007e04) {	//byte 0x3ed0 (fe), 
+	if (reg.R15 == 0x800731e) {	//byte 0x3ed0 (fe), 
 		reg.R15 = reg.R15;
 	}
 	if (reg.R15 == 0x80b7966) {	//byte 0x3ed0 (fe), 
@@ -1290,6 +1290,7 @@ inline void Cpu::Thumb_MOV_HRR(uint16_t opcode) {
 	Rs_reg_code |= (opcode & 0b1000000) >> 3;
 	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
 	if (Rs_reg_code == 0xf) Rs += 4;
+	if (Rd_reg_code == 0xf) Rs -= 2;	//compensate for the pc increase after this instruction
 
 	*Rd = Rs;
 }
