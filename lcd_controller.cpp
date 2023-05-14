@@ -341,7 +341,7 @@ void LcdController::background_mode0(helperParams& params, graphicsScanline** la
 				//get the pixel
 				get_text_bg_pixel_color(bg_layer, params, bg_coords, bg_scanline->scanline[screen_x].color, bg_size);
 				bg_scanline->scanline[screen_x].option.priority = params.BGCNT[bg_layer].bg_priority;
-				bg_scanline->type = LayerType::BG0;
+				bg_scanline->type = LayerType(1 << bg_layer);
 			}
 		}
 	}
