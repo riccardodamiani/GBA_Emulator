@@ -2,8 +2,7 @@
 Open source gba emulator in C++.
 
 ## Progress  
-The emulator is not able to execute the game yet and will probably freeze somewhere in the bios because of some instructions not yet implemented.  
-Working on intro screen..
+In the current state the emulator is able to display the intro screen and boot into the game.  
 
 Done:
 * Bios loading
@@ -14,14 +13,15 @@ Done:
 * Video:
 	* object affine transformation
 	* Objects priority
-	* rendering of background 3 in mode 2
+	* graphic mode 0
+	* background 3 of graphic mode 2
 	* special effect: alpha blending
 	* special effect: brightness adjust
 	* graphic layers priority
+	* 256/1 and 16/16 color palette
   
 Not even started:  
 * Audio 
-* Dma
 * Keypad inputs
 * Serial communication
 * Timers
@@ -30,7 +30,7 @@ In progress:
 * Arm/Thumb instruction sets (~80% done)
 * Video:
 	* Object 2-dimentional tile mapping
-	* Object 256 color palette
 * Cpu interrupts:
 	* V-blank
 * Cpu timings
+* DMAs
