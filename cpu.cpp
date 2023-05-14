@@ -1301,12 +1301,12 @@ inline void Cpu::Thumb_ADD_HRR(uint16_t opcode) {
 	uint8_t Rd_reg_code = opcode & 0b111;
 	Rd_reg_code |= (opcode & 0b10000000) >> 4;
 	uint32_t& Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
-	if (Rd_reg_code == 0xf) Rd += 4;
 
 	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
 	Rs_reg_code |= (opcode & 0b1000000) >> 3;
 	uint32_t& Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
 	if (Rs_reg_code == 0xf) Rs += 4;
+	if (Rd_reg_code == 0xf) Rs -= 2;	//compensate for the pc increase after this instruction
 
 	Rd += Rs;
 	//no condition flag are set
@@ -1317,13 +1317,13 @@ inline void Cpu::Thumb_CMP_HRR(uint16_t opcode) {
 	//get operand register
 	uint8_t Rd_reg_code = opcode & 0b111;
 	Rd_reg_code |= (opcode & 0b10000000) >> 4;
-	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//destination register
-	if (Rd_reg_code == 0xf) Rd += 4;
+	uint32_t Rd = ((uint32_t*)&reg)[Rd_reg_code];	//first operand
+	if (Rd_reg_code == 0xf) Rd += 4;	//compensate for prefetch
 
 	uint8_t Rs_reg_code = (opcode >> 3) & 0b111;
 	Rs_reg_code |= (opcode & 0b1000000) >> 3;
-	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//source register
-	if (Rs_reg_code == 0xf) Rs += 4;
+	uint32_t Rs = ((uint32_t*)&reg)[Rs_reg_code];	//second operand
+	if (Rs_reg_code == 0xf) Rs += 4;		//compensate for prefetch
 
 	uint32_t result = Rd - Rs;
 
