@@ -87,6 +87,13 @@ Internal Screen Size (dots) and size of BG Map (bytes):
 */
 };
 
+const V2Int const TextModeScreenSize_Trans[4] = {
+	{256, 256},
+	{512, 256},
+	{256, 512},
+	{512, 512}
+};
+
 struct dispStat_struct {
 	uint16_t vblank_flag : 1,	//(Read only) (1=VBlank) (set in line 160..226; not 227)
 		hblank_flag : 1,		//(Read only) (1=HBlank) (toggled in all lines, 0..227)
@@ -109,6 +116,13 @@ struct gba_32_fpd {	//32 bit fixed point decimal
 		integer : 19,
 		sign : 1,
 		unused : 4;
+};
+
+struct tile_info_struct {
+	uint16_t tile_nr : 10,
+		h_flip : 1,
+		v_flip : 1,
+		palette : 4;
 };
 
 struct Transf_Gba_Matrix {
@@ -255,9 +269,11 @@ public:
 	static void getSpritePixel(obj_attribute& attr, helperParams& params, V2Int coords, rgba_color& color);
 
 	static void get_bg_layer_scanline(helperParams& params, graphicsScanline** layers, int& activeLayers);
+	static void background_mode0(helperParams& params, graphicsScanline** layers, int& asctiveLayers);
 	static void background_mode2(helperParams& params, graphicsScanline** layers, int& asctiveLayers);
 	static void bg_transform_pixel_coords(vector2 src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& bgSize);
-	static void get_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
+	static void get_affine_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
+	static void get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
 
 	static void apply_special_effects(helperParams& params, SpecialEffectPixel& lowerPixel, graphicsPixel& upperPixel, SpecialEffectPixel& finalPixel);
 	static void order_bg_scanlines(graphicsScanline** layers, int activeLayers);

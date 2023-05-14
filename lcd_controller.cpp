@@ -279,7 +279,7 @@ void LcdController::get_bg_layer_scanline(helperParams& params, graphicsScanline
 
 	switch (params.DISPCNT.bg_mode) {
 	case 0:
-		//printError(ErrorType::WARNING, "Background mode 0 not supported");
+		background_mode0(params, layers, activeLayers);
 		break;
 	case 1:
 		//printError(ErrorType::WARNING, "Background mode 1 not supported");
@@ -300,6 +300,46 @@ void LcdController::get_bg_layer_scanline(helperParams& params, graphicsScanline
 	}	
 }
 
+void LcdController::background_mode0(helperParams& params, graphicsScanline** layers, int& activeLayers) {
+	if (params.DISPCNT.bg0_enable) {
+		//create new scanline layer
+		graphicsScanline* bg0_scanline = new graphicsScanline();
+		layers[activeLayers] = bg0_scanline;
+		activeLayers++;
+
+		//background size in pixels
+		V2Int bg_size = TextModeScreenSize_Trans[params.BGCNT[0].screen_size];
+
+		//get each pixel of the scanline
+		for (int screen_x = 0; screen_x < 240; screen_x++) {
+
+			//Get the real coordinates of the background layer to draw
+			int32_t bg_row_to_draw = ((float)params.vCount + params.BG_OFFSETS[0].VOFS.offset);
+			int32_t bg_col_to_draw = ((float)screen_x + params.BG_OFFSETS[0].HOFS.offset);
+
+			V2Int bg_coords = { bg_col_to_draw, bg_row_to_draw };
+
+			//screen overflow
+			if (params.BGCNT[0].display_overflow == 0) {	//transparent 
+				if (bg_coords.x < 0 || bg_coords.y < 0 ||
+					bg_coords.x >= bg_size.x || bg_coords.y >= bg_size.y) {
+					continue;
+				}
+			}
+			else {//wrap around
+				bg_coords.x %= bg_size.x;
+				bg_coords.y %= bg_size.y;
+				if (bg_coords.x < 0) bg_coords.x += bg_size.x;
+				if (bg_coords.y < 0) bg_coords.y += bg_size.y;
+			}
+			//get the pixel
+			get_text_bg_pixel_color(0, params, bg_coords, bg0_scanline->scanline[screen_x].color, bg_size);
+			bg0_scanline->scanline[screen_x].option.priority = params.BGCNT[0].bg_priority;
+			bg0_scanline->type = LayerType::BG0;
+		}
+	}
+}
+
 void LcdController::background_mode2(helperParams& params, graphicsScanline** layers, int& activeLayers) {
 	if (params.DISPCNT.bg2_enable) {
 		uint8_t* bg_tile_data = &params.vram_copy[0x4000 * params.BGCNT[2].ch_base_block];
@@ -317,21 +357,26 @@ void LcdController::background_mode2(helperParams& params, graphicsScanline** la
 		//background size in pixels
 		V2Int bg_size = {128 << params.BGCNT[3].screen_size, 128 << params.BGCNT[3].screen_size };
 
-		for (int screen_x = 0; screen_x < 240; screen_x++) {
-			float r_y = -1.0 * (params.GB3_REF_POINT.y.sign * 2 - 1) * params.GB3_REF_POINT.y.integer +
-				params.GB3_REF_POINT.y.fract / 256.0;
-			float r_x = -1.0 * (params.GB3_REF_POINT.x.sign * 2 - 1) * params.GB3_REF_POINT.x.integer +
-				params.GB3_REF_POINT.x.fract / 256.0;
-			r_x = -fmod(r_x, bg_size.x);
-			r_y = -fmod(r_y, bg_size.y);
-			if (r_x < 0) r_x += bg_size.x;
-			if (r_y < 0) r_y += bg_size.y;
+		//Calculates the offsets of the real coordinates of the background layer to draw
+		float r_y = -1.0 * (params.GB3_REF_POINT.y.sign * 2 - 1) * params.GB3_REF_POINT.y.integer +
+			params.GB3_REF_POINT.y.fract / 256.0;
+		float r_x = -1.0 * (params.GB3_REF_POINT.x.sign * 2 - 1) * params.GB3_REF_POINT.x.integer +
+			params.GB3_REF_POINT.x.fract / 256.0;
+		r_x = -fmod(r_x, bg_size.x);
+		r_y = -fmod(r_y, bg_size.y);
+		if (r_x < 0) r_x += bg_size.x;
+		if (r_y < 0) r_y += bg_size.y;
 
+		//get each pixel of the scanline
+		for (int screen_x = 0; screen_x < 240; screen_x++) {
+			
+			//Get the real coordinates of the background layer to draw
 			float bg_row_to_draw = ((float)params.vCount + r_y);
 			float bg_col_to_draw = ((float)screen_x + r_x);
 
 			vector2 bg_coords = { bg_col_to_draw, bg_row_to_draw};
 			V2Int trans_coords;
+			//apply the transformation (affine layer)
 			bg_transform_pixel_coords(bg_coords, trans_coords, params.BG3_TRANSF_MATRIX, bg_size);
 
 			//screen overflow
@@ -347,19 +392,20 @@ void LcdController::background_mode2(helperParams& params, graphicsScanline** la
 				if (trans_coords.x < 0) trans_coords.x += bg_size.x;
 				if (trans_coords.y < 0) trans_coords.y += bg_size.y;
 			}
-
-			get_bg_pixel_color(3, params, trans_coords, bg3_scanline->scanline[screen_x].color, bg_size);
+			//get the pixel
+			get_affine_bg_pixel_color(3, params, trans_coords, bg3_scanline->scanline[screen_x].color, bg_size);
 			bg3_scanline->scanline[screen_x].option.priority = params.BGCNT[3].bg_priority;
 			bg3_scanline->type = LayerType::BG3;
 		}
 	}
 }
 
-void LcdController::get_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize) {
+void LcdController::get_affine_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize) {
 	uint8_t* bg_tile_data = &params.vram_copy[0x4000 * params.BGCNT[bg_num].ch_base_block];
 	uint8_t* bg_map_base = &params.vram_copy[0x800 * params.BGCNT[bg_num].screen_base_block];
 
 	int tile_nr = coords.x / 8 + (coords.y / 8) * bgSize.x / 8;
+	//the tile info takes always 1 byte and you can only use 256/1 palette
 	uint8_t* tileMem = &bg_tile_data[64 * bg_map_base[tile_nr]];
 
 	V2Int tile_pixel_coords = { coords.x % 8, coords.y % 8 };
@@ -371,6 +417,47 @@ void LcdController::get_bg_pixel_color(int bg_num, helperParams& params, V2Int c
 	if (palette_color == 0) alpha = 0;
 
 	gba_palette_color gba_color = palette[palette_color];
+	color.r = gba_color.r * 8;
+	color.g = gba_color.g * 8;
+	color.b = gba_color.b * 8;
+	color.a = alpha;
+}
+
+void LcdController::get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize) {
+	uint8_t* bg_tile_data = &params.vram_copy[0x4000 * params.BGCNT[bg_num].ch_base_block];
+	uint8_t* bg_map_base = &params.vram_copy[0x800 * params.BGCNT[bg_num].screen_base_block];
+
+	int tile_nr = coords.x / 8 + (coords.y / 8) * bgSize.x / 8;
+
+	tile_info_struct tileInfo;
+	gba_palette_color* palette = (gba_palette_color*)params.palette_copy;
+
+	V2Int tile_pixel_coords = { coords.x % 8, coords.y % 8 };
+
+	uint8_t palette_color;
+	if (params.BGCNT[bg_num].palette) {	//palette 256/1
+		uint8_t* tileMem = &bg_tile_data[64 * bg_map_base[tile_nr]];
+		palette_color = tileMem[tile_pixel_coords.x + tile_pixel_coords.y * 8];
+		tileInfo.palette = 0;
+	}
+	else {	//palette 16/16
+		memcpy(&tileInfo, &bg_map_base[tile_nr * 2], 2);
+		uint8_t* tileMem = &bg_tile_data[32 * tileInfo.tile_nr];
+
+		//horizontal and vertical flip
+		tile_pixel_coords.x = tileInfo.h_flip ? (7 - tile_pixel_coords.x) : tile_pixel_coords.x;
+		tile_pixel_coords.y = tileInfo.v_flip ? (7 - tile_pixel_coords.y) : tile_pixel_coords.y;
+
+		uint16_t pixel_index = tile_pixel_coords.x + tile_pixel_coords.y * 8;
+		palette_color = tileMem[pixel_index / 2];
+		palette_color >>= ((pixel_index & 1) * 4);
+		palette_color &= 0xf;
+	}
+
+	uint8_t alpha = 255;
+	if (palette_color == 0) alpha = 0;
+
+	gba_palette_color gba_color = palette[tileInfo.palette * 16 + palette_color];
 	color.r = gba_color.r * 8;
 	color.g = gba_color.g * 8;
 	color.b = gba_color.b * 8;
