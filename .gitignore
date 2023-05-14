@@ -28,6 +28,8 @@
 !threadHelper.cpp
 !dma.cpp
 !dma.h
+!error.h
+!error.cpp
 
 !.gitignore
 !README.md
