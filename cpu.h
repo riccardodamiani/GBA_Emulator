@@ -230,6 +230,7 @@ private:
 	inline void Thumb_AND(uint16_t opcode);
 	inline void Thumb_LSR(uint16_t opcode);
 	inline void Thumb_LSL(uint16_t opcode);
+	inline void Thumb_ASR(uint16_t opcode);
 	inline void Thumb_TST(uint16_t opcode);
 	inline void Thumb_NEG(uint16_t opcode);
 	inline void Thumb_MVN(uint16_t opcode);
