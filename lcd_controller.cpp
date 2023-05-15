@@ -274,8 +274,8 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 	delete[] layerPixels_ptr;
 }
 
-void LcdController::get_bg_layer_scanline(helperParams& params, graphicsScanline** layers, int& activeLayers){//graphicsScanline* bg0_scanline, 
-	//graphicsScanline* bg1_scanline, graphicsScanline* bg2_scanline, graphicsScanline* bg3_scanline) {
+void LcdController::get_bg_layer_scanline(helperParams& params, 
+	graphicsScanline** layers, int& activeLayers){
 
 	switch (params.DISPCNT.bg_mode) {
 	case 0:
@@ -635,9 +635,9 @@ void LcdController::getSpritePixel(obj_attribute& attr, helperParams& params, V2
 			gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200 + attr.palette_num * 32);
 
 			uint8_t alpha = 255;
-			if (tileRowMem[pixelCoords.x % 8] == 0) alpha = 0;
+			uint8_t palette_entry = (tileRowMem[(pixelCoords.x % 8) / 2] >> (4 - 4 * ((pixelCoords.x % 8) % 2))) & 0b1111;
+			if(palette_entry == 0) alpha = 0;
 
-			int palette_entry = (tileRowMem[(pixelCoords.x % 8) / 2] >> (4 - 4 * ((pixelCoords.x % 8) % 2))) & 0b1111;
 			gba_palette_color gba_color = palette[palette_entry];
 			color.r = gba_color.r * 8;
 			color.g = gba_color.g * 8;
