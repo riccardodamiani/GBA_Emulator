@@ -146,7 +146,11 @@ void LcdController::order_bg_scanlines(graphicsScanline** layers, int activeLaye
 	bool sorted = true;
 
 	for (int i = 0; i < activeLayers - 1; i++) {
-		if (layers[i]->scanline[0].option.priority < layers[i + 1]->scanline[0].option.priority) {
+		uint8_t p0 = layers[i]->scanline[0].option.priority;
+		uint8_t p1 = layers[i + 1]->scanline[0].option.priority;
+		if (p0 < p1 ||	//lower priority
+			(p0 == p1 && (layers[i]->type < layers[i + 1]->type))	//same priority bug lower bg number
+			) {
 			graphicsScanline* t = layers[i];
 			layers[i] = layers[i + 1];
 			layers[i + 1] = t;
