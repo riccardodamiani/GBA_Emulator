@@ -19,10 +19,10 @@ Done:
 	* special effect: brightness adjust
 	* graphic layers priority
 	* 256/1 and 16/16 color palette
+* Keypad inputs
   
 Not even started:  
 * Audio 
-* Keypad inputs
 * Serial communication
 * Timers
   
@@ -34,3 +34,18 @@ In progress:
 	* V-blank
 * Cpu timings
 * DMAs
+
+## Keyboard map
+Not customizable yet.
+| GBA   	 	| Keyboard  	| 
+|---------------|---------------|
+| a 			| o 			|
+| b 			| p 			|
+| start 		| space 		|
+| select		| left shift 	|
+| left 			| a 			|
+| right 		| d 			|
+| up			| w 			|
+| down 			| s 			|
+| r button		| e 			|
+| l button		| q 			|
