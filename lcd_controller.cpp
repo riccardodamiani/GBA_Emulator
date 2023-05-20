@@ -339,7 +339,7 @@ void LcdController::background_mode0(helperParams& params, graphicsScanline** la
 					if (bg_coords.y < 0) bg_coords.y += bg_size.y;
 				}
 				//get the pixel
-				get_text_bg_pixel_color(bg_layer, params, bg_coords, bg_scanline->scanline[screen_x].color, bg_size);
+				get_text_bg_pixel_color(bg_layer, params, bg_coords, bg_scanline->scanline[screen_x].color, params.BGCNT[bg_layer].screen_size);
 				bg_scanline->scanline[screen_x].option.priority = params.BGCNT[bg_layer].bg_priority;
 				bg_scanline->type = LayerType(1 << bg_layer);
 			}
@@ -431,11 +431,29 @@ void LcdController::get_affine_bg_pixel_color(int bg_num, helperParams& params, 
 	color.a = alpha;
 }
 
-void LcdController::get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize) {
+void LcdController::get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, uint8_t screen_size) {
 	uint8_t* bg_tile_data = &params.vram_copy[0x4000 * params.BGCNT[bg_num].ch_base_block];
-	uint8_t* bg_map_base = &params.vram_copy[0x800 * params.BGCNT[bg_num].screen_base_block];
+	
+	uint8_t area_offset = 0;
+	//a background is organized in 1 to 4 areas of 256x256 pixels (32x32 tiles).
+	V2Int bgSize = TextModeScreenSize_Trans[screen_size];
 
-	int tile_nr = coords.x / 8 + (coords.y / 8) * bgSize.x / 8;
+	//calculates the tile map base offset due to tile areas
+	if (screen_size == 3) {
+		area_offset = (coords.x / 256) + (coords.y / 256) * 2;
+	}
+	else {
+		area_offset = (coords.x / 256) + (coords.y / 256);
+	}
+	
+	uint8_t* bg_map_base = &params.vram_copy[0x800 * params.BGCNT[bg_num].screen_base_block + area_offset * 0x800];
+
+	//recaulculates the pixel coords for the current tile area
+	coords.x %= 256;
+	coords.y %= 256;
+
+	//calculates the tile number in the tile memory
+	int tile_nr = coords.x / 8 + (coords.y / 8) * 32;
 
 	tile_info_struct tileInfo;
 	gba_palette_color* palette = (gba_palette_color*)params.palette_copy;

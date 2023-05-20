@@ -273,7 +273,7 @@ public:
 	static void background_mode2(helperParams& params, graphicsScanline** layers, int& asctiveLayers);
 	static void bg_transform_pixel_coords(vector2 src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& bgSize);
 	static void get_affine_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
-	static void get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, V2Int& bgSize);
+	static void get_text_bg_pixel_color(int bg_num, helperParams& params, V2Int coords, rgba_color& color, uint8_t bgSize);
 
 	static void apply_special_effects(helperParams& params, SpecialEffectPixel& lowerPixel, graphicsPixel& upperPixel, SpecialEffectPixel& finalPixel);
 	static void order_bg_scanlines(graphicsScanline** layers, int activeLayers);
