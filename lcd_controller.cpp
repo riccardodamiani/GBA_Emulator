@@ -149,7 +149,7 @@ void LcdController::order_bg_scanlines(graphicsScanline** layers, int activeLaye
 		uint8_t p0 = layers[i]->scanline[0].option.priority;
 		uint8_t p1 = layers[i + 1]->scanline[0].option.priority;
 		if (p0 < p1 ||	//lower priority
-			(p0 == p1 && (layers[i]->type < layers[i + 1]->type))	//same priority bug lower bg number
+			(p0 == p1 && (layers[i]->type < layers[i + 1]->type))	//same priority but lower bg number
 			) {
 			graphicsScanline* t = layers[i];
 			layers[i] = layers[i + 1];
@@ -329,19 +329,12 @@ void LcdController::background_mode0(helperParams& params, graphicsScanline** la
 
 				V2Int bg_coords = { bg_col_to_draw, bg_row_to_draw };
 
-				//screen overflow
-				if (params.BGCNT[bg_layer].display_overflow == 0) {	//transparent 
-					if (bg_coords.x < 0 || bg_coords.y < 0 ||
-						bg_coords.x >= bg_size.x || bg_coords.y >= bg_size.y) {
-						continue;
-					}
-				}
-				else {//wrap around
-					bg_coords.x %= bg_size.x;
-					bg_coords.y %= bg_size.y;
-					if (bg_coords.x < 0) bg_coords.x += bg_size.x;
-					if (bg_coords.y < 0) bg_coords.y += bg_size.y;
-				}
+				//screen overflow always wrap around
+				bg_coords.x %= bg_size.x;
+				bg_coords.y %= bg_size.y;
+				if (bg_coords.x < 0) bg_coords.x += bg_size.x;
+				if (bg_coords.y < 0) bg_coords.y += bg_size.y;
+
 				//get the pixel
 				get_text_bg_pixel_color(bg_layer, params, bg_coords, bg_scanline->scanline[screen_x].color, params.BGCNT[bg_layer].screen_size);
 				bg_scanline->scanline[screen_x].option.priority = params.BGCNT[bg_layer].bg_priority;
