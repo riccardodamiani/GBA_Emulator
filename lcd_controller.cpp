@@ -590,6 +590,9 @@ void LcdController::getSpriteScanline(obj_attribute& attr, V2Int &spriteSize, in
 		}
 		else {
 			transformedCoords = { i - x_coord, rowToDraw };
+			//horizontal and vertical flip
+			transformedCoords.x = attr.h_flip ? (spriteSize.x - 1 - transformedCoords.x) : transformedCoords.x;
+			transformedCoords.y = attr.v_flip ? (spriteSize.y - 1 - transformedCoords.y) : transformedCoords.y;
 		}
 
 		// sprite pixel is outside the sprite mem
