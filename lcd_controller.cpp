@@ -635,7 +635,9 @@ void LcdController::getSpritePixel(obj_attribute& attr, helperParams& params, V2
 			gba_palette_color* palette = (gba_palette_color*)(params.palette_copy + 0x200 + attr.palette_num * 32);
 
 			uint8_t alpha = 255;
-			uint8_t palette_entry = (tileRowMem[(pixelCoords.x % 8) / 2] >> (4 - 4 * ((pixelCoords.x % 8) % 2))) & 0b1111;
+			uint16_t x_pixel_index = pixelCoords.x % 8;
+			uint8_t palette_entry = tileRowMem[x_pixel_index / 2] >> ((x_pixel_index & 1) * 4);
+			palette_entry &= 0xf;
 			if(palette_entry == 0) alpha = 0;
 
 			gba_palette_color gba_color = palette[palette_entry];
