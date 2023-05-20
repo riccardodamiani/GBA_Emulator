@@ -10,6 +10,7 @@
 MemoryMapper GBA::memory;
 Cpu GBA::cpu;
 Graphics GBA::graphics;
+Input GBA::input;
 
 void GBA::Load(std::string rom_filename) {
 	memory.loadRom(rom_filename);
@@ -24,6 +25,7 @@ void GBA::Run() {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         GBA::graphics.drawFrame();
+        GBA::input.update();
         GBA::cpu.runFor(clock_speed * 16'777'918 / 60);   //  1/60th of a second
 
         auto endTime = std::chrono::high_resolution_clock::now();

@@ -1,6 +1,24 @@
 #ifndef IO_REGISTERS_H
 #define IO_REGISTERS_H
 
+#include "input.h"
+
+struct keycnt_struct {
+	uint16_t a : 1,
+		b : 1,
+		select : 1,
+		start : 1,
+		right : 1,
+		left : 1,
+		up : 1,
+		down : 1,
+		r : 1,
+		l : 1,
+		not_used : 4,
+		irq_en : 1,
+		irq_cond : 1;
+};
+
 struct Io_registers {
 
 	//LCD I/O REGISTERS
@@ -138,8 +156,8 @@ struct Io_registers {
 	uint8_t NOT_USED_13[4];
 
 	//KEYPAD INPUT
-	uint16_t KEYINPUT;		//Key Status
-	uint16_t KEYCNT;		//Key Interrupt Control
+	keyinput_struct KEYINPUT;		//Key Status
+	keycnt_struct KEYCNT;		//Key Interrupt Control
 
 	//SERIAL COMMUNICATION (2)
 	uint16_t RCNT;		//SIO Mode Select/General Purpose Data

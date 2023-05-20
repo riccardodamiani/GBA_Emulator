@@ -71,6 +71,7 @@ public:
 	void write_16(uint32_t address, uint16_t data);
 	void write_32(uint32_t address, uint32_t data);
 	uint16_t* get_io_reg(uint32_t offset);
+	void setKeyInput(keyinput_struct input);
 	uint8_t* getMemoryAddr(int chunk);
 	void write_register(uint32_t gba_addr, uint8_t& real_addr, uint8_t data);
 	void write_register(uint32_t gba_addr, uint16_t& real_addr, uint16_t data);

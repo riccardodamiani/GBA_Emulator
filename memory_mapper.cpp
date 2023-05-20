@@ -192,6 +192,19 @@ uint16_t* MemoryMapper::get_io_reg(uint32_t offset) {
 	return (uint16_t *) ( & ((uint8_t*)&_ioReg)[offset]);
 }
 
+void MemoryMapper::setKeyInput(keyinput_struct input) {
+	_ioReg.KEYINPUT.a = 1 - input.a;
+	_ioReg.KEYINPUT.b = 1 - input.b;
+	_ioReg.KEYINPUT.select = 1 - input.select;
+	_ioReg.KEYINPUT.start = 1 - input.start;
+	_ioReg.KEYINPUT.right = 1 - input.right;
+	_ioReg.KEYINPUT.left = 1 - input.left;
+	_ioReg.KEYINPUT.up = 1 - input.up;
+	_ioReg.KEYINPUT.down = 1 - input.down;
+	_ioReg.KEYINPUT.r = 1 - input.r;
+	_ioReg.KEYINPUT.l = 1 - input.l;
+}
+
 uint8_t* MemoryMapper::getMemoryAddr(int chunk) {
 
 	switch (chunk) {

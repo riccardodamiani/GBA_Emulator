@@ -30,6 +30,8 @@
 !dma.h
 !error.h
 !error.cpp
+!input.h
+!input.cpp
 
 !.gitignore
 !README.md

@@ -7,6 +7,7 @@
 #include "cpu.h"
 #include "graphics.h"
 #include "interrupt.h"
+#include "input.h"
 
 #include <string>
 
@@ -19,6 +20,7 @@ public:
 	static Cpu cpu;
 	static LcdController lcd_ctl;
 	static Interrupt irq;
+	static Input input;
 private:
 	static double limit_fps(double elapsedTime, double maxFPS);
 	static Graphics graphics;
