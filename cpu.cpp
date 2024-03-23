@@ -10,6 +10,7 @@
 
 Clock GBA::clock;
 Interrupt GBA::irq;
+SoundController GBA::sound;
 
 Cpu::Cpu()
 {
