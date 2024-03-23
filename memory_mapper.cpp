@@ -407,6 +407,9 @@ void MemoryMapper::write_register(uint32_t gba_addr,
 		return;
 
 	switch (gba_addr) {
+	case 0x84:
+		real_mem = data;
+		GBA::sound.enableMaster(real_mem >> 7);
 	case 0xba:	//DMA0 control
 		real_mem = data;
 		if (data & 0x8000) {	//DMA enable
@@ -456,6 +459,9 @@ void MemoryMapper::write_register(uint32_t gba_addr,
 	case 0xa4:
 		writeFifo(data, 1);
 		break;
+	case 0x84:
+		real_mem = data;
+		GBA::sound.enableMaster(real_mem >> 7);
 	default:
 		real_mem = data;
 		break;
