@@ -20,11 +20,17 @@ Done:
 	* graphic layers priority
 	* 256/1 and 16/16 color palette
 * Keypad inputs
+* Save/load states
+	* sram
+* Audio
+	* DMA sound channel A
   
 Not even started:  
-* Audio 
 * Serial communication
 * Timers
+* Save/load states
+	* eeprom
+	* flash
   
 In progress:
 * Arm/Thumb instruction sets (~80% done)
@@ -34,6 +40,8 @@ In progress:
 	* V-blank
 * Cpu timings
 * DMAs
+* Audio
+	* DMA sound channel B (disabled due to a bug)
 
 ## Keyboard map
 Not customizable yet.
@@ -49,3 +57,4 @@ Not customizable yet.
 | down 			| s 			|
 | r button		| e 			|
 | l button		| q 			|
+| F1 button		| save state    |
