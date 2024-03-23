@@ -8,6 +8,7 @@
 #include "graphics.h"
 #include "interrupt.h"
 #include "input.h"
+#include "sound_controller.h"
 
 #include <string>
 
@@ -21,6 +22,7 @@ public:
 	static LcdController lcd_ctl;
 	static Interrupt irq;
 	static Input input;
+	static SoundController sound;
 private:
 	static double limit_fps(double elapsedTime, double maxFPS);
 	static Graphics graphics;

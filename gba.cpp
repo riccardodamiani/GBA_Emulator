@@ -2,6 +2,7 @@
 #include "memory_mapper.h"
 #include "cpu.h"
 #include "clock.h"
+#include "sound_controller.h"
 
 #include <string>
 #include <chrono>
@@ -21,12 +22,15 @@ void GBA::Run() {
     double totTime = 0;
     double elapsedTime = 0;
     float clock_speed = 1;
+    uint32_t clks_per_second = 16'777'918;
     while (1) {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         GBA::graphics.drawFrame();
         GBA::input.update();
         GBA::cpu.runFor(clock_speed * 16'777'918 / 60);   //  1/60th of a second
+        GBA::cpu.runFor(clock_speed * ((clks_per_second) / 60));   //  1/60th of a second
+        clks_per_second -= GBA::sound.getClkAdjust()*10;  //adjust clock speed to match sound speed
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = endTime - startTime;
