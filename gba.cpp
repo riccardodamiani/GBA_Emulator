@@ -28,7 +28,6 @@ void GBA::Run() {
 
         GBA::graphics.drawFrame();
         GBA::input.update();
-        GBA::cpu.runFor(clock_speed * 16'777'918 / 60);   //  1/60th of a second
         GBA::cpu.runFor(clock_speed * ((clks_per_second) / 60));   //  1/60th of a second
         clks_per_second -= GBA::sound.getClkAdjust()*10;  //adjust clock speed to match sound speed
 
