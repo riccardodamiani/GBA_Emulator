@@ -227,9 +227,8 @@ void Dma::disable() {
 void Dma::full_run_dma(void) {
 	int8_t inc_transform[4] = {1, -1, 0, 1};
 
-	if (_fifoTransfer) {	//fifo transfer
+	if (_fifoTransfer) {	//fifo transfer. destination address is fixed
 		int32_t src_inc_mod = inc_transform[_cnt->src_cnt];
-		int32_t dst_inc_mod = 1;
 		for (_transfCounter = 0; _transfCounter < 4; _transfCounter++) {
 			uint32_t read_val = GBA::memory.read_32(_srcAddr + _transfCounter * 4 * src_inc_mod);
 			GBA::memory.write_32(_dstAddr + _transfCounter * 4 * dst_inc_mod, read_val);
