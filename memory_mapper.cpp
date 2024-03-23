@@ -32,6 +32,9 @@ MemoryMapper::MemoryMapper() :
 		_dma[i].reset(new Dma(i));
 	}
 
+	fifoIndex[0] = fifoIndex[1] = 0;
+	memset(fifo, 0, sizeof(fifo));
+
 	loadBios();
 }
 
@@ -203,6 +206,42 @@ void MemoryMapper::setKeyInput(keyinput_struct input) {
 	_ioReg.KEYINPUT.down = 1 - input.down;
 	_ioReg.KEYINPUT.r = 1 - input.r;
 	_ioReg.KEYINPUT.l = 1 - input.l;
+}
+
+uint32_t MemoryMapper::getFifo(uint8_t ch) {
+
+	uint8_t dma = 0;
+	if (_ioReg.DMA1DAD == (0x40000A0 + ch * 4)) {
+		dma = 1;
+	}
+	else {
+		dma = 2;
+	}
+
+	if (fifoIndex[ch & 1] <= 4) {
+		_dma[dma]->trigger(FIFO);
+	}
+
+	if(fifoIndex[ch & 1] == 0)
+		return 0;
+
+	uint32_t firstOut = fifo[ch & 1][0];
+	
+	for (int i = 1; i < fifoIndex[ch & 1]; i++) {
+		fifo[ch & 1][i - 1] = fifo[ch & 1][i];
+	}
+
+	fifoIndex[ch & 1]--;
+
+	return firstOut;
+}
+
+void MemoryMapper::writeFifo(uint32_t val, uint8_t ch) {
+	if (fifoIndex[ch & 1] == 8)
+		return;
+
+	fifo[ch][fifoIndex[ch & 1]] = val;
+	fifoIndex[ch & 1]++;
 }
 
 uint8_t* MemoryMapper::getMemoryAddr(int chunk) {
@@ -411,6 +450,12 @@ void MemoryMapper::write_register(uint32_t gba_addr,
 		return;
 
 	switch (gba_addr) {
+	case 0xa0:
+		writeFifo(data, 0);
+		break;
+	case 0xa4:
+		writeFifo(data, 1);
+		break;
 	default:
 		real_mem = data;
 		break;

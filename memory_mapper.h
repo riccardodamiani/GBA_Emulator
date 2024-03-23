@@ -72,6 +72,8 @@ public:
 	void write_32(uint32_t address, uint32_t data);
 	uint16_t* get_io_reg(uint32_t offset);
 	void setKeyInput(keyinput_struct input);
+	uint32_t getFifo(uint8_t index);
+	void writeFifo(uint32_t val, uint8_t fifo);
 	uint8_t* getMemoryAddr(int chunk);
 	void write_register(uint32_t gba_addr, uint8_t& real_addr, uint8_t data);
 	void write_register(uint32_t gba_addr, uint16_t& real_addr, uint16_t data);
@@ -89,6 +91,8 @@ private:
 	uint8_t wave_ram_banks[2][0x10];
 	WaitCnt *WAITCNT;
 	std::unique_ptr<Dma> _dma[4];
+	uint32_t fifo[2][8];
+	uint8_t fifoIndex[2];
 
 	void loadBios();
 	realAddress find_memory_addr(uint32_t gba_address);
