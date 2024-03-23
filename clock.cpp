@@ -12,6 +12,7 @@ void Clock::addTicks(unsigned long long ticks) {
 	_ticks += ticks;
 
 	GBA::lcd_ctl.update_V_count(ticks);
+	GBA::sound.update_fifo_timers(ticks);
 }
 
 unsigned long long Clock::getTicks() {
