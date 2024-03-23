@@ -230,16 +230,19 @@ void Dma::full_run_dma(void) {
 	if (_fifoTransfer) {	//fifo transfer. destination address is fixed
 		int32_t src_inc_mod = inc_transform[_cnt->src_cnt];
 		for (_transfCounter = 0; _transfCounter < 4; _transfCounter++) {
-			uint32_t read_val = GBA::memory.read_32(_srcAddr + _transfCounter * 4 * src_inc_mod);
-			GBA::memory.write_32(_dstAddr + _transfCounter * 4 * dst_inc_mod, read_val);
+			uint32_t read_val = GBA::memory.read_32(_srcAddr);
+			GBA::memory.write_32(_dstAddr, read_val);
+			_srcAddr += src_inc_mod * 4;
 		}
 	}else if (_cnt->type == 0){
 		//16 bit transfer
 		int32_t src_inc_mod = inc_transform[_cnt->src_cnt];
 		int32_t dst_inc_mod = inc_transform[_cnt->dst_cnt];
 		for (_transfCounter = 0; _transfCounter < _transfLen; _transfCounter++) {
-			uint16_t read_val = GBA::memory.read_16(_srcAddr + _transfCounter * 2 * src_inc_mod);
-			GBA::memory.write_16(_dstAddr + _transfCounter * 2 * dst_inc_mod, read_val);
+			uint16_t read_val = GBA::memory.read_16(_srcAddr);
+			GBA::memory.write_16(_dstAddr, read_val);
+			_srcAddr += 2 * src_inc_mod;
+			_dstAddr += 2 * dst_inc_mod;
 		}
 	}
 	else {
@@ -248,8 +251,10 @@ void Dma::full_run_dma(void) {
 			int32_t src_inc_mod = inc_transform[_cnt->src_cnt];
 			int32_t dst_inc_mod = inc_transform[_cnt->dst_cnt];
 			for (_transfCounter = 0; _transfCounter < _transfLen; _transfCounter++) {
-				uint32_t read_val = GBA::memory.read_32(_srcAddr + _transfCounter * 4 * src_inc_mod);
-				GBA::memory.write_32(_dstAddr + _transfCounter * 4 * dst_inc_mod, read_val);
+				uint32_t read_val = GBA::memory.read_32(_srcAddr);
+				GBA::memory.write_32(_dstAddr, read_val);
+				_srcAddr += 4 * src_inc_mod;
+				_dstAddr += 4 * dst_inc_mod;
 			}
 		}
 	}
