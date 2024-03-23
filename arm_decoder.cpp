@@ -6,6 +6,7 @@ ARM_opcode ArmDecoder::decode(uint32_t opcode) {
 	if (instr = ARM_IsBranch(opcode)) return instr;		//branches
 	if (instr = ARM_IsSDTHInst(opcode)) return instr;	//load/store halfword
 	if (instr = ARM_IsMultiplication(opcode)) return instr;
+	if (instr = ARM_IsMull(opcode)) return instr;	//multiply long, multiply-accum long
 	if (instr = ARM_IsAluInst(opcode)) return instr;	//data processing
 	if (instr = ARM_IsSDTInst(opcode)) return instr;	//single store/load
 	if (instr = ARM_IsBlockDataTransfer(opcode)) return instr;	//block data transfer (push/pop)
@@ -38,6 +39,21 @@ ARM_opcode ArmDecoder::ARM_IsBranch(uint32_t opcode) {
 		return ARM_OP_BX;
 
 	return ARM_OP_INVALID;
+}
+
+//multiply long and multiply accumulate long
+ARM_opcode ArmDecoder::ARM_IsMull(uint32_t opcode) {
+	uint32_t mask =   0b0000'1111'1000'0000'0000'0000'1111'0000;
+	uint32_t format = 0b0000'0000'1000'0000'0000'0000'1001'0000;
+
+	uint32_t opcode_format = opcode & mask;
+	if (format != opcode_format)	//not this instruction
+		return ARM_OP_INVALID;
+
+	if ((opcode >> 22) & 1) {
+		return (opcode >> 21) & 1 ? ARM_OP_UMLAL : ARM_OP_UMULL;
+	}
+	return (opcode >> 21) & 1 ? ARM_OP_MLAL : ARM_OP_MULL;
 }
 
 ARM_opcode ArmDecoder::ARM_IsAluInst(uint32_t opcode) {
