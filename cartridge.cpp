@@ -100,7 +100,7 @@ void Cartridge::load(std::string rom_filename) {
 	return;
 }
 
-bool Cartridge::load_state() {
+void Cartridge::load_state() {
 	std::ifstream sramFile;
 
 	std::string sramFilename = _rom_path + _rom_name + ".sram";

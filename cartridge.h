@@ -45,7 +45,7 @@ private:
 	std::string _rom_path;
 
 	void load(std::string rom_filename);
-	bool load_state();
+	void load_state();
 	void find_rom_name(std::string romPath);
 	void findBackupId();
 	void findEeprom();
