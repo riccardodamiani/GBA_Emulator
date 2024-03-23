@@ -1772,6 +1772,11 @@ void Cpu::execute_arm(ARM_opcode instruction, uint32_t opcode) {
 		reg.R15 += 4;
 		break;
 
+	case ARM_OP_MULL:
+		Arm_MULL(opcode);
+		reg.R15 += 4;
+		break;
+
 	default:
 		std::cout << "!! Arm instruction not implemented: " << std::hex 
 			<< "opcode: 0x" << opcode << ", instruction 0x" << instruction << std::endl;
@@ -2575,6 +2580,32 @@ inline void Cpu::Arm_MUL(uint32_t opcode) {
 		reg.CPSR_f->C = 0;	//carry destroyed on ARMv4
 	}
 
+}
+
+void Cpu::Arm_MULL(uint32_t opcode) {
+	//destination registers
+	uint8_t Rdhi_code = (opcode >> 16) & 0x0f;
+	uint32_t* Rdhi = &((uint32_t*)&reg)[Rdhi_code];
+
+	uint8_t Rdlo_code = (opcode >> 12) & 0x0f;
+	uint32_t* Rdlo = &((uint32_t*)&reg)[Rdlo_code];
+
+	//get the first operand
+	uint8_t Rs_code = (opcode >> 8) & 0x0f;
+	int32_t Rs = ((int32_t*)&reg)[Rs_code];
+
+	//get the second operand
+	uint8_t Rm_code = opcode & 0x0f;
+	int32_t Rm = ((int32_t*)&reg)[Rm_code];
+
+	int64_t res = (int64_t)Rs * (int64_t)Rm;
+	*Rdlo = ((uint64_t)res) & 0xffffffff;
+	*Rdhi = (((uint64_t)res) >> 32) & 0xffffffff;
+
+	if ((opcode >> 20) & 1) {
+		reg.CPSR_f->N = (((uint64_t)res) >> 64) & 1;
+		reg.CPSR_f->Z = res == 0;
+	}
 }
 
 uint32_t countSetBits(uint32_t word) {

@@ -37,7 +37,11 @@ enum ARM_opcode {
 	ARM_OP_MSR,
 	ARM_OP_MRS,
 	ARM_OP_MUL,
-	ARM_OP_MLA
+	ARM_OP_MLA,
+	ARM_OP_MULL,	//multiply long
+	ARM_OP_MLAL,		//multiply-accumulate long
+	ARM_OP_UMULL,	//unsigned multiply long
+	ARM_OP_UMLAL		//unsigned multiply-accumulate long
 };
 
 enum THUMB_opcode {
@@ -347,6 +351,9 @@ private:
 
 	//multiplications
 	inline void Arm_MUL(uint32_t opcode);
+
+	//multiply long
+	inline void Arm_MULL(uint32_t opcode);
 
 	//block data transfer
 	inline void Arm_STM(uint32_t opcode);
