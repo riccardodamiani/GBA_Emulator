@@ -7,7 +7,7 @@
 void Cartridge::open(std::string rom_filename) {
 
 	load(rom_filename);
-	
+
 	_header = (CartHeader*)_rom.get();
 
 	if (_header->fixed != 0x96) {
@@ -27,8 +27,54 @@ void Cartridge::open(std::string rom_filename) {
 		std::cout << " Error: the rom header checksum failed" << std::endl;
 		exit(0);
 	}
+	find_rom_name(rom_filename);
+	std::cout << "Rom path: " << _rom_path << std::endl;
+	std::cout << "Rom name: " << _rom_name << std::endl;
 
+	_eepromSize = 0;
+	_sramSize = 0;
+	_flashSize = 0;
+
+	load_state();
 	findBackupId();
+
+}
+
+void Cartridge::find_rom_name(std::string romPath) {
+	size_t endOfPath = romPath.find_last_of("/\\");
+	if (endOfPath == std::string::npos) {
+		endOfPath = 0;
+	}
+
+	size_t endOfName = romPath.find_last_of(".");
+	if (endOfName == std::string::npos) {
+		endOfName = romPath.size();
+	}
+	_rom_name = romPath.substr(endOfPath, romPath.size() - (romPath.size() - endOfName));
+	_rom_path = romPath.substr(0, endOfPath);
+}
+
+bool Cartridge::saveSram() {
+	std::string sram_filename = _rom_path + _rom_name + ".sram";
+	std::ofstream sramFile;
+
+	sramFile.open(sram_filename, std::ios::binary);
+	if (!sramFile.is_open()) {
+		std::cout << "Error: unable to open the sram file " << sram_filename << std::endl;
+		exit(0);
+	}
+	if (_sramSize != 0) {
+		sramFile.exceptions(std::ofstream::badbit | std::ofstream::failbit);
+		try {
+			sramFile.write((const char*)_sram.get(), _sramSize);
+		}
+		catch(std::ofstream::failure& e){
+			std::cout << "Error: unable to write to file " << sram_filename << std::endl;
+		}
+	}
+	sramFile.close();
+	std::cout << "Sram state saved correctly" << std::endl;
+	return true;
 }
 
 void Cartridge::load(std::string rom_filename) {
@@ -54,16 +100,41 @@ void Cartridge::load(std::string rom_filename) {
 	return;
 }
 
+bool Cartridge::load_state() {
+	std::ifstream sramFile;
+
+	std::string sramFilename = _rom_path + _rom_name + ".sram";
+	sramFile.open(sramFilename, std::ios::binary);
+
+	//load the sram files if it finds it
+	if (sramFile.is_open()) {
+		std::cout << "Found sram file" << std::endl;
+		sramFile.seekg(0, sramFile.end);
+		uint32_t size = sramFile.tellg();	//sram size
+
+		_sram.reset(new uint8_t[size]);	//allocate sram memory to a unique_ptr
+
+		sramFile.seekg(0, sramFile.beg);
+
+		sramFile.read((char*)_sram.get(), size);	//load the sram file
+		sramFile.close();
+
+		_sramSize = size;
+		std::cout << "Loaded " << _sramSize  << " bytes of sram from file" << std::endl;
+	}
+}
+
 void Cartridge::findBackupId() {
 	
-	_eepromSize = 0;
-	_sramSize = 0;
-	_flashSize = 0;
+	if(_sramSize == 0)
+		findSram();
 
-	findEeprom();
-	findFlash();
-	findSram();
+	if(_eepromSize == 0)
+		findEeprom();
 
+	if(_flashSize == 0)
+		findFlash();
+	
 }
 
 void Cartridge::findEeprom() {
@@ -91,6 +162,7 @@ void Cartridge::findFlash() {
 				_flashSize = 0x20000;
 				_flash.reset(new uint8_t[0x20000]);
 			}
+			std::cout << "Allocated " << _flashSize << " bytes of flash" << std::endl;
 			return;
 		}
 	}
@@ -106,6 +178,7 @@ void Cartridge::findSram() {
 			_sramSize = 0x8000;
 			_sram.reset(new uint8_t[0x8000]);
 			memset(_sram.get(), 0xff, 0x8000);
+			std::cout << "Allocated " << _sramSize << " bytes of sram" << std::endl;
 			return;
 		}
 	}

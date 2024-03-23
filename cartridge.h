@@ -23,6 +23,7 @@ struct CartHeader {
 class Cartridge {
 public:
 	void open(std::string rom_filename);
+	bool saveSram();
 	uint8_t read_8(uint32_t address);
 	uint16_t read_16(uint32_t address);
 	uint32_t read_32(uint32_t address);
@@ -40,8 +41,12 @@ private:
 	uint32_t _flashSize;
 
 	CartHeader* _header;
+	std::string _rom_name;
+	std::string _rom_path;
 
 	void load(std::string rom_filename);
+	bool load_state();
+	void find_rom_name(std::string romPath);
 	void findBackupId();
 	void findEeprom();
 	void findFlash();

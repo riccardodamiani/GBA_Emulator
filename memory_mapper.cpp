@@ -46,6 +46,12 @@ void MemoryMapper::loadRom(std::string rom_filename) {
 	_cartridge.open(rom_filename);
 }
 
+bool MemoryMapper::saveState() {
+	bool ret = true;
+	ret &= _cartridge.saveSram();
+	return ret;
+}
+
 void MemoryMapper::loadBios() {
 	std::ifstream biosFile;
 

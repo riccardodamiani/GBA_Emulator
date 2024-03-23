@@ -58,12 +58,12 @@ const int waitcntAccessTimings[][4] = {
 	{4, 3, 2, 8},		//sram
 };
 
-
 class MemoryMapper {
 public:
 	MemoryMapper();
 	~MemoryMapper();
 	void loadRom(std::string rom_filename);
+	bool saveState();
 	uint8_t read_8(uint32_t address);
 	uint16_t read_16(uint32_t address);
 	uint32_t read_32(uint32_t address);
