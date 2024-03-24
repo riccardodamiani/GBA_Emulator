@@ -233,10 +233,6 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 	graphicsPixel layerPixels[5];
 	graphicsPixel** layerPixels_ptr;
 	layerPixels_ptr = new graphicsPixel * [5];
-	
-	if (params.BLDCNT & 0x80) {
-		params.BLDCNT = params.BLDCNT;
-	}
 
 	SpecialEffectPixel finalPixel;
 	//update frame buffer
