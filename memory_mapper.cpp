@@ -465,6 +465,34 @@ void MemoryMapper::write_register(uint32_t gba_addr,
 	case 0xa4:
 		writeFifo(data, 1);
 		break;
+	case 0xb8:	//DMA0 control
+		real_mem = data;
+		if (data & 0x80000000) {	//DMA enable
+			_dma[0]->enable_dma();
+			_dma[0]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xc4:	//DMA1 control
+		real_mem = data;
+		if (data & 0x80000000) {	//DMA enable
+			_dma[1]->enable_dma();
+			_dma[1]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xd0:	//DMA2 control
+		real_mem = data;
+		if (data & 0x80000000) {	//DMA enable
+			_dma[2]->enable_dma();
+			_dma[2]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
+	case 0xd4:	//DMA3 control
+		real_mem = data;
+		if (data & 0x80000000) {	//DMA enable
+			_dma[3]->enable_dma();
+			_dma[3]->trigger(Dma_Trigger::EMPTY_TRIGGER);
+		}
+		break;
 	case 0x84:
 		real_mem = data;
 		GBA::sound.enableMaster(real_mem >> 7);
