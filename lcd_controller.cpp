@@ -459,7 +459,8 @@ void LcdController::get_text_bg_pixel_color(int bg_num, helperParams& params, V2
 
 	uint8_t palette_color;
 	if (params.BGCNT[bg_num].palette) {	//palette 256/1
-		uint8_t* tileMem = &bg_tile_data[64 * bg_map_base[tile_nr]];
+		memcpy(&tileInfo, &bg_map_base[tile_nr * 2], 2);
+		uint8_t* tileMem = &bg_tile_data[64 * tileInfo.tile_nr];
 		palette_color = tileMem[tile_pixel_coords.x + tile_pixel_coords.y * 8];
 		tileInfo.palette = 0;
 	}
