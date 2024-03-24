@@ -3,6 +3,7 @@
 #include "memory_mapper.h"
 #include "interrupt.h"
 #include "multithreadManager.h"
+#include "dma.h"
 #include "error.h"
 
 #include <cstdint>
@@ -230,6 +231,8 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 	}
 	
 	//a temporary buffer to store layers pixels
+	rgba_color backdropPixel;
+	bool empty_pixel;	//used for backdrop
 	graphicsPixel layerPixels[5];
 	graphicsPixel** layerPixels_ptr;
 	layerPixels_ptr = new graphicsPixel * [5];
@@ -237,9 +240,12 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 	SpecialEffectPixel finalPixel;
 	//update frame buffer
 	for (int pixel = 0; pixel < 240; pixel++) {
-		finalPixel.color = {0xff, 0xff, 0xff, 0xff};	//starts with alla white
+		finalPixel.color = {0xff, 0xff, 0xff, 0xff};	//starts with all white
+		backdropPixel = { 0xff, 0xff, 0xff, 0xff };	//starts with backdrop white
 		finalPixel.option.priority = 0x69;	//a random number. Just need to make sure is not close to the numbers 0-4
 		finalPixel.type = LayerType::NO_TYPE;
+		empty_pixel = true;
+
 		//copy the layers pixels into a separate buffer to order them by priority
 		for (int i = 0; i < activeLayers; i++) {
 			layerPixels[i] = { layers[i]->scanline[pixel], layers[i]->type, layers[i]->scanline[pixel].option};
@@ -252,14 +258,23 @@ void LcdController::helperRoutine(int start_index, int end_index, void* args) {
 		for (int layer = 0; layer < activeLayers; layer++) {
 			graphicsPixel& currentPixel = *layerPixels_ptr[layer];
 
+			//save backdrop pixel
+			if (currentPixel.type == LayerType::BG0) {
+				backdropPixel = currentPixel.pixel.color;
+				backdropPixel.a = 255;
+			}
 			//check for obj window visibility
 			currentPixel.pixel.color.a *= get_bg_window_mask(params, currentPixel.type, windowObjMask[pixel], pixel, params.vCount);
 
 			if (currentPixel.pixel.color.a == 0)	//ignores transparent pixels
 				continue;
-
+			empty_pixel = false;
 			//check for alpha blending
 			apply_special_effects(params, finalPixel, currentPixel, finalPixel);
+		}
+		//backdrop. if pixel is not visible use color of bg0 layer
+		if (empty_pixel) {
+			finalPixel.color = backdropPixel;
 		}
 
 		//print final color in the frame buffer
