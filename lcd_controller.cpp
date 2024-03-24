@@ -546,7 +546,6 @@ void LcdController::getObjLayerScanline(helperParams& params, graphicsScanline**
 		// sprite row outside sprite rectangle
 		if (spriteRowToDraw >= spriteSize.y * double_size)
 			continue;
-
 		int pixel_count = 0;
 		//get the pixels visible in the current scanline
 		getSpriteScanline(currentObjAttr, spriteSize, spriteRowToDraw, &objRowBuffer, params);
@@ -595,11 +594,19 @@ void LcdController::getSpriteScanline(obj_attribute& attr, V2Int &spriteSize, in
 		}
 
 		if (attr.rot_scale_flag) {	//apply affine transformation
+			//at the end of each sprite attribute there are 16 bits of data containing one of 
+			//the 4 values of the transformation matrix (A, B, C, D).
+			//To get the whole matrix you have to get the last 2 bytes of 4 consecutive object attributes.
+			//In memory there is space for 128 sprite attributes so there is also space for 128/4=32 transformation matrixes
+			//the variable rot_scale_param_select identify which one of the 32 transformation matrixes in memory we need
+
+			uint16_t rot_scale_param_select = (attr.rot_scale_par_sel << 0) | (attr.h_flip << 3) | (attr.v_flip << 4);
+
 			transform_matrix = {
-				spriteAttributes[attr.rot_scale_par_sel * 4].rot_scale_param,
-				spriteAttributes[attr.rot_scale_par_sel * 4 + 1].rot_scale_param,
-				spriteAttributes[attr.rot_scale_par_sel * 4 + 2].rot_scale_param,
-				spriteAttributes[attr.rot_scale_par_sel * 4 + 3].rot_scale_param,
+				spriteAttributes[rot_scale_param_select * 4].rot_scale_param,
+				spriteAttributes[rot_scale_param_select * 4 + 1].rot_scale_param,
+				spriteAttributes[rot_scale_param_select * 4 + 2].rot_scale_param,
+				spriteAttributes[rot_scale_param_select * 4 + 3].rot_scale_param,
 			};
 			transformPixelCoords({ i - x_coord, rowToDraw }, transformedCoords, transform_matrix, spriteSize, double_size);
 		}
@@ -667,12 +674,24 @@ void LcdController::getSpritePixel(obj_attribute& attr, helperParams& params, V2
 	}
 }
 
+inline float fpd_16_To_float(gba_16_fpd fpd) {
+	if (fpd.sign) {
+		uint16_t temp;
+		memcpy(&temp, &fpd, 2);
+		temp ^= 0xffff;
+		temp += 1;
+		memcpy(&fpd, &temp, 2);
+		return -1.0 * (fpd.integer + fpd.fract / 256.0);
+	}
+	return fpd.integer + fpd.fract / 256.0;
+}
+
 void LcdController::transformPixelCoords(V2Int src_coords, V2Int& dst_coords, Transf_Gba_Matrix& gba_matrix, V2Int& spriteSize, int doubleSize) {
 	Matrix2x2 matrix = {
-		-1.0 * (gba_matrix.A.sign * 2 - 1) * gba_matrix.A.integer + gba_matrix.A.fract / 256.0,
-		-1.0 * (gba_matrix.B.sign * 2 - 1) * gba_matrix.B.integer + gba_matrix.B.fract / 256.0,
-		-1.0 * (gba_matrix.C.sign * 2 - 1) * gba_matrix.C.integer + gba_matrix.C.fract / 256.0,
-		-1.0 * (gba_matrix.D.sign * 2 - 1) * gba_matrix.D.integer + gba_matrix.D.fract / 256.0
+		fpd_16_To_float(gba_matrix.A),
+		fpd_16_To_float(gba_matrix.B),
+		fpd_16_To_float(gba_matrix.C),
+		fpd_16_To_float(gba_matrix.D)
 	};
 
 	vector2 p0 = { spriteSize.x / 2, spriteSize.y / 2 };

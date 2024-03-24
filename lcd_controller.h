@@ -161,7 +161,7 @@ struct obj_attribute {
 		//when rot_scale_flag == 1
 			//9-13: rotation scale parameter selection
 		//else the following:
-	rot_scale_par_sel: 3,	//first 3 bit of rotation scale parameter selection
+	rot_scale_par_sel: 3,	//first 3 bit of rotation scale parameter selection. h_flip and v_flip are used too if using rotation/scale
 		h_flip : 1,	//horizontal flip
 		v_flip : 1,	//vertical flip
 		obj_size : 2;	//(0..3, depends on OBJ Shape, see Attr 0)
