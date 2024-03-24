@@ -702,9 +702,44 @@ void LcdController::update_V_count(uint32_t cycles) {
 	video_cnt += cycles;
 	h_cnt = video_cnt / 4;
 
-	if (video_cnt > 960) {	//h-blank
-		if (!DISPSTAT->hblank_flag && *VCOUNT < 160) {	//first time in h-blank: draw the current scanline
+	//v-counter irq
+	if (DISPSTAT->vcounter_irq_enable && DISPSTAT->LYC == *VCOUNT) {
+		GBA::irq.setVCounterFlag();
+	}
 
+	//v-blank (nothing to display)
+	if (*VCOUNT >= 160) {
+		if (!DISPSTAT->vblank_flag) {
+			DISPSTAT->vblank_flag = 1;
+			if(DISPSTAT->vblank_irq_enable)
+				GBA::irq.setVBlankFlag();
+		}
+		if (video_cnt <= 960) {//h-draw in v-blank
+			DISPSTAT->hblank_flag = 0;
+		}
+		else {//h-blank in v-blank
+			DISPSTAT->hblank_flag = 1;
+			if (video_cnt > 1232) {	//end of h-blank
+				video_cnt %= 1232;
+				*VCOUNT += 1;
+			}
+		}
+		if (*VCOUNT >= 228) {//end of v-blank
+			*VCOUNT %= 228;
+			DISPSTAT->vblank_flag = 0;	//v-draw
+			activeFrameBuffer = 1 - activeFrameBuffer;	//change frame buffer
+			memset(frameBuffers[activeFrameBuffer], 0, 240 * 160 * 4);	//clean the buffer
+		}
+		return;
+	}
+
+	//h-draw
+	if (video_cnt <= 960) {
+		//first time in h-draw
+		if (DISPSTAT->hblank_flag) {
+			DISPSTAT->hblank_flag = 0;
+
+			//draw the current scanline
 			drawer->Wait();	//wait for the helper to finish the previous job
 
 			//sets some registers
@@ -732,31 +767,16 @@ void LcdController::update_V_count(uint32_t cycles) {
 			drawerParams.screenBuffer = frameBuffers[activeFrameBuffer];
 			drawer->startWork(1, helperRoutine, &drawerParams);	//start the new job
 		}
-		DISPSTAT->hblank_flag = 1;
+	}else {	//h-blank
+		if (!DISPSTAT->hblank_flag) {	//first time in h-blank
+			DISPSTAT->hblank_flag = 1;
+			if(DISPSTAT->hblank_irq_enable)
+				GBA::irq.setHBlankFlag();	//h-blank irq
+		}
 
-		if (video_cnt > 1232) {
-			DISPSTAT->hblank_flag = 0;	//h-draw
+		if (video_cnt > 1232) {	//end of h-blank
 			video_cnt %= 1232;
-			GBA::irq.setHBlankFlag();	//h-blank irq
 			*VCOUNT += 1;
-
-			//v-counter irq
-			if (DISPSTAT->vcounter_irq_enable && DISPSTAT->LYC == *VCOUNT) {
-				GBA::irq.setVCounterFlag();
-			}
-
-			if (*VCOUNT >= 160) {	//v-blank
-				if (!DISPSTAT->vblank_flag && DISPSTAT->vblank_irq_enable) {	//v-blank irq
-					GBA::irq.setVBlankFlag();
-				}
-				DISPSTAT->vblank_flag = 1;
-				if (*VCOUNT >= 228) {
-					*VCOUNT %= 228;
-					DISPSTAT->vblank_flag = 0;	//v-draw
-					activeFrameBuffer = 1 - activeFrameBuffer;	//change frame buffer
-					memset(frameBuffers[activeFrameBuffer], 0, 240 * 160 * 4);	//clean the buffer
-				}
-			}
 		}
 	}
 }
