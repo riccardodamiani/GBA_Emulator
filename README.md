@@ -22,26 +22,36 @@ Done:
 * Keypad inputs
 * Save/load states
 	* sram
+* DMAs
+	* DMA enable and registers load
+	* Repeat bit
+	* Transfer trigger (h-blank, v-blank, FIFOs)
 * Audio
 	* DMA sound channel A
-  
-Not even started:  
+* Interrupts:
+	* H-blank, V-blank, V-couter, keypad, DMAs
+ 
+Partially done:
+* Arm/Thumb instruction sets (~80% done)
+* Video:
+	* Object 2-dimentional tile mapping
+* Cpu timings
+* Audio
+	* DMA sound channel B (disabled due to a bug)
+* Video:
+	* graphic mode 2
+
+To do:  
 * Serial communication
 * Timers
 * Save/load states
 	* eeprom
 	* flash
-  
-In progress:
-* Arm/Thumb instruction sets (~80% done)
 * Video:
-	* Object 2-dimentional tile mapping
-* Cpu interrupts:
-	* V-blank
-* Cpu timings
-* DMAs
-* Audio
-	* DMA sound channel B (disabled due to a bug)
+	* Graphic modes 1, 3, 4, 5
+* Interrupts:
+	* Timers
+
 
 ## Keyboard map
 Not customizable yet.
