@@ -4,6 +4,7 @@
 #include "cartridge.h"
 #include "io_registers.h"
 class Dma;
+enum Dma_Trigger;
 
 #include <string>
 #include <cstdint>
@@ -78,6 +79,7 @@ public:
 	void write_register(uint32_t gba_addr, uint8_t& real_addr, uint8_t data);
 	void write_register(uint32_t gba_addr, uint16_t& real_addr, uint16_t data);
 	void write_register(uint32_t gba_addr, uint32_t& real_addr, uint32_t data);
+	void trigger_dma(Dma_Trigger type);
 private:
 	//memory
 	std::unique_ptr <uint8_t[]> _bios_mem;

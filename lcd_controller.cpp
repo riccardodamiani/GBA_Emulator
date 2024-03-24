@@ -713,6 +713,7 @@ void LcdController::update_V_count(uint32_t cycles) {
 			DISPSTAT->vblank_flag = 1;
 			if(DISPSTAT->vblank_irq_enable)
 				GBA::irq.setVBlankFlag();
+			GBA::memory.trigger_dma(Dma_Trigger::VBLANK);
 		}
 		if (video_cnt <= 960) {//h-draw in v-blank
 			DISPSTAT->hblank_flag = 0;
@@ -770,6 +771,7 @@ void LcdController::update_V_count(uint32_t cycles) {
 	}else {	//h-blank
 		if (!DISPSTAT->hblank_flag) {	//first time in h-blank
 			DISPSTAT->hblank_flag = 1;
+			GBA::memory.trigger_dma(Dma_Trigger::HBLANK);
 			if(DISPSTAT->hblank_irq_enable)
 				GBA::irq.setHBlankFlag();	//h-blank irq
 		}

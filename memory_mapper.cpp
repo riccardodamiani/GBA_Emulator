@@ -391,6 +391,13 @@ gamePakAddr MemoryMapper::inCartridge(uint32_t gba_address) {
 	return { false, 0 };
 }
 
+//send a trigger to all DMAs
+void MemoryMapper::trigger_dma(Dma_Trigger type) {
+	for (int i = 0; i < 4; i++) {
+		_dma[i]->trigger(type);
+	}
+}
+
 void MemoryMapper::write_register(uint32_t gba_addr,
 	uint8_t& real_mem, uint8_t data) {
 	if (gba_addr > 0x3fe)
