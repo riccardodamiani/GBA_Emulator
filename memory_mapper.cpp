@@ -343,7 +343,7 @@ realAddress MemoryMapper::find_memory_addr(uint32_t gba_address) {
 	{
 		localAddr &= 0x1ffff;	//mirrors every 128k
 		if (localAddr > 0x17fff) {	//last 32k mirrors the previous 32k
-			localAddr = 0xffff /* 64k */  + localAddr & 0x7fff /* mirror of used 32k */;
+			localAddr = 0x10000 /* 64k */ + (localAddr & 0x7fff)/* mirror of used 32k */;
 		}
 		return { _vram.get(), localAddr, accessTimings[6] };
 		break;
