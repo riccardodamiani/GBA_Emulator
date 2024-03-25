@@ -3,6 +3,7 @@ Open source gba emulator in C++.
 
 ## Progress  
 In the current state the emulator is able to display the intro screen and boot into the game.  
+Right now I'm focusing mainly on emulating properly the game 'Kirby - Nightmare in Dreamland'.
 
 Done:
 * Bios loading
@@ -27,7 +28,7 @@ Done:
 	* Repeat bit
 	* Transfer trigger (h-blank, v-blank, FIFOs)
 * Audio
-	* DMA sound channel A
+	* DMA sound channel A (still buggy)
 * Interrupts:
 	* H-blank, V-blank, V-couter, keypad, DMAs
  
@@ -37,7 +38,7 @@ Partially done:
 	* Object 2-dimentional tile mapping
 * Cpu timings
 * Audio
-	* DMA sound channel B (disabled due to a bug)
+	* DMA sound channel B (disabled due to annoying clicking)
 * Video:
 	* graphic mode 2
 
